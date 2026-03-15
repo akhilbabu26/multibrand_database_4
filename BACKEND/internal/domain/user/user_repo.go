@@ -36,4 +36,10 @@ type UserUsecase interface{
 
 	//user
 	GetUser(id uint) (*User, error)
+
+	// Admin user management  ← add these
+	ListUsers() ([]*User, error)
+	BlockUser(id uint) error
+	UnblockUser(id uint) error
+	DeleteUser(id uint) error
 }

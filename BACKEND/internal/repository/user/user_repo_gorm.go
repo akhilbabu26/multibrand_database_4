@@ -53,6 +53,8 @@ func (r *userRepository) FindByEmail(email string) (*domain.User, error) {
 	return &user, nil
 }
 
+
+// Admin only
 // update user
 func (r *userRepository) Update(user *domain.User) error {
 	if err := r.db.Save(user).Error; err != nil {
@@ -78,7 +80,7 @@ func (r *userRepository) Delete(id uint) error {
 	return nil
 }
 
-// Block or Unblock user
+// Block user
 func (r *userRepository) BlockUser(id uint) error {
 	if err := r.db.Model(&domain.User{}).
 		Where("id = ?", id).

@@ -321,3 +321,84 @@ func (u *userUsecase) ResetPassword(email_, otp, newPassword, confirmPassword st
 
 	return nil
 }
+
+// ------Admin user management-----
+
+//list user
+func (u *userUsecase) ListUsers() ([] *domain.User, error){
+	users , err := u.repo.ListUsers()
+	if err != nil{
+		return nil, fmt.Errorf("faild to fetch user: %w", err)
+	}
+
+	return users, nil
+}
+
+//block user
+func (u *userUsecase) BlockUser(userID uint) error{
+	//1. cheeck if user exist
+	user, err := u.repo.FindByID(userID)
+	if err != nil {
+		return fmt.Errorf("user not found")
+	}
+
+	// check is already blocked
+	if user.IsBlocked{
+		return fmt.Errorf("user is already blocked")
+	}
+
+	//block user indb
+	if err := u.repo.BlockUser(userID); err != nil{
+		return fmt.Errorf("failed to block user: %w", err)
+	}
+
+	// 5. force logout — invalidate their tokens
+	u.tokenStore.Delete(userID)
+
+	return nil
+}
+
+// unblock user
+func (u *userUsecase) UnblockUser(id uint) error {
+	// 1. check user exists
+	user, err := u.repo.FindByID(id)
+	if err != nil {
+		return fmt.Errorf("user not found")
+	}
+
+	// 2. check actually blocked
+	if !user.IsBlocked {
+		return fmt.Errorf("user is not blocked")
+	}
+
+	// 3. unblock in db
+	if err := u.repo.UnblockUser(id); err != nil {
+		return fmt.Errorf("failed to unblock user: %w", err)
+	}
+
+	return nil
+}
+
+//delete user
+func (u *userUsecase) DeleteUser(id uint) error {
+	// 1. check user exists
+	user, err := u.repo.FindByID(id)
+	if err != nil {
+		return fmt.Errorf("user not found")
+	}
+
+	// 2. prevent deleting admin
+	if user.Role == domain.RoleAdmin {
+		return fmt.Errorf("cannot delete an admin account")
+	}
+
+	// 3. invalidate tokens first
+	u.tokenStore.Delete(id)
+
+	// 4. delete from db
+	if err := u.repo.Delete(id); err != nil {
+		return fmt.Errorf("failed to delete user: %w", err)
+	}
+
+	return nil
+}

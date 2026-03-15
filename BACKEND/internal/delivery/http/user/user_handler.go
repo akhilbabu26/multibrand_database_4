@@ -168,24 +168,6 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"user": user})
 }
 
-// get user by id for admin
-func (h *UserHandler) GetUserByID(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
-		return
-	}
-
-	user, err := h.usecase.GetUser(uint(id))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"user": user})
-}
-
-
 // --- forgot password---
 
 func (h *UserHandler) ForgotPassword(c *gin.Context) {
@@ -213,4 +195,98 @@ func (h *UserHandler) ResetPassword(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "password reset successfully, please login"})
+}
+
+
+//--- adnim user management------
+
+// get user by id for admin
+func (h *UserHandler) GetUserByID(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+
+	user, err := h.usecase.GetUser(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"user": user})
+}
+
+// get all users
+func (h *UserHandler) ListUsers(c *gin.Context){
+	users, err := h.usecase.ListUsers()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"users": users,
+		"total": len(users),
+	})
+}
+
+// block user
+func (h *UserHandler) BlockUser(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+
+	loggedInID, _ := c.Get("userID")
+
+	// prevent self block
+	if uint(id) == loggedInID.(uint) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "you cannot block yourself"})
+		return
+	}
+
+	if err := h.usecase.BlockUser(uint(id)); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "user blocked successfully"})
+}
+
+// unblock user
+func (h *UserHandler) UnblockUser(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+	if err := h.usecase.UnblockUser(uint(id)); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "user unblocked successfully"})
+}
+
+// delete user
+func (h *UserHandler) DeleteUser(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+
+	loggedInID, _ := c.Get("userID")
+
+	// prevent self delete
+	if uint(id) == loggedInID.(uint) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "you cannot delete yourself"})
+		return
+	}
+
+	if err := h.usecase.DeleteUser(uint(id)); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "user deleted successfully"})
 }
