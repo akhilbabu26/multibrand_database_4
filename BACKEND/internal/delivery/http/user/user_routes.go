@@ -16,6 +16,10 @@ func (h *UserHandler) RegisterRoutes(r *gin.RouterGroup, app *bootstrap.App){
 		auth.POST("/verify-otp", h.VerifyOTP)
 		auth.POST("/login", h.Login)
 		auth.POST("/refresh", h.RefreshToken)
+
+		// password reset routes
+		auth.POST("/forgot-password", h.ForgotPassword)
+		auth.POST("/reset-password", h.ResetPassword)
 	}
 
 	// customer protected routes

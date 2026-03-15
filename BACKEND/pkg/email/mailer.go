@@ -99,3 +99,55 @@ func createOTPEmail(name, otp string) (string, error) {
 	return buf.String(), nil
 }
 
+//--- reset password mail format
+func (m *Mailer) SendResetOTP(toEmail, name, otp string) error {
+	subject := "Reset your Multibrand password"
+	body, err := buildResetOTPEmail(name, otp)
+	if err != nil {
+		return fmt.Errorf("failed to build email: %w", err)
+	}
+	return m.send(toEmail, subject, body)
+}
+
+func buildResetOTPEmail(name, otp string) (string, error) {
+	const tmpl = `
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+  <h2>Hello, {{.Name}}!</h2>
+  <p>We received a request to reset your <strong>Multibrand</strong> password.</p>
+  <p>Your OTP code is:</p>
+  <div style="
+    display: inline-block;
+    font-size: 32px;
+    font-weight: bold;
+    letter-spacing: 8px;
+    background: #f4f4f4;
+    padding: 16px 32px;
+    border-radius: 8px;
+    margin: 16px 0;
+  ">{{.OTP}}</div>
+  <p>This code expires in <strong>10 minutes</strong>.</p>
+  <p>If you did not request a password reset, ignore this email.</p>
+  <br/>
+  <p>— The Multibrand Team</p>
+</body>
+</html>`
+
+	t, err := template.New("reset").Parse(tmpl)
+	if err != nil {
+		return "", err
+	}
+
+	data := struct {
+		Name string
+		OTP  string
+	}{Name: name, OTP: otp}
+
+	var buf bytes.Buffer
+	if err := t.Execute(&buf, data); err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
+}

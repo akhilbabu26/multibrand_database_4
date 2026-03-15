@@ -247,3 +247,77 @@ func generateOTP() (string, error) {
 	}
 	return otp, nil
 }
+
+// ----forgot password----
+
+func (u *userUsecase) ForgotPassword(email_ string) error {
+	// 1. check user exists
+	user, err := u.repo.FindByEmail(email_)
+	if err != nil {
+		return nil
+	}
+
+	// 2. check user is not blocked
+	if user.IsBlocked {
+		return fmt.Errorf("account has been blocked, contact support")
+	}
+
+	// 3. generate OTP
+	otp, err := generateOTP()
+	if err != nil {
+		return fmt.Errorf("failed to generate otp: %w", err)
+	}
+
+	// 4. save OTP in Redis with 10 min TTL
+	if err := u.tokenStore.SaveResetOTP(email_, otp); err != nil {
+		return fmt.Errorf("failed to save reset otp: %w", err)
+	}
+
+	// 5. send OTP email
+	if err := u.mailer.SendResetOTP(email_, user.Name, otp); err != nil {
+		u.tokenStore.DeleteResetOTP(email_)
+		return fmt.Errorf("failed to send otp: %w", err)
+	}
+
+	return nil
+}
+
+func (u *userUsecase) ResetPassword(email_, otp, newPassword, confirmPassword string) error {
+	// 1. verify OTP
+	stored, err := u.tokenStore.GetResetOTP(email_)
+	if err != nil {
+		return fmt.Errorf("otp expired or not found, please request again")
+	}
+	if stored != otp {
+		return fmt.Errorf("invalid otp")
+	}
+
+	// 2. check passwords match
+	if newPassword != confirmPassword {
+		return fmt.Errorf("passwords do not match")
+	}
+
+	// 3. find user
+	user, err := u.repo.FindByEmail(email_)
+	if err != nil {
+		return fmt.Errorf("user not found")
+	}
+
+	// 4. hash new password
+	hashed, err := hash.HashPassword(newPassword)
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	// 5. update password
+	user.Password = hashed
+	if err := u.repo.Update(user); err != nil {
+		return fmt.Errorf("failed to update password: %w", err)
+	}
+
+	// 6. cleanup OTP + invalidate refresh token
+	u.tokenStore.DeleteResetOTP(email_)
+	u.tokenStore.Delete(user.ID)
+
+	return nil
+}

@@ -41,6 +41,22 @@ type refreshTokenRequest struct{
 	RefreshToken string `json:"refresh_token" binding:"required"` 
 }
 
+type forgotPasswordRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+type verifyResetOTPRequest struct {
+	Email string `json:"email" binding:"required,email"`
+	OTP   string `json:"otp" binding:"required,len=6"`
+}
+
+type resetPasswordRequest struct {
+	Email string `json:"email" binding:"required,email"`
+	OTP string `json:"otp" binding:"required,len=6"`
+	NewPassword string `json:"new_password" binding:"required,min=6"`
+	ConfirmPassword string `json:"confirm_password" binding:"required,min=6"`
+}
+
 // AUTH HANDLERS
 
 // signup
@@ -167,4 +183,34 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"user": user})
+}
+
+
+// --- forgot password---
+
+func (h *UserHandler) ForgotPassword(c *gin.Context) {
+	var req forgotPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// always return same message — don't reveal if email exists
+	h.usecase.ForgotPassword(req.Email)
+	c.JSON(http.StatusOK, gin.H{"message": "if your email exists you will receive an otp"})
+}
+
+func (h *UserHandler) ResetPassword(c *gin.Context) {
+	var req resetPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.usecase.ResetPassword(req.Email, req.OTP, req.NewPassword, req.ConfirmPassword); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "password reset successfully, please login"})
 }

@@ -30,6 +30,10 @@ type UserUsecase interface{
 	RefreshToken(refreshToken string) (accessToken string, err error)
 	Logout(userID uint, accessToken string) error
 
+	// Password reset
+	ForgotPassword(email string) error
+	ResetPassword(email, otp, newPassword, confirmPassword string) error
+
 	//user
 	GetUser(id uint) (*User, error)
 }
