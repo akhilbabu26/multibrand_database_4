@@ -43,7 +43,7 @@ func Initialize() (*App, error){
 		return nil, err
 	}
 
-	// 5. Create token store
+	// 5. Create token store in redis
 	tokenStore := redis.NewTokenStore(redisClient)
 
 	mailer := email.NewMailer(&cfg.SMTP)

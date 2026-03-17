@@ -38,10 +38,10 @@ func (h *UserHandler) RegisterRoutes(r *gin.RouterGroup, app *bootstrap.App){
 		admin.GET("/profile", h.GetProfile)
 
 		// user management
-		admin.GET("/users",             h.ListUsers)
-		admin.GET("/users/:id",         h.GetUserByID)
-		admin.PUT("/users/:id/block",   h.BlockUser)
-		admin.PUT("/users/:id/unblock", h.UnblockUser)
-		admin.DELETE("/users/:id",      h.DeleteUser)
+		admin.GET("/users", h.ListUsers)
+		admin.GET("/users/:id", h.GetUserByID)
+		admin.PATCH("/users/:id/block", h.BlockUser)
+		admin.PATCH("/users/:id/unblock", h.UnblockUser)
+		admin.DELETE("/users/:id", h.DeleteUser)
 	}
 }

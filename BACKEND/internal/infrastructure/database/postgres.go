@@ -4,7 +4,8 @@ import (
 	"fmt"
 
 	"github.com/akhilbabu26/multibrand_database_4/internal/infrastructure/config"
-	"github.com/akhilbabu26/multibrand_database_4/internal/domain/user"
+	userdomain "github.com/akhilbabu26/multibrand_database_4/internal/domain/user"
+	productdomain "github.com/akhilbabu26/multibrand_database_4/internal/domain/product"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -48,7 +49,8 @@ func NewPostgresDB(cfg *config.DatabaseConfig) (*gorm.DB, error){
 
 func AutoMigrate(db *gorm.DB) error {
 	return db.AutoMigrate(
-		&domain.User{},
-		&domain.PendingUser{},
+		&userdomain.User{},
+		&userdomain.PendingUser{},
+		&productdomain.Product{},
 	)
 }
