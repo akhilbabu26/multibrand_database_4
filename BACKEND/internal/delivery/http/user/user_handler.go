@@ -18,51 +18,12 @@ func NewUserHandler(usecase domain.UserUsecase) *UserHandler {
 	return &UserHandler{usecase: usecase}
 }
 
-// Request Struct
-
-type signupRequest struct{
-	Name     string `json:"name" binding:"required,min=2"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6"`
-	Cpassword string `json:"cPassword" binding:"required,min=6"`
-}
-
-type verifyOTPRequest  struct{
-	Email string `json:"email" binding:"required,email"`
-	OTP   string `json:"otp" binding:"required,len=6"`
-}
-
-type loginRequest struct{
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
-}
-
-type refreshTokenRequest struct{
-	RefreshToken string `json:"refresh_token" binding:"required"` 
-}
-
-type forgotPasswordRequest struct {
-	Email string `json:"email" binding:"required,email"`
-}
-
-type verifyResetOTPRequest struct {
-	Email string `json:"email" binding:"required,email"`
-	OTP   string `json:"otp" binding:"required,len=6"`
-}
-
-type resetPasswordRequest struct {
-	Email string `json:"email" binding:"required,email"`
-	OTP string `json:"otp" binding:"required,len=6"`
-	NewPassword string `json:"new_password" binding:"required,min=6"`
-	ConfirmPassword string `json:"confirm_password" binding:"required,min=6"`
-}
-
 // AUTH HANDLERS
 
 // signup
 func (h *UserHandler) Signup(c *gin.Context){
 
-	var req signupRequest
+	var req domain.SignupRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil{
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -79,7 +40,7 @@ func (h *UserHandler) Signup(c *gin.Context){
 
 // verify otp
 func (h *UserHandler) VerifyOTP(c *gin.Context){
-	var req verifyOTPRequest 
+	var req domain.VerifyOTPRequest 
 	if err := c.ShouldBindJSON(&req); err != nil{
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -95,7 +56,7 @@ func (h *UserHandler) VerifyOTP(c *gin.Context){
 
 // Login
 func (h *UserHandler) Login(c *gin.Context){
-	var req loginRequest
+	var req domain.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil{
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -115,7 +76,7 @@ func (h *UserHandler) Login(c *gin.Context){
 
 // referesh token
 func (h *UserHandler) RefreshToken(c *gin.Context){
-	var req refreshTokenRequest
+	var req domain.RefreshTokenRequest
 	if err := c.ShouldBindJSON(&req); err != nil{
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -171,7 +132,7 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 // --- forgot password---
 
 func (h *UserHandler) ForgotPassword(c *gin.Context) {
-	var req forgotPasswordRequest
+	var req domain.ForgotPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -183,7 +144,7 @@ func (h *UserHandler) ForgotPassword(c *gin.Context) {
 }
 
 func (h *UserHandler) ResetPassword(c *gin.Context) {
-	var req resetPasswordRequest
+	var req domain.ResetPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

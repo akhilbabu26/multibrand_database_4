@@ -28,6 +28,21 @@ func (p *Product) CalculateSalePrice() {
 	}
 }
 
+// ProductFilter — for search and filter
+type ProductFilter struct {
+	Search   string
+	Type     string
+	Color    string
+	MinPrice float64
+	MaxPrice float64
+	InStock  bool
+	Inactive bool
+	Page     int
+	Limit    int
+}
+
+//----request feilds------
+
 // CreateProductRequest — input for create
 type CreateProductRequest struct {
 	Name string  `json:"name" binding:"required"`
@@ -55,20 +70,7 @@ type UpdateProductRequest struct {
 	IsActive           *bool    `json:"is_active"`
 }
 
-// ProductFilter — for search and filter
-type ProductFilter struct {
-	Search   string
-	Type     string
-	Color    string
-	MinPrice float64
-	MaxPrice float64
-	InStock  bool
-	Inactive bool
-	Page     int
-	Limit    int
-}
-
-// Response feilds for Admin and User
+// -----Response feilds for Admin and User-----
 
 // CustomerProductResponse — limited fields for customer
 type CustomerProductResponse struct {
@@ -102,7 +104,7 @@ type AdminProductResponse struct {
 }
 
 
-// CONVERTERS
+// CONVERTERS customer and admin response
 func (p *Product) ToCustomerResponse() *CustomerProductResponse {
 	return &CustomerProductResponse{
 		ID:                 p.ID,
