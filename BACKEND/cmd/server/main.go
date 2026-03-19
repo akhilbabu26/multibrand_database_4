@@ -26,6 +26,12 @@ import (
 	wishlistRepository "github.com/akhilbabu26/multibrand_database_4/internal/repository/wishlist"
 	wishlistUsecase "github.com/akhilbabu26/multibrand_database_4/internal/usecase/wishlist"
 	
+	//address
+	addressHandler "github.com/akhilbabu26/multibrand_database_4/internal/delivery/http/address"
+	addressRepository "github.com/akhilbabu26/multibrand_database_4/internal/repository/address"
+	addressUsecase "github.com/akhilbabu26/multibrand_database_4/internal/usecase/address"
+	
+	
 	"github.com/gin-gonic/gin"
 )
 
@@ -62,15 +68,22 @@ func main() {
 	wUsecase := wishlistUsecase.NewWishlistUsecase(wRepo, pRepo, cUsecase)
 	wHandler := wishlistHandler.NewWishlistHandler(wUsecase)
 
+	// wire address
+	aRepo := addressRepository.NewAddressRepository(app.DB)
+	aUsecase := addressUsecase.NewAddressUsecase(aRepo)
+	aHandler := addressHandler.NewAddressHandler(aUsecase)
+
+
 	// 5. setup gin
 	r := gin.Default()
 	api := r.Group("/api/v1")
 
 	// 6. register routes
-	uHandler.RegisterRoutes(api, app)
-	pHandler.RegisterRoutes(api, app)
-	cHandler.RegisterRoutes(api, app)
-	wHandler.RegisterRoutes(api, app)
+	uHandler.RegisterRoutes(api, app) // user routes
+	pHandler.RegisterRoutes(api, app) // product routes
+	cHandler.RegisterRoutes(api, app) // cart routes
+	wHandler.RegisterRoutes(api, app) // wishlist routes
+	aHandler.RegisterRoutes(api, app) // address routes
 
 	log.Printf("Server running on %s", app.Config.App.Port)
 	r.Run(app.Config.App.Port)

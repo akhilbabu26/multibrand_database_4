@@ -8,6 +8,7 @@ import (
 	productdomain "github.com/akhilbabu26/multibrand_database_4/internal/domain/product"
 	cartdomain "github.com/akhilbabu26/multibrand_database_4/internal/domain/cart"
 	wishlistdomain "github.com/akhilbabu26/multibrand_database_4/internal/domain/wishlist"
+	addressdomain "github.com/akhilbabu26/multibrand_database_4/internal/domain/address"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -56,6 +57,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&productdomain.Product{},
 		&wishlistdomain.Wishlist{},   
 		&cartdomain.Cart{},       
-		&cartdomain.CartItem{},   
+		&cartdomain.CartItem{},
+		&addressdomain.Address{},
 	)
 }
