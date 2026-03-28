@@ -17,6 +17,10 @@ func NewCartRepository(db *gorm.DB) domain.CartRepository {
 	return &cartRepository{db: db}
 }
 
+func (r *cartRepository) WithTx(tx *gorm.DB) domain.CartRepository {
+	return &cartRepository{db: tx}
+}
+
 func (r *cartRepository) GetOrCreateCart(userID uint) (*domain.Cart, error) {
 	var cart domain.Cart
 	err := r.db.Where("user_id = ?", userID).First(&cart).Error

@@ -16,6 +16,10 @@ func NewAddressRepository(db *gorm.DB) domain.AddressRepository {
 	return &addressRepository{db: db}
 }
 
+func (r *addressRepository) WithTx(tx *gorm.DB) domain.AddressRepository {
+	return &addressRepository{db: tx}
+}
+
 func (r *addressRepository) Create(address *domain.Address) error {
 	if err := r.db.Create(address).Error; err != nil {
 		return apperrors.Internal("failed to create address", err)

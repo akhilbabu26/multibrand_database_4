@@ -7,8 +7,9 @@ import (
 	cartDomain    "github.com/akhilbabu26/multibrand_database_4/internal/models/cart"
 	productDomain "github.com/akhilbabu26/multibrand_database_4/internal/models/product"
 	addressDomain "github.com/akhilbabu26/multibrand_database_4/internal/models/address"
+	"github.com/akhilbabu26/multibrand_database_4/internal/infrastructure/database"
 	apperrors     "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
-	"github.com/akhilbabu26/multibrand_database_4/pkg/razorpay"
+	"gorm.io/gorm"
 )
 
 type orderUsecase struct {
@@ -16,7 +17,7 @@ type orderUsecase struct {
 	cartRepo    cartDomain.CartRepository
 	productRepo productDomain.ProductRepository
 	addressRepo addressDomain.AddressRepository
-	razorpay    *razorpay.RazorpayClient
+	txManager   database.TransactionManager
 }
 
 func NewOrderUsecase(
@@ -24,14 +25,14 @@ func NewOrderUsecase(
 	cartRepo cartDomain.CartRepository,
 	productRepo productDomain.ProductRepository,
 	addressRepo addressDomain.AddressRepository,
-	razorpay *razorpay.RazorpayClient,
+	txManager database.TransactionManager,
 ) orderDomain.OrderUsecase {
 	return &orderUsecase{
 		repo:        repo,
 		cartRepo:    cartRepo,
 		productRepo: productRepo,
 		addressRepo: addressRepo,
-		razorpay:    razorpay,
+		txManager:   txManager,
 	}
 }
 
@@ -63,71 +64,71 @@ func (u *orderUsecase) PlaceOrder(userID uint, req orderDomain.PlaceOrderRequest
 
 	var orderItems []orderDomain.OrderItem
 	var totalAmount float64
+	var order *orderDomain.Order
 
-	for _, item := range cart.Items {
-		product, err := u.productRepo.FindByID(item.ProductID)
-		if err != nil {
-			return nil, err
+	err = u.txManager.ExecuteTx(func(tx *gorm.DB) error {
+		txProductRepo := u.productRepo.WithTx(tx)
+		txOrderRepo := u.repo.WithTx(tx) // “Temporary changes to the tables used by these repos inside the transaction”
+		txCartRepo := u.cartRepo.WithTx(tx)
+
+		for _, item := range cart.Items {
+			product, txErr := txProductRepo.FindByIDForUpdate(item.ProductID)
+			if txErr != nil {
+				return txErr
+			}
+			if !product.IsActive {
+				return apperrors.ProductNotAvailable()
+			}
+			if product.Stock < item.Quantity {
+				return apperrors.BadRequest(
+					fmt.Sprintf("insufficient stock for '%s', only %d available", product.Name, product.Stock),
+					nil,
+				)
+			}
+
+			subtotal := product.SalePrice * float64(item.Quantity)
+			totalAmount += subtotal
+
+			orderItems = append(orderItems, orderDomain.OrderItem{
+				ProductID:    product.ID,
+				ProductName:  product.Name,
+				ProductImage: product.ImageURL,
+				Quantity:     item.Quantity,
+				Price:        product.SalePrice,
+				Subtotal:     subtotal,
+			})
+			
+			product.Stock -= item.Quantity
+			if updateErr := txProductRepo.Update(product); updateErr != nil {
+				return updateErr
+			}
 		}
-		if !product.IsActive {
-			return nil, apperrors.ProductNotAvailable()
+
+		order = &orderDomain.Order{
+			UserID:        userID,
+			AddressID:     req.AddressID,
+			PaymentMethod: req.PaymentMethod,
+			PaymentStatus: orderDomain.PaymentStatusPending,
+			Status:        orderDomain.OrderStatusPending,
+			TotalAmount:   totalAmount,
 		}
-		if product.Stock < item.Quantity {
-			return nil, apperrors.BadRequest(
-				fmt.Sprintf("insufficient stock for '%s', only %d available", product.Name, product.Stock),
-				nil,
-			)
+
+		if createErr := txOrderRepo.Create(order); createErr != nil {
+			return createErr
 		}
 
-		subtotal := product.SalePrice * float64(item.Quantity)
-		totalAmount += subtotal
+		for i := range orderItems {
+			orderItems[i].OrderID = order.ID
+		}
+		if itemsErr := txOrderRepo.CreateItems(orderItems); itemsErr != nil {
+			return itemsErr
+		}
 
-		orderItems = append(orderItems, orderDomain.OrderItem{
-			ProductID:    product.ID,
-			ProductName:  product.Name,
-			ProductImage: product.ImageURL,
-			Quantity:     item.Quantity,
-			Price:        product.SalePrice,
-			Subtotal:     subtotal,
-		})
-	}
+		return txCartRepo.ClearCart(cart.ID)
+	})
 
-	order := &orderDomain.Order{
-		UserID:        userID,
-		AddressID:     req.AddressID,
-		PaymentMethod: req.PaymentMethod,
-		PaymentStatus: orderDomain.PaymentStatusPending,
-		Status:        orderDomain.OrderStatusPending,
-		TotalAmount:   totalAmount,
-	}
-
-	if err := u.repo.Create(order); err != nil {
+	if err != nil {
 		return nil, err
-	}
-
-	for i := range orderItems {
-		orderItems[i].OrderID = order.ID
-	}
-	if err := u.repo.CreateItems(orderItems); err != nil {
-		return nil, err
-	}
-
-	// reduce stock
-	for _, item := range cart.Items {
-		product, _ := u.productRepo.FindByID(item.ProductID)
-		product.Stock -= item.Quantity
-		u.productRepo.Update(product)
-	}
-
-	u.cartRepo.ClearCart(cart.ID)
-
-	if req.PaymentMethod == orderDomain.PaymentMethodRazorpay {
-		razorpayOrderID, err := u.razorpay.CreateOrder(totalAmount, order.ID)
-		if err != nil {
-			return nil, apperrors.Internal("failed to initiate payment", err)
-		}
-		u.repo.UpdateRazorpayOrderID(order.ID, razorpayOrderID)
-		order.RazorpayOrderID = razorpayOrderID
 	}
 
 	return u.buildOrderResponse(order, address, orderItems), nil
@@ -147,59 +148,63 @@ func (u *orderUsecase) BuyNow(userID uint, req orderDomain.BuyNowRequest) (*orde
 		return nil, apperrors.UnauthorizedAccess()
 	}
 
-	product, err := u.productRepo.FindByID(req.ProductID)
+	var order *orderDomain.Order
+	var subtotal float64
+	var orderItems []orderDomain.OrderItem
+
+	err = u.txManager.ExecuteTx(func(tx *gorm.DB) error {
+		txProductRepo := u.productRepo.WithTx(tx)
+		txOrderRepo := u.repo.WithTx(tx)
+
+		product, txErr := txProductRepo.FindByIDForUpdate(req.ProductID)
+		if txErr != nil {
+			return txErr
+		}
+		if !product.IsActive {
+			return apperrors.ProductNotAvailable()
+		}
+		if product.Stock < req.Quantity {
+			return apperrors.BadRequest(
+				fmt.Sprintf("insufficient stock. only %d available", product.Stock),
+				nil,
+			)
+		}
+
+		subtotal = product.SalePrice * float64(req.Quantity)
+
+		order = &orderDomain.Order{
+			UserID:        userID,
+			AddressID:     req.AddressID,
+			PaymentMethod: req.PaymentMethod,
+			PaymentStatus: orderDomain.PaymentStatusPending,
+			Status:        orderDomain.OrderStatusPending,
+			TotalAmount:   subtotal,
+		}
+
+		if createErr := txOrderRepo.Create(order); createErr != nil {
+			return createErr
+		}
+
+		orderItems = []orderDomain.OrderItem{{
+			OrderID:      order.ID,
+			ProductID:    product.ID,
+			ProductName:  product.Name,
+			ProductImage: product.ImageURL,
+			Quantity:     req.Quantity,
+			Price:        product.SalePrice,
+			Subtotal:     subtotal,
+		}}
+
+		if itemsErr := txOrderRepo.CreateItems(orderItems); itemsErr != nil {
+			return itemsErr
+		}
+
+		product.Stock -= req.Quantity
+		return txProductRepo.Update(product)
+	})
+
 	if err != nil {
 		return nil, err
-	}
-	if !product.IsActive {
-		return nil, apperrors.ProductNotAvailable()
-	}
-	if product.Stock < req.Quantity {
-		return nil, apperrors.BadRequest(
-			fmt.Sprintf("insufficient stock, only %d available", product.Stock),
-			nil,
-		)
-	}
-
-	subtotal := product.SalePrice * float64(req.Quantity)
-
-	order := &orderDomain.Order{
-		UserID:        userID,
-		AddressID:     req.AddressID,
-		PaymentMethod: req.PaymentMethod,
-		PaymentStatus: orderDomain.PaymentStatusPending,
-		Status:        orderDomain.OrderStatusPending,
-		TotalAmount:   subtotal,
-	}
-
-	if err := u.repo.Create(order); err != nil {
-		return nil, err
-	}
-
-	orderItems := []orderDomain.OrderItem{{
-		OrderID:      order.ID,
-		ProductID:    product.ID,
-		ProductName:  product.Name,
-		ProductImage: product.ImageURL,
-		Quantity:     req.Quantity,
-		Price:        product.SalePrice,
-		Subtotal:     subtotal,
-	}}
-
-	if err := u.repo.CreateItems(orderItems); err != nil {
-		return nil, err
-	}
-
-	product.Stock -= req.Quantity
-	u.productRepo.Update(product)
-
-	if req.PaymentMethod == orderDomain.PaymentMethodRazorpay {
-		razorpayOrderID, err := u.razorpay.CreateOrder(subtotal, order.ID)
-		if err != nil {
-			return nil, apperrors.Internal("failed to initiate payment", err)
-		}
-		u.repo.UpdateRazorpayOrderID(order.ID, razorpayOrderID)
-		order.RazorpayOrderID = razorpayOrderID
 	}
 
 	return u.buildOrderResponse(order, address, orderItems), nil
@@ -294,43 +299,6 @@ func (u *orderUsecase) GetMyOrders(userID uint) ([]*orderDomain.OrderResponse, e
 	return response, nil
 }
 
-func (u *orderUsecase) VerifyPayment(userID uint, req orderDomain.VerifyPaymentRequest) error {
-	valid := u.razorpay.VerifyPayment(
-		req.RazorpayOrderID,
-		req.RazorpayPaymentID,
-		req.RazorpaySignature,
-	)
-	if !valid {
-		return apperrors.InvalidPaymentSignature()
-	}
-
-	orders, err := u.repo.FindByUserID(userID)
-	if err != nil {
-		return err
-	}
-
-	var targetOrder *orderDomain.Order
-	for _, o := range orders {
-		if o.RazorpayOrderID == req.RazorpayOrderID {
-			targetOrder = o
-			break
-		}
-	}
-
-	if targetOrder == nil {
-		return apperrors.OrderNotFound(nil)
-	}
-
-	if err := u.repo.UpdatePayment(
-		targetOrder.ID,
-		orderDomain.PaymentStatusPaid,
-		req.RazorpayPaymentID,
-	); err != nil {
-		return err
-	}
-
-	return u.repo.UpdateStatus(targetOrder.ID, orderDomain.OrderStatusConfirmed)
-}
 
 // ─────────────────────────────────────────
 // ADMIN

@@ -16,6 +16,10 @@ func NewOrderRepository(db *gorm.DB) domain.OrderRepository {
 	return &orderRepository{db: db}
 }
 
+func (r *orderRepository) WithTx(tx *gorm.DB) domain.OrderRepository {
+	return &orderRepository{db: tx}
+}
+
 func (r *orderRepository) Create(order *domain.Order) error {
 	if err := r.db.Create(order).Error; err != nil {
 		return apperrors.Internal("failed to create order", err)

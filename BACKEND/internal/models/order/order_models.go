@@ -72,12 +72,6 @@ type UpdateOrderStatusRequest struct {
 	Status OrderStatus `json:"status" validate:"required,order_status"`
 }
 
-type VerifyPaymentRequest struct {
-	RazorpayOrderID   string `json:"razorpay_order_id"   validate:"required"`
-	RazorpayPaymentID string `json:"razorpay_payment_id" validate:"required"`
-	RazorpaySignature string `json:"razorpay_signature"  validate:"required"`
-}
-
 // RESPONSE STRUCTS
 type OrderResponse struct {
 	ID              uint          `json:"id"`
@@ -99,15 +93,6 @@ type OrderAddress struct {
 	City     string `json:"city"`
 	State    string `json:"state"`
 	PinCode  string `json:"pin_code"`
-}
-
-// RazorpayOrderResponse — sent to frontend to initiate payment
-type RazorpayOrderResponse struct {
-	OrderID         uint    `json:"order_id"`           // our DB order id
-	RazorpayOrderID string  `json:"razorpay_order_id"`  // razorpay order id
-	Amount          float64 `json:"amount"`             // in rupees
-	Currency        string  `json:"currency"`
-	KeyID           string  `json:"key_id"`             // razorpay key id for frontend
 }
 
 // VALID STATUS TRANSITIONS

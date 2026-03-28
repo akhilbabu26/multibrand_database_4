@@ -19,7 +19,6 @@ func (h *OrderHandler) RegisterRoutes(r *gin.RouterGroup, app *bootstrap.App) {
 		orders.GET("", h.GetMyOrders)
 		orders.GET("/:id", h.GetOrder)
 		orders.PATCH("/:id/cancel", h.CancelOrder)
-		orders.POST("/payment/verify", h.VerifyPayment)
 	}
 
 	// admin routes

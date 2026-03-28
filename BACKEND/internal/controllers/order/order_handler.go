@@ -139,27 +139,6 @@ func (h *OrderHandler) GetMyOrders(c *gin.Context) {
 	})
 }
 
-func (h *OrderHandler) VerifyPayment(c *gin.Context) {
-	userID := c.MustGet("userID").(uint)
-
-	var req orderDomain.VerifyPaymentRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		apperrors.HandleError(c, apperrors.BadRequest("invalid request payload", err))
-		return
-	}
-
-	if err := validator.ValidateStruct(req); err != nil {
-		apperrors.HandleError(c, apperrors.ValidationFailed(validator.FormatValidationError(err)))
-		return
-	}
-
-	if err := h.usecase.VerifyPayment(userID, req); err != nil {
-		apperrors.HandleError(c, err)
-		return
-	}
-
-	apperrors.HandleSuccess(c, "payment verified successfully", nil)
-}
 
 // ─────────────────────────────────────────
 // ADMIN HANDLERS

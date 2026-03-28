@@ -1,7 +1,11 @@
 package domain
 
+import "gorm.io/gorm"
+
 // ProductRepository — DB contract
 type ProductRepository interface {
+	WithTx(tx *gorm.DB) ProductRepository
+	
 	// admin
 	Create(product *Product) error
 	Update(product *Product) error
@@ -9,6 +13,7 @@ type ProductRepository interface {
 
 	// public
 	FindByID(id uint) (*Product, error)
+	FindByIDForUpdate(id uint) (*Product, error)
 	ListAll(filters ProductFilter) ([]*Product, int64, error)
 }
 

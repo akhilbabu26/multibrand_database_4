@@ -1,7 +1,10 @@
 package domain
 
+import "gorm.io/gorm"
+
 // contract to repo
 type CartRepository interface{
+	WithTx(tx *gorm.DB) CartRepository
 	GetOrCreateCart(userID uint) (*Cart, error)
 	GetCartWithItems(userID uint) (*Cart, error)
 	GetCartWithProducts(userID uint) (*CartResponse, error)

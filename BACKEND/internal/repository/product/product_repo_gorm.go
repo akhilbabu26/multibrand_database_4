@@ -6,6 +6,7 @@ import (
 	domain     "github.com/akhilbabu26/multibrand_database_4/internal/models/product"
 	apperrors  "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type productRepository struct {
@@ -14,6 +15,10 @@ type productRepository struct {
 
 func NewProductRepository(db *gorm.DB) domain.ProductRepository {
 	return &productRepository{db: db}
+}
+
+func (r *productRepository) WithTx(tx *gorm.DB) domain.ProductRepository {
+	return &productRepository{db: tx}
 }
 
 func (r *productRepository) Create(product *domain.Product) error {
@@ -44,6 +49,17 @@ func (r *productRepository) FindByID(id uint) (*domain.Product, error) {
 			return nil, apperrors.ProductNotFound(err)
 		}
 		return nil, apperrors.Internal("failed to find product", err)
+	}
+	return &product, nil
+}
+
+func (r *productRepository) FindByIDForUpdate(id uint) (*domain.Product, error) {
+	var product domain.Product
+	if err := r.db.Clauses(clause.Locking{Strength: "UPDATE"}).First(&product, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperrors.ProductNotFound(err)
+		}
+		return nil, apperrors.Internal("failed to find product for update", err)
 	}
 	return &product, nil
 }

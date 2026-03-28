@@ -1,6 +1,9 @@
 package domain
 
+import "gorm.io/gorm"
+
 type AddressRepository interface {
+	WithTx(tx *gorm.DB) AddressRepository
 	Create(address *Address) error
 	FindByID(id uint) (*Address, error)
 	FindByUserID(userID uint) ([]*Address, error)

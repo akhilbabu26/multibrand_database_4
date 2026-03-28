@@ -1,6 +1,9 @@
 package domain
 
+import "gorm.io/gorm"
+
 type OrderRepository interface {
+	WithTx(tx *gorm.DB) OrderRepository
 	// order
 	Create(order *Order) error
 	FindByID(id uint) (*Order, error)
@@ -21,9 +24,6 @@ type OrderUsecase interface {
 	CancelOrder(userID, orderID uint) error
 	GetOrder(userID, orderID uint) (*OrderResponse, error)
 	GetMyOrders(userID uint) ([]*OrderResponse, error)
-
-	// payment
-	VerifyPayment(userID uint, req VerifyPaymentRequest) error
 
 	// admin
 	GetAllOrders() ([]*OrderResponse, error)

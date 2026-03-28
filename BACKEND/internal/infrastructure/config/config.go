@@ -2,7 +2,7 @@ package config
 
 import(
 	"os"
-	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/joho/godotenv"
@@ -56,8 +56,23 @@ type RazorpayConfig struct {
 
 // Load reads .env and returns Config
 func Load() (*Config, error){
+	// if err := godotenv.Load(); err != nil{
+	// 	return nil, fmt.Errorf("error loading env file: %w", err)
+	// }
+
 	if err := godotenv.Load(); err != nil{
-		return nil, fmt.Errorf("error loading env file: %w", err)
+		log.Println("No .env file found, falling back to OS system environment variables")
+	}
+
+	appEnv := getEnv("APP_ENV", "development")
+	jwtSecret := getEnv("JWT_SECRET", "")
+
+	if appEnv == "production" && jwtSecret == "" {
+		log.Fatal("CRITICAL: JWT_SECRET environment variable is required in production environments to prevent security vulnerabilities.")
+	}
+
+	if jwtSecret == "" {
+		jwtSecret = "multibrand4" // Fallback only meant for local dev
 	}
 
 	return &Config{
