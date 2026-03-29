@@ -38,25 +38,38 @@ func (r *orderRepository) FindByID(id uint) (*domain.Order, error) {
 	return &order, nil
 }
 
-func (r *orderRepository) FindByUserID(userID uint) ([]*domain.Order, error) {
+func (r *orderRepository) FindByUserID(userID uint, page, limit int) ([]*domain.Order, int64, error) {
 	var orders []*domain.Order
-	if err := r.db.Where("user_id = ?", userID).
-		Preload("Items").
+	var total int64
+
+	query := r.db.Model(&domain.Order{}).Where("user_id = ?", userID)
+	query.Count(&total)
+
+	offset := (page - 1) * limit
+	if err := query.Preload("Items").
 		Order("created_at DESC").
+		Offset(offset).Limit(limit).
 		Find(&orders).Error; err != nil {
-		return nil, apperrors.Internal("failed to find orders", err)
+		return nil, 0, apperrors.Internal("failed to find orders", err)
 	}
-	return orders, nil
+	return orders, total, nil
 }
 
-func (r *orderRepository) FindAll() ([]*domain.Order, error) {
+func (r *orderRepository) FindAll(page, limit int) ([]*domain.Order, int64, error) {
 	var orders []*domain.Order
-	if err := r.db.Preload("Items").
+	var total int64
+
+	query := r.db.Model(&domain.Order{})
+	query.Count(&total)
+
+	offset := (page - 1) * limit
+	if err := query.Preload("Items").
 		Order("created_at DESC").
+		Offset(offset).Limit(limit).
 		Find(&orders).Error; err != nil {
-		return nil, apperrors.Internal("failed to find orders", err)
+		return nil, 0, apperrors.Internal("failed to find orders", err)
 	}
-	return orders, nil
+	return orders, total, nil
 }
 
 func (r *orderRepository) UpdateStatus(id uint, status domain.OrderStatus) error {

@@ -7,8 +7,8 @@ type OrderRepository interface {
 	// order
 	Create(order *Order) error
 	FindByID(id uint) (*Order, error)
-	FindByUserID(userID uint) ([]*Order, error)
-	FindAll() ([]*Order, error)
+	FindByUserID(userID uint, page, limit int) ([]*Order, int64, error)
+	FindAll(page, limit int) ([]*Order, int64, error)
 	UpdateStatus(id uint, status OrderStatus) error
 	UpdatePayment(id uint, paymentStatus PaymentStatus, razorpayPaymentID string) error
 	UpdateRazorpayOrderID(id uint, razorpayOrderID string) error
@@ -18,15 +18,15 @@ type OrderRepository interface {
 }
 
 type OrderUsecase interface {
-	// customer
+	// User
 	PlaceOrder(userID uint, req PlaceOrderRequest) (*OrderResponse, error)
 	BuyNow(userID uint, req BuyNowRequest) (*OrderResponse, error)  
 	CancelOrder(userID, orderID uint) error
 	GetOrder(userID, orderID uint) (*OrderResponse, error)
-	GetMyOrders(userID uint) ([]*OrderResponse, error)
+	GetMyOrders(userID uint, page, limit int) ([]*OrderResponse, int64, error)
 
 	// admin
-	GetAllOrders() ([]*OrderResponse, error)
+	GetAllOrders(page, limit int) ([]*OrderResponse, int64, error)
 	AdminGetOrder(orderID uint) (*OrderResponse, error) 
 	UpdateOrderStatus(orderID uint, req UpdateOrderStatusRequest) error
 	AdminCancelOrder(orderID uint) error

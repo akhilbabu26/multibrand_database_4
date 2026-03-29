@@ -10,7 +10,7 @@ import (
 func (h *CartHandler) RegisterRoutes(r *gin.RouterGroup, app *bootstrap.App) {
 	cart := r.Group("/cart")
 	cart.Use(middleware.AuthMiddleware(app.Config.JWT.Secret, app.TokenStore))
-	cart.Use(middleware.RoleMiddleware("customer"))
+	cart.Use(middleware.RoleMiddleware("user"))
 	{
 		cart.GET("", h.GetCart)
 		cart.POST("/:productId", h.AddToCart)

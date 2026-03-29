@@ -18,7 +18,7 @@ func NewOrderHandler(usecase orderDomain.OrderUsecase) *OrderHandler {
 }
 
 // ─────────────────────────────────────────
-// CUSTOMER HANDLERS
+// User HANDLERS
 // ─────────────────────────────────────────
 
 func (h *OrderHandler) PlaceOrder(c *gin.Context) {
@@ -127,7 +127,17 @@ func (h *OrderHandler) GetOrder(c *gin.Context) {
 func (h *OrderHandler) GetMyOrders(c *gin.Context) {
 	userID := c.MustGet("userID").(uint)
 
-	orders, err := h.usecase.GetMyOrders(userID)
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 50 {
+		limit = 10
+	}
+
+	orders, total, err := h.usecase.GetMyOrders(userID, page, limit)
 	if err != nil {
 		apperrors.HandleError(c, err)
 		return
@@ -135,7 +145,9 @@ func (h *OrderHandler) GetMyOrders(c *gin.Context) {
 
 	apperrors.HandleSuccess(c, "orders fetched", gin.H{
 		"orders": orders,
-		"total":  len(orders),
+		"total":  total,
+		"page":   page,
+		"limit":  limit,
 	})
 }
 
@@ -145,7 +157,17 @@ func (h *OrderHandler) GetMyOrders(c *gin.Context) {
 // ─────────────────────────────────────────
 
 func (h *OrderHandler) GetAllOrders(c *gin.Context) {
-	orders, err := h.usecase.GetAllOrders()
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 50 {
+		limit = 10
+	}
+
+	orders, total, err := h.usecase.GetAllOrders(page, limit)
 	if err != nil {
 		apperrors.HandleError(c, err)
 		return
@@ -153,7 +175,9 @@ func (h *OrderHandler) GetAllOrders(c *gin.Context) {
 
 	apperrors.HandleSuccess(c, "orders fetched", gin.H{
 		"orders": orders,
-		"total":  len(orders),
+		"total":  total,
+		"page":   page,
+		"limit":  limit,
 	})
 }
 

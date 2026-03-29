@@ -9,7 +9,7 @@ import (
 func (h *AddressHandler) RegisterRoutes(r *gin.RouterGroup, app *bootstrap.App) {
 	address := r.Group("/addresses")
 	address.Use(middleware.AuthMiddleware(app.Config.JWT.Secret, app.TokenStore))
-	address.Use(middleware.RoleMiddleware("customer"))
+	address.Use(middleware.RoleMiddleware("user"))
 	{
 		address.GET("", h.GetAddresses)
 		address.POST("", h.AddAddress)

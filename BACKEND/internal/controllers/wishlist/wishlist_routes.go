@@ -9,7 +9,7 @@ import (
 func (h *WishlistHandler) RegisterRoutes(r *gin.RouterGroup, app *bootstrap.App) {
 	wishlist := r.Group("/wishlist")
 	wishlist.Use(middleware.AuthMiddleware(app.Config.JWT.Secret, app.TokenStore))
-	wishlist.Use(middleware.RoleMiddleware("customer"))
+	wishlist.Use(middleware.RoleMiddleware("user"))
 	{
 		wishlist.GET("", h.GetWishlist)
 		wishlist.POST("/:productId", h.AddToWishlist)

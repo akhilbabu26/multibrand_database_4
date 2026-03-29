@@ -12,7 +12,7 @@ func (h *OrderHandler) RegisterRoutes(r *gin.RouterGroup, app *bootstrap.App) {
 	// customer routes
 	orders := r.Group("/orders")
 	orders.Use(middleware.AuthMiddleware(app.Config.JWT.Secret, app.TokenStore))
-	orders.Use(middleware.RoleMiddleware("customer"))
+	orders.Use(middleware.RoleMiddleware("user"))
 	{
 		orders.POST("", h.PlaceOrder)
 		orders.POST("/buy-now", h.BuyNow)  

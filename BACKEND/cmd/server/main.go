@@ -13,7 +13,12 @@ import (
 
 	"github.com/akhilbabu26/multibrand_database_4/internal/bootstrap"
 	"github.com/akhilbabu26/multibrand_database_4/internal/infrastructure/database"
+	"github.com/akhilbabu26/multibrand_database_4/internal/middleware"
 	
+	// auth
+	authUsecase "github.com/akhilbabu26/multibrand_database_4/internal/services/auth"
+	authHandler "github.com/akhilbabu26/multibrand_database_4/internal/controllers/auth"
+
 	// user
 	userRepository "github.com/akhilbabu26/multibrand_database_4/internal/repository/user"
 	userUsecase "github.com/akhilbabu26/multibrand_database_4/internal/services/user"
@@ -67,10 +72,15 @@ func main() {
 
 	txManager := database.NewTransactionManager(app.DB)
 
+	
 	// wire user module
 	uRepo    := userRepository.NewUserRepository(app.DB)
-	uUsecase := userUsecase.NewUserUsecase(uRepo, app.Mailer, app.Config, app.TokenStore)
+	uUsecase := userUsecase.NewUserUsecase(uRepo)
 	uHandler := userHandler.NewUserHandler(uUsecase)
+	
+	// wire auth module
+	auUsecase := authUsecase.NewAuthUsecase(uRepo, app.Mailer, app.Config, app.TokenStore)
+	auHandler := authHandler.NewAuthHandler(auUsecase)
 
 	// wire product module
 	pRepo    := productRepository.NewProductRepository(app.DB)
@@ -125,7 +135,12 @@ func main() {
 
 	api := r.Group("/api/v1")
 
+	// Apply robust Global API rate limit (100 res/min) to prevent brute level 7 DDOS
+	globalLimit := middleware.RateLimiter(app.Redis, "100-M")
+	api.Use(globalLimit)
+
 	// 6. register routes
+	auHandler.RegisterRoutes(api, app) // auth routes
 	uHandler.RegisterRoutes(api, app) // user routes
 	pHandler.RegisterRoutes(api, app) // product routes
 	cHandler.RegisterRoutes(api, app) // cart routes

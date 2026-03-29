@@ -37,7 +37,7 @@ func NewOrderUsecase(
 }
 
 // ─────────────────────────────────────────
-// CUSTOMER
+// User
 // ─────────────────────────────────────────
 
 func (u *orderUsecase) PlaceOrder(userID uint, req orderDomain.PlaceOrderRequest) (*orderDomain.OrderResponse, error) {
@@ -262,13 +262,13 @@ func (u *orderUsecase) GetOrder(userID, orderID uint) (*orderDomain.OrderRespons
 }
 
 // ✅ N+1 Fix — batch fetch addresses
-func (u *orderUsecase) GetMyOrders(userID uint) ([]*orderDomain.OrderResponse, error) {
-	orders, err := u.repo.FindByUserID(userID)
+func (u *orderUsecase) GetMyOrders(userID uint, page, limit int) ([]*orderDomain.OrderResponse, int64, error) {
+	orders, total, err := u.repo.FindByUserID(userID, page, limit)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	if len(orders) == 0 {
-		return []*orderDomain.OrderResponse{}, nil
+		return []*orderDomain.OrderResponse{}, total, nil
 	}
 
 	// collect unique address IDs
@@ -284,7 +284,7 @@ func (u *orderUsecase) GetMyOrders(userID uint) ([]*orderDomain.OrderResponse, e
 	// fetch all in ONE query
 	addressMap, err := u.addressRepo.FindByIDs(addressIDs)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var response []*orderDomain.OrderResponse
@@ -296,7 +296,7 @@ func (u *orderUsecase) GetMyOrders(userID uint) ([]*orderDomain.OrderResponse, e
 		response = append(response, u.buildOrderResponse(order, address, order.Items))
 	}
 
-	return response, nil
+	return response, total, nil
 }
 
 
@@ -304,14 +304,14 @@ func (u *orderUsecase) GetMyOrders(userID uint) ([]*orderDomain.OrderResponse, e
 // ADMIN
 // ─────────────────────────────────────────
 
-// ✅ N+1 Fix — batch fetch addresses
-func (u *orderUsecase) GetAllOrders() ([]*orderDomain.OrderResponse, error) {
-	orders, err := u.repo.FindAll()
+// N+1 Fix — batch fetch addresses
+func (u *orderUsecase) GetAllOrders(page, limit int) ([]*orderDomain.OrderResponse, int64, error) {
+	orders, total, err := u.repo.FindAll(page, limit)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	if len(orders) == 0 {
-		return []*orderDomain.OrderResponse{}, nil
+		return []*orderDomain.OrderResponse{}, total, nil
 	}
 
 	seen := map[uint]bool{}
@@ -325,7 +325,7 @@ func (u *orderUsecase) GetAllOrders() ([]*orderDomain.OrderResponse, error) {
 
 	addressMap, err := u.addressRepo.FindByIDs(addressIDs)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var response []*orderDomain.OrderResponse
@@ -337,7 +337,7 @@ func (u *orderUsecase) GetAllOrders() ([]*orderDomain.OrderResponse, error) {
 		response = append(response, u.buildOrderResponse(order, address, order.Items))
 	}
 
-	return response, nil
+	return response, total, nil
 }
 
 func (u *orderUsecase) AdminGetOrder(orderID uint) (*orderDomain.OrderResponse, error) {

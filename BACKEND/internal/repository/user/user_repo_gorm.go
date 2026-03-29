@@ -57,12 +57,19 @@ func (r *userRepository) Update(user *domain.User) error {
 	return nil
 }
 
-func (r *userRepository) ListUsers() ([]*domain.User, error) {
+func (r *userRepository) ListUsers(page, limit int) ([]*domain.User, int64, error) {
 	var users []*domain.User
-	if err := r.db.Find(&users).Error; err != nil {
-		return nil, apperrors.Internal("failed to list users", err)
+	var total int64
+
+	query := r.db.Model(&domain.User{})
+	query.Count(&total) // get total count for frontend pagination bar
+
+	offset := (page - 1) * limit
+	if err := query.Offset(offset).Limit(limit).Find(&users).Error; err != nil {
+		return nil, 0, apperrors.Internal("failed to list users", err)
 	}
-	return users, nil
+
+	return users, total, nil
 }
 
 func (r *userRepository) Delete(id uint) error {

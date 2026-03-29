@@ -2,11 +2,9 @@ package handler
 
 import (
 	"strconv"
-	"strings"
 
 	domain    "github.com/akhilbabu26/multibrand_database_4/internal/models/user"
 	apperrors "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
-	"github.com/akhilbabu26/multibrand_database_4/pkg/validator"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,150 +14,6 @@ type UserHandler struct {
 
 func NewUserHandler(usecase domain.UserUsecase) *UserHandler {
 	return &UserHandler{usecase: usecase}
-}
-
-// ─────────────────────────────────────────
-// AUTH HANDLERS
-// ─────────────────────────────────────────
-
-func (h *UserHandler) Signup(c *gin.Context) {
-	var req domain.SignupRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		apperrors.HandleError(c, apperrors.BadRequest("invalid request payload", err))
-		return
-	}
-
-	if err := validator.ValidateStruct(req); err != nil {
-		apperrors.HandleError(c, apperrors.ValidationFailed(validator.FormatValidationError(err)))
-		return
-	}
-
-	if err := h.usecase.Signup(req.Name, req.Email, req.Password, req.Cpassword); err != nil {
-		apperrors.HandleError(c, err)
-		return
-	}
-
-	apperrors.HandleSuccess(c, "otp sent to your email", nil)
-}
-
-func (h *UserHandler) VerifyOTP(c *gin.Context) {
-	var req domain.VerifyOTPRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		apperrors.HandleError(c, apperrors.BadRequest("invalid request payload", err))
-		return
-	}
-
-	if err := validator.ValidateStruct(req); err != nil {
-		apperrors.HandleError(c, apperrors.ValidationFailed(validator.FormatValidationError(err)))
-		return
-	}
-
-	if err := h.usecase.VerifyOTP(req.Email, req.OTP); err != nil {
-		apperrors.HandleError(c, err)
-		return
-	}
-
-	apperrors.HandleCreated(c, "signup successful", nil)
-}
-
-func (h *UserHandler) Login(c *gin.Context) {
-	var req domain.LoginRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		apperrors.HandleError(c, apperrors.BadRequest("invalid request payload", err))
-		return
-	}
-
-	if err := validator.ValidateStruct(req); err != nil {
-		apperrors.HandleError(c, apperrors.ValidationFailed(validator.FormatValidationError(err)))
-		return
-	}
-
-	accessToken, refreshToken, loginErr := h.usecase.Login(req.Email, req.Password)
-	if loginErr != nil {
-		apperrors.HandleError(c, loginErr)
-		return
-	}
-
-	apperrors.HandleSuccess(c, "login successful", gin.H{
-		"access_token":  accessToken,
-		"refresh_token": refreshToken,
-	})
-}
-
-func (h *UserHandler) RefreshToken(c *gin.Context) {
-	var req domain.RefreshTokenRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		apperrors.HandleError(c, apperrors.BadRequest("invalid request payload", err))
-		return
-	}
-
-	accessToken, err := h.usecase.RefreshToken(req.RefreshToken)
-	if err != nil {
-		apperrors.HandleError(c, err)
-		return
-	}
-
-	apperrors.HandleSuccess(c, "token refreshed", gin.H{
-		"access_token": accessToken,
-	})
-}
-
-func (h *UserHandler) Logout(c *gin.Context) {
-	userID, exists := c.Get("userID")
-	if !exists {
-		apperrors.HandleError(c, apperrors.Unauthorized("unauthorized", nil))
-		return
-	}
-
-	tokenStr := strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer ")
-
-	if err := h.usecase.Logout(userID.(uint), tokenStr); err != nil {
-		apperrors.HandleError(c, err)
-		return
-	}
-
-	apperrors.HandleSuccess(c, "logged out successfully", nil)
-}
-
-// ─────────────────────────────────────────
-// PASSWORD RESET
-// ─────────────────────────────────────────
-
-func (h *UserHandler) ForgotPassword(c *gin.Context) {
-	var req domain.ForgotPasswordRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		apperrors.HandleError(c, apperrors.BadRequest("invalid request payload", err))
-		return
-	}
-
-	// always return same message — don't reveal if email exists
-	h.usecase.ForgotPassword(req.Email)
-	apperrors.HandleSuccess(c, "if your email exists you will receive an otp", nil)
-}
-
-func (h *UserHandler) ResetPassword(c *gin.Context) {
-	var req domain.ResetPasswordRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		apperrors.HandleError(c, apperrors.BadRequest("invalid request payload", err))
-		return
-	}
-
-	if err := validator.ValidateStruct(req); err != nil {
-		apperrors.HandleError(c, apperrors.ValidationFailed(validator.FormatValidationError(err)))
-		return
-	}
-
-	if err := h.usecase.ResetPassword(
-		req.Email,
-		req.OTP,
-		req.NewPassword,
-		req.ConfirmPassword,
-	); err != nil {
-		apperrors.HandleError(c, err)
-		return
-	}
-
-	apperrors.HandleSuccess(c, "password reset successfully, please login", nil)
 }
 
 // ─────────────────────────────────────────
@@ -187,7 +41,17 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 // ─────────────────────────────────────────
 
 func (h *UserHandler) ListUsers(c *gin.Context) {
-	users, err := h.usecase.ListUsers()
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 50 {
+		limit = 10 // safe fallback preventing 10,000 limits
+	}
+
+	users, total, err := h.usecase.ListUsers(page, limit)
 	if err != nil {
 		apperrors.HandleError(c, err)
 		return
@@ -195,7 +59,9 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 
 	apperrors.HandleSuccess(c, "users fetched", gin.H{
 		"users": users,
-		"total": len(users),
+		"total": total,
+		"page":  page,
+		"limit": limit,
 	})
 }
 
