@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	domain    "github.com/akhilbabu26/multibrand_database_4/internal/models/cart"
+	domain "github.com/akhilbabu26/multibrand_database_4/internal/models/cart"
 	apperrors "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -50,10 +50,11 @@ func (r *cartRepository) GetCartWithItems(userID uint) (*domain.Cart, error) {
 	return &cart, nil
 }
 
-//  N+1 Fix — single JOIN query
+// N+1 Fix — single JOIN query
 func (r *cartRepository) GetCartWithProducts(userID uint) (*domain.CartResponse, error) {
 	type Result struct {
 		CartID    uint
+		UserID    uint
 		ItemID    uint
 		ProductID uint
 		Quantity  int
@@ -67,6 +68,7 @@ func (r *cartRepository) GetCartWithProducts(userID uint) (*domain.CartResponse,
 	err := r.db.Raw(`
 		SELECT
 			c.id       AS cart_id,
+			c.user_id  AS user_id,
 			ci.id      AS item_id,
 			ci.product_id,
 			ci.quantity,
@@ -85,7 +87,22 @@ func (r *cartRepository) GetCartWithProducts(userID uint) (*domain.CartResponse,
 	}
 
 	if len(results) == 0 {
+		// Get cart ID even if it has no items
+		var cart domain.Cart
+		if err := r.db.Where("user_id = ?", userID).First(&cart).Error; err != nil {
+			// No cart exists yet, return empty response
+			return &domain.CartResponse{
+				ID:         0,
+				UserID:     userID,
+				Items:      []domain.CartItemResponse{},
+				TotalItems: 0,
+				TotalPrice: 0,
+			}, nil
+		}
+		// Cart exists but empty
 		return &domain.CartResponse{
+			ID:         cart.ID,
+			UserID:     userID,
 			Items:      []domain.CartItemResponse{},
 			TotalItems: 0,
 			TotalPrice: 0,
@@ -113,6 +130,8 @@ func (r *cartRepository) GetCartWithProducts(userID uint) (*domain.CartResponse,
 	}
 
 	return &domain.CartResponse{
+		ID:         results[0].CartID,
+		UserID:     userID,
 		Items:      items,
 		TotalItems: totalItems,
 		TotalPrice: totalPrice,

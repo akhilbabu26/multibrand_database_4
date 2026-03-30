@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/akhilbabu26/multibrand_database_4/internal/infrastructure/config"
 	userdomain "github.com/akhilbabu26/multibrand_database_4/internal/models/user"
@@ -13,11 +14,11 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
-
+	"go.uber.org/zap"
+	"moul.io/zapgorm2"
 )
 
-func NewPostgresDB(cfg *config.DatabaseConfig) (*gorm.DB, error){
+func NewPostgresDB(cfg *config.DatabaseConfig, appLogger *zap.Logger) (*gorm.DB, error){
 	dsn := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		cfg.Host,
@@ -28,8 +29,9 @@ func NewPostgresDB(cfg *config.DatabaseConfig) (*gorm.DB, error){
 		cfg.SSLMode,
 	)
 
-	// Show SQL logs only in development
-	gormLogger := logger.Default.LogMode(logger.Info)
+	// Intercept all plain-text SQL logs and output strict Zap JSON telemetry
+	gormLogger := zapgorm2.New(appLogger)
+	gormLogger.SetAsDefault()
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: gormLogger,
@@ -47,6 +49,7 @@ func NewPostgresDB(cfg *config.DatabaseConfig) (*gorm.DB, error){
 
 	sqlDB.SetMaxOpenConns(25) // how many connections can be open. in this case its 25
 	sqlDB.SetMaxIdleConns(10) // how many connections can be kept alive and it can be ready to use also if beyound the limit 10 it will close
+	sqlDB.SetConnMaxLifetime(time.Hour) // recycle connections every 60 minutes to clear stale AWS networks
 
 	return db, nil
 }

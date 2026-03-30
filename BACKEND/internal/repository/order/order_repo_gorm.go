@@ -29,7 +29,9 @@ func (r *orderRepository) Create(order *domain.Order) error {
 
 func (r *orderRepository) FindByID(id uint) (*domain.Order, error) {
 	var order domain.Order
-	if err := r.db.Preload("Items").First(&order, id).Error; err != nil {
+	if err := r.db.Preload("Items", func(db *gorm.DB) *gorm.DB {
+		return db.Limit(100)
+	}).First(&order, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperrors.OrderNotFound(err)
 		}
@@ -46,7 +48,9 @@ func (r *orderRepository) FindByUserID(userID uint, page, limit int) ([]*domain.
 	query.Count(&total)
 
 	offset := (page - 1) * limit
-	if err := query.Preload("Items").
+	if err := query.Preload("Items", func(db *gorm.DB) *gorm.DB {
+		return db.Limit(100)
+	}).
 		Order("created_at DESC").
 		Offset(offset).Limit(limit).
 		Find(&orders).Error; err != nil {
@@ -63,7 +67,9 @@ func (r *orderRepository) FindAll(page, limit int) ([]*domain.Order, int64, erro
 	query.Count(&total)
 
 	offset := (page - 1) * limit
-	if err := query.Preload("Items").
+	if err := query.Preload("Items", func(db *gorm.DB) *gorm.DB {
+		return db.Limit(100)
+	}).
 		Order("created_at DESC").
 		Offset(offset).Limit(limit).
 		Find(&orders).Error; err != nil {

@@ -2,10 +2,10 @@ package errors
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // HandleError handles all errors centrally
@@ -14,9 +14,9 @@ func HandleError(c *gin.Context, err error) {
 
 	if errors.As(err, &appErr) {
 
-		// LOG INTERNAL ERROR
+		// LOG INTERNAL ERROR using structured logging
 		if appErr.Err != nil {
-			fmt.Println("ERROR:", appErr.Err)
+			zap.L().Error("app error", zap.Error(appErr.Err), zap.String("code", appErr.ErrorCode))
 		}
 
 		c.JSON(appErr.Code, gin.H{
@@ -29,7 +29,7 @@ func HandleError(c *gin.Context, err error) {
 	}
 
 	// UNKNOWN ERROR
-	fmt.Println("UNKNOWN ERROR:", err)
+	zap.L().Error("unknown error", zap.Error(err))
 
 	c.JSON(http.StatusInternalServerError, gin.H{
 		"success": false,

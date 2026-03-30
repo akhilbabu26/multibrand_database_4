@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/ulule/limiter/v3"
 	sredis "github.com/ulule/limiter/v3/drivers/store/redis"
+	"go.uber.org/zap"
 )
 
 // RateLimiter blocks IPs that exceed the provided threshold String (e.g. "5-M")
@@ -16,14 +16,14 @@ func RateLimiter(redisClient *redis.Client, rate string) gin.HandlerFunc {
 	// Parse limit (e.g. "5-M" = 5 req / minute)
 	rateLimit, err := limiter.NewRateFromFormatted(rate)
 	if err != nil {
-		log.Fatalf("failed to parse rate limit: %v", err)
+		zap.L().Fatal("failed to parse rate limit", zap.Error(err))
 	}
 
 	store, err := sredis.NewStoreWithOptions(redisClient, limiter.StoreOptions{
 		Prefix: "rate_limit_router:",
 	})
 	if err != nil {
-		log.Fatalf("failed to create redis rate limit store: %v", err)
+		zap.L().Fatal("failed to create redis rate limit store", zap.Error(err))
 	}
 
 	instance := limiter.New(store, rateLimit)
@@ -36,8 +36,12 @@ func RateLimiter(redisClient *redis.Client, rate string) gin.HandlerFunc {
 
 		limitContext, err := instance.Get(c, ip)
 		if err != nil {
-			log.Printf("rate limiter fallback error: %v", err)
-			c.Next()
+			zap.L().Error("rate limiter error - failing closed", zap.String("ip", ip), zap.Error(err))
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"success": false,
+				"error":   "API security layer temporarily offline",
+			})
+			c.Abort()
 			return
 		}
 

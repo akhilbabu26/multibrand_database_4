@@ -10,6 +10,7 @@ import(
 
 	"gorm.io/gorm"
 	goredis "github.com/redis/go-redis/v9" 
+	"go.uber.org/zap"
 )
 
 type App struct{
@@ -21,7 +22,7 @@ type App struct{
 	Razorpay * rzp.RazorpayClient
 }
 
-func Initialize() (*App, error){
+func Initialize(appLogger *zap.Logger) (*App, error){
 	// 1. Load config
 	cfg, err := config.Load()
 	if err != nil{
@@ -29,7 +30,7 @@ func Initialize() (*App, error){
 	}
 
 	// 2. Connect db
-	db, err := database.NewPostgresDB(&cfg.Database)
+	db, err := database.NewPostgresDB(&cfg.Database, appLogger)
 	if err != nil{
 		return nil, err
 	}

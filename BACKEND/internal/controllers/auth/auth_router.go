@@ -7,26 +7,22 @@ import (
 )
 
 func (h *AuthHandler) RegisterRoutes(r *gin.RouterGroup, app *bootstrap.App) {
-	auth := r.Group("/auth")
 	
-	// Apply strict brute-force protection (5 requests per minute)
-	bruteForceBlocker := middleware.RateLimiter(app.Redis, "5-M") // 5 req / minute
+	// Apply brute-force protection (15 requests per minute)
+	auth := r.Group("/auth")
+	bruteForceBlocker := middleware.RateLimiter(app.Redis, "15-M")
 	auth.Use(bruteForceBlocker)
 
-	{
-		// public routes
-		auth.POST("/signup", h.Signup)
-		auth.POST("/verify-otp", h.VerifyOTP)
-		auth.POST("/login", h.Login)
-		auth.POST("/refresh", h.RefreshToken)
+	// PUBLIC ROUTES - No authentication required
+	auth.POST("/signup", h.Signup)
+	auth.POST("/verify-otp", h.VerifyOTP)
+	auth.POST("/login", h.Login)
+	auth.POST("/refresh", h.RefreshToken)
+	auth.POST("/forgot-password", h.ForgotPassword)
+	auth.POST("/reset-password", h.ResetPassword)
 
-		// password reset routes
-		auth.POST("/forgot-password", h.ForgotPassword)
-		auth.POST("/reset-password", h.ResetPassword)
-	}
-
-    // Logout requires AuthMiddleware
-	protected := r.Group("/auth")
+	// PROTECTED ROUTES - Requires valid JWT token
+	protected := auth.Group("")
 	protected.Use(middleware.AuthMiddleware(app.Config.JWT.Secret, app.TokenStore))
 	{
 		protected.POST("/logout", h.Logout)
