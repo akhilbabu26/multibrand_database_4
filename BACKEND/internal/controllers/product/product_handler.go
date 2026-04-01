@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"net/http"
 	"strconv"
 
 	domain     "github.com/akhilbabu26/multibrand_database_4/internal/models/product"
@@ -22,8 +23,14 @@ func NewProductHandler(usecase domain.ProductUsecase) *ProductHandler {
 // ─────────────────────────────────────────
 
 func (h *ProductHandler) CreateProduct(c *gin.Context) {
+	// 10 MB limit for multipart forms
+	if err := c.Request.ParseMultipartForm(10 << 20); err != nil && err != http.ErrNotMultipart {
+		apperrors.HandleError(c, apperrors.BadRequest("invalid form data", err))
+		return
+	}
+
 	var req domain.CreateProductRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		apperrors.HandleError(c, apperrors.BadRequest("invalid request payload", err))
 		return
 	}
@@ -48,8 +55,13 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 		return
 	}
 
+	if err := c.Request.ParseMultipartForm(10 << 20); err != nil && err != http.ErrNotMultipart {
+		apperrors.HandleError(c, apperrors.BadRequest("invalid form data", err))
+		return
+	}
+
 	var req domain.UpdateProductRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		apperrors.HandleError(c, apperrors.BadRequest("invalid request payload", err))
 		return
 	}

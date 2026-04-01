@@ -1,6 +1,8 @@
 package domain
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 // ProductRepository — DB contract
 type ProductRepository interface {

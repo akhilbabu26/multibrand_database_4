@@ -15,6 +15,7 @@ type Config struct {
 	SMTP     SMTPConfig
 	Redis    RedisConfig
 	Razorpay RazorpayConfig
+	Cloudinary CloudinaryConfig
 }
 
 type AppConfig struct {
@@ -53,6 +54,12 @@ type RedisConfig struct {
 type RazorpayConfig struct {
 	KeyID     string
 	KeySecret string
+}
+
+type CloudinaryConfig struct{
+	CloudName string
+	APIKey string
+	APISecret string
 }
 
 // Load reads .env and returns Config
@@ -115,6 +122,11 @@ func Load() (*Config, error) {
 		Razorpay: RazorpayConfig{
 			KeyID:     getEnv("RAZORPAY_KEY_ID", ""),
 			KeySecret: getEnv("RAZORPAY_KEY_SECRET", ""),
+		},
+		Cloudinary: CloudinaryConfig{
+			CloudName: getEnv("CLOUDINARY_CLOUD_NAME", ""),
+			APIKey: getEnv("CLOUDINARY_API_KEY", ""),
+			APISecret: getEnv("CLOUDINARY_API_SECRET",""),
 		},
 	}, nil
 }

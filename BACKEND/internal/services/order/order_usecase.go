@@ -89,10 +89,15 @@ func (u *orderUsecase) PlaceOrder(userID uint, req orderDomain.PlaceOrderRequest
 			subtotal := product.SalePrice * float64(item.Quantity)
 			totalAmount += subtotal
 
+			imageURL := ""
+			if len(product.Images) > 0 {
+				imageURL = product.Images[0].ImageURL // Get the first image URL of the product and store it in imageURL
+			}
+
 			orderItems = append(orderItems, orderDomain.OrderItem{
 				ProductID:    product.ID,
 				ProductName:  product.Name,
-				ProductImage: product.ImageURL,
+				ProductImage: imageURL,
 				Quantity:     item.Quantity,
 				Price:        product.SalePrice,
 				Subtotal:     subtotal,
@@ -185,11 +190,16 @@ func (u *orderUsecase) BuyNow(userID uint, req orderDomain.BuyNowRequest) (*orde
 			return createErr
 		}
 
+		imageURL := ""
+		if len(product.Images) > 0 {
+			imageURL = product.Images[0].ImageURL
+		}
+
 		orderItems = []orderDomain.OrderItem{{
 			OrderID:      order.ID,
 			ProductID:    product.ID,
 			ProductName:  product.Name,
-			ProductImage: product.ImageURL,
+			ProductImage: imageURL,
 			Quantity:     req.Quantity,
 			Price:        product.SalePrice,
 			Subtotal:     subtotal,

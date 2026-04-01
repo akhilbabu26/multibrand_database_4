@@ -1,16 +1,20 @@
 package usecase
 
 import (
-	domain    "github.com/akhilbabu26/multibrand_database_4/internal/models/product"
+	"context"
+
+	domain "github.com/akhilbabu26/multibrand_database_4/internal/models/product"
+	"github.com/akhilbabu26/multibrand_database_4/pkg/cloudinary"
 	// apperrors "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
 )
 
 type productUsecase struct {
-	repo domain.ProductRepository
+	repo         domain.ProductRepository
+	imageService cloudinary.ImageService
 }
 
-func NewProductUsecase(repo domain.ProductRepository) domain.ProductUsecase {
-	return &productUsecase{repo: repo}
+func NewProductUsecase(repo domain.ProductRepository, imageService cloudinary.ImageService) domain.ProductUsecase {
+	return &productUsecase{repo: repo, imageService: imageService}
 }
 
 func (u *productUsecase) CreateProduct(req domain.CreateProductRequest) error {
@@ -23,12 +27,31 @@ func (u *productUsecase) CreateProduct(req domain.CreateProductRequest) error {
 		CostPrice:          req.CostPrice,
 		OriginalPrice:      req.OriginalPrice,
 		DiscountPercentage: req.DiscountPercentage,
-		ImageURL:           req.ImageURL,
 		Description:        req.Description,
 		Stock:              req.Stock,
 		IsActive:           true,
 	}
 	product.CalculateSalePrice()
+
+	var images []domain.ProductImage
+	for i, fileHeader := range req.Images {
+		file, err := fileHeader.Open()
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		url, err := u.imageService.UploadImage(context.Background(), file)
+		if err != nil {
+			return err
+		}
+
+		images = append(images, domain.ProductImage{
+			ImageURL:  url,
+			IsPrimary: i == 0,
+		})
+	}
+	product.Images = images
 
 	if err := u.repo.Create(product); err != nil {
 		return err
@@ -50,12 +73,34 @@ func (u *productUsecase) UpdateProduct(id uint, req domain.UpdateProductRequest)
 	if req.CostPrice != nil          { product.CostPrice = *req.CostPrice }
 	if req.OriginalPrice != nil      { product.OriginalPrice = *req.OriginalPrice }
 	if req.DiscountPercentage != nil { product.DiscountPercentage = *req.DiscountPercentage }
-	if req.ImageURL != nil           { product.ImageURL = *req.ImageURL }
 	if req.Description != nil        { product.Description = *req.Description }
 	if req.Stock != nil              { product.Stock = *req.Stock }
 	if req.IsActive != nil           { product.IsActive = *req.IsActive }
 
 	product.CalculateSalePrice()
+
+	if len(req.Images) > 0 {
+		var newImages []domain.ProductImage
+		for _, fileHeader := range req.Images {
+			file, err := fileHeader.Open()
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			url, err := u.imageService.UploadImage(context.Background(), file)
+			if err != nil {
+				return err
+			}
+
+			newImages = append(newImages, domain.ProductImage{
+				ProductID: product.ID,
+				ImageURL:  url,
+				IsPrimary: len(product.Images) == 0 && len(newImages) == 0,
+			})
+		}
+		product.Images = append(product.Images, newImages...)
+	}
 
 	return u.repo.Update(product)
 }

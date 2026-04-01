@@ -59,6 +59,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&userdomain.User{},
 		&userdomain.PendingUser{},
 		&productdomain.Product{},
+		&productdomain.ProductImage{},
 		&wishlistdomain.Wishlist{},   
 		&cartdomain.Cart{},       
 		&cartdomain.CartItem{},

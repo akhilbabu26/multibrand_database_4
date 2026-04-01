@@ -1,20 +1,21 @@
 package main
 
 import (
-	"context"
+	"context" //used to control execution flow across goroutines, especially for: cancellation, timeouts, request-scoped data
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
+	"os" // access to operating system like environment variables and process control
+	"os/signal" //listen to OS-level signals (like Ctrl+C or system shutdown)
+	"syscall"  // provides low-level OS signals and system calls like syscall.SIGINT etc
 	"time"
 
-	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/cors" // it controls which websites are allowed to call your API
 
 	"github.com/akhilbabu26/multibrand_database_4/internal/bootstrap"
 	"github.com/akhilbabu26/multibrand_database_4/internal/infrastructure/database"
 	"github.com/akhilbabu26/multibrand_database_4/internal/infrastructure/logger" 
 	"github.com/akhilbabu26/multibrand_database_4/internal/middleware"
+	"github.com/akhilbabu26/multibrand_database_4/pkg/cloudinary"
 	"go.uber.org/zap"
 	
 	// auth
@@ -65,7 +66,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to initialize logger: %v", err)
 	}
-	defer appLogger.Sync()
+	defer appLogger.Sync() // all pending logs print when main func ends
 
 	// 1. initialize everything
 	app, err := bootstrap.Initialize(appLogger)
@@ -73,13 +74,12 @@ func main() {
 		appLogger.Fatal("failed to initialize app", zap.Error(err))
 	}
 
-	// close db on shutdown
+	//  on shutdown
 	defer func() {
-		sqlDB, _ := app.DB.DB()
+		sqlDB, _ := app.DB.DB() //close db
 		sqlDB.Close()
 
-		// Close Redis properly to prevent AWS socket resource leaks
-		if app.Redis != nil {
+		if app.Redis != nil { // Close Redis 
 			app.Redis.Close()
 		}
 	}()
@@ -96,8 +96,12 @@ func main() {
 	auHandler := authHandler.NewAuthHandler(auUsecase)
 
 	// wire product module
+	imgService, err := cloudinary.NewCloudinaryService(app.Config)
+	if err != nil {
+		appLogger.Fatal("failed to initialize cloudinary service", zap.Error(err))
+	}
 	pRepo    := productRepository.NewProductRepository(app.DB)
-	pUsecase := productUsecase.NewProductUsecase(pRepo)
+	pUsecase := productUsecase.NewProductUsecase(pRepo, imgService)
 	pHandler := productHandler.NewProductHandler(pUsecase)
 
 	// wire cart
@@ -146,16 +150,18 @@ func main() {
 	}(jobCtx)
 
 	// 5. setup gin
+	// r := gin.New()
+	// r.Use(gin.Recovery())
 	r := gin.Default()
 	
 	// Structured logging for every single HTTP request
 	r.Use(middleware.RequestLogger(appLogger))
 	
 	// Support Strict CORS (Cross-Origin Resource Sharing)
-	config := cors.DefaultConfig()
-	config.AllowOrigins = app.Config.App.CORSOrigins
-	config.AllowCredentials = true
-	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization", "X-Requested-With", "Accept"}
+	config := cors.DefaultConfig() // Creates base CORS settings
+	config.AllowOrigins = app.Config.App.CORSOrigins // Allow specific origins
+	config.AllowCredentials = true // allow the cookies and jwt headres
+	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization", "X-Requested-With", "Accept"} // Allows frontend to send that slice
 	r.Use(cors.New(config))
 
 	api := r.Group("/api/v1")
@@ -174,7 +180,7 @@ func main() {
 	oHandler.RegisterRoutes(api, app) // order routes
 	payHandler.RegisterRoutes(api, app) // payment routes
 
-	// 7. Graceful Shutdown HTTP Server
+	// 7. HTTP Server
 	srv := &http.Server{
 		Addr:    app.Config.App.Port,
 		Handler: r,
@@ -182,20 +188,23 @@ func main() {
 
 	go func() {
 		appLogger.Info("Server running", zap.String("addr", srv.Addr))
+
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			appLogger.Fatal("listen failed", zap.Error(err))
 		}
+
 	}()
 
-	// Wait for interrupt signal to gracefully shutdown the server with
-	// a timeout of 5 seconds.
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
+	// creates a channel of type os.Signal (used to receive OS signals like Ctrl+C)
+	quit := make(chan os.Signal, 1) 
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM) // SIGINT → Ctrl + C, SIGTERM → Docker / system stop
+	
+	<-quit // Blocks until signal arrives
+
 	appLogger.Info("Shutting down server softly...")
 
 	// Safely power down all infinite loop background goroutines instantly!
-	jobCancel()
+	jobCancel() // This triggers ctx.Done()
 
 	// Close Redis connection gracefully
 	if err := app.Redis.Close(); err != nil {
@@ -203,8 +212,9 @@ func main() {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
+	defer cancel() //Give the server 5 seconds to shut down properly
+	
+	if err := srv.Shutdown(ctx); err != nil { // Stops accepting new requests and Allows ongoing requests to finish and Waits up to 5 seconds
 		appLogger.Fatal("Server forced to shutdown", zap.Error(err))
 	}
 
