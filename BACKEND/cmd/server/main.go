@@ -18,38 +18,35 @@ import (
 	"github.com/akhilbabu26/multibrand_database_4/pkg/cloudinary"
 	"go.uber.org/zap"
 	
+	allRepo "github.com/akhilbabu26/multibrand_database_4/internal/repository/postgres"
+	
 	// auth
 	authUsecase "github.com/akhilbabu26/multibrand_database_4/internal/services/auth"
 	authHandler "github.com/akhilbabu26/multibrand_database_4/internal/controllers/auth"
 
 	// user
-	userRepository "github.com/akhilbabu26/multibrand_database_4/internal/repository/user"
 	userUsecase "github.com/akhilbabu26/multibrand_database_4/internal/services/user"
 	userHandler "github.com/akhilbabu26/multibrand_database_4/internal/controllers/user"
 	
 	//product
-	productRepository "github.com/akhilbabu26/multibrand_database_4/internal/repository/product"
+	
 	productUsecase "github.com/akhilbabu26/multibrand_database_4/internal/services/product"
 	productHandler "github.com/akhilbabu26/multibrand_database_4/internal/controllers/product"
 
 	//cart
-	cartRepository "github.com/akhilbabu26/multibrand_database_4/internal/repository/cart"
 	cartUsecase "github.com/akhilbabu26/multibrand_database_4/internal/services/cart"
 	cartHandler "github.com/akhilbabu26/multibrand_database_4/internal/controllers/cart"
 
 
 	//wishlist
-	wishlistRepository "github.com/akhilbabu26/multibrand_database_4/internal/repository/wishlist"
 	wishlistUsecase "github.com/akhilbabu26/multibrand_database_4/internal/services/wishlist"
 	wishlistHandler "github.com/akhilbabu26/multibrand_database_4/internal/controllers/wishlist"
 	
 	//address
-	addressRepository "github.com/akhilbabu26/multibrand_database_4/internal/repository/address"
 	addressUsecase "github.com/akhilbabu26/multibrand_database_4/internal/services/address"
 	addressHandler "github.com/akhilbabu26/multibrand_database_4/internal/controllers/address"
 	
 	//order
-	orderRepository "github.com/akhilbabu26/multibrand_database_4/internal/repository/order"
 	orderUsecase "github.com/akhilbabu26/multibrand_database_4/internal/services/order"
 	orderHandler "github.com/akhilbabu26/multibrand_database_4/internal/controllers/order"
 
@@ -87,7 +84,7 @@ func main() {
 	txManager := database.NewTransactionManager(app.DB)
 
 	// wire user module
-	uRepo    := userRepository.NewUserRepository(app.DB)
+	uRepo    := allRepo.NewUserRepository(app.DB)
 	uUsecase := userUsecase.NewUserUsecase(uRepo)
 	uHandler := userHandler.NewUserHandler(uUsecase)
 
@@ -100,27 +97,27 @@ func main() {
 	if err != nil {
 		appLogger.Fatal("failed to initialize cloudinary service", zap.Error(err))
 	}
-	pRepo    := productRepository.NewProductRepository(app.DB)
+	pRepo    := allRepo.NewProductRepository(app.DB)
 	pUsecase := productUsecase.NewProductUsecase(pRepo, imgService)
 	pHandler := productHandler.NewProductHandler(pUsecase)
 
 	// wire cart
-	cRepo    := cartRepository.NewCartRepository(app.DB)
+	cRepo    := allRepo.NewCartRepository(app.DB)
 	cUsecase := cartUsecase.NewCartUsecase(cRepo, pRepo)
 	cHandler := cartHandler.NewCartHandler(cUsecase)
 
 	// wire wishlist — depends on cartUsecase
-	wRepo    := wishlistRepository.NewWishlistRepository(app.DB)
+	wRepo    := allRepo.NewWishlistRepository(app.DB)
 	wUsecase := wishlistUsecase.NewWishlistUsecase(wRepo, pRepo, cUsecase)
 	wHandler := wishlistHandler.NewWishlistHandler(wUsecase)
 
 	// wire address
-	aRepo := addressRepository.NewAddressRepository(app.DB)
+	aRepo := allRepo.NewAddressRepository(app.DB)
 	aUsecase := addressUsecase.NewAddressUsecase(aRepo)
 	aHandler := addressHandler.NewAddressHandler(aUsecase)
 
 	// wire order
-	oRepo := orderRepository.NewOrderRepository(app.DB)
+	oRepo := allRepo.NewOrderRepository(app.DB)
 	oUsecase := orderUsecase.NewOrderUsecase(oRepo, cRepo, pRepo, aRepo, txManager)
 	oHandler := orderHandler.NewOrderHandler(oUsecase)
 
