@@ -1,46 +1,35 @@
-package repository
+package postgres
 
 import (
 	"errors"
 
-	domain    "github.com/akhilbabu26/multibrand_database_4/internal/models/address"
+	"github.com/akhilbabu26/multibrand_database_4/internal/models/contracts"
+	"github.com/akhilbabu26/multibrand_database_4/internal/models/entities"
+
+	"github.com/akhilbabu26/multibrand_database_4/internal/repository/generic"
 	apperrors "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
 	"gorm.io/gorm"
 )
 
 type addressRepository struct {
-	db *gorm.DB
+	generic.Repository[entities.Address]
 }
 
-func NewAddressRepository(db *gorm.DB) domain.AddressRepository {
-	return &addressRepository{db: db}
-}
-
-func (r *addressRepository) WithTx(tx *gorm.DB) domain.AddressRepository {
-	return &addressRepository{db: tx}
-}
-
-func (r *addressRepository) Create(address *domain.Address) error {
-	if err := r.db.Create(address).Error; err != nil {
-		return apperrors.Internal("failed to create address", err)
+func NewAddressRepository(db *gorm.DB) contracts.AddressRepository {
+	return &addressRepository{
+		Repository: generic.NewGenericRepository[entities.Address](db),
 	}
-	return nil
 }
 
-func (r *addressRepository) FindByID(id uint) (*domain.Address, error) {
-	var address domain.Address
-	if err := r.db.First(&address, id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, apperrors.AddressNotFound(err)
-		}
-		return nil, apperrors.Internal("failed to find address", err)
+func (r *addressRepository) WithTx(tx *gorm.DB) contracts.AddressRepository {
+	return &addressRepository{
+		Repository: generic.NewGenericRepository[entities.Address](tx),
 	}
-	return &address, nil
 }
 
-func (r *addressRepository) FindByUserID(userID uint) ([]*domain.Address, error) {
-	var addresses []*domain.Address
-	if err := r.db.Where("user_id = ?", userID).
+func (r *addressRepository) FindByUserID(userID uint) ([]*entities.Address, error) {
+	var addresses []*entities.Address
+	if err := r.DB().Where("user_id = ?", userID).
 		Order("is_default DESC, created_at DESC").
 		Find(&addresses).Error; err != nil {
 		return nil, apperrors.Internal("failed to find addresses", err)
@@ -48,36 +37,22 @@ func (r *addressRepository) FindByUserID(userID uint) ([]*domain.Address, error)
 	return addresses, nil
 }
 
-//  N+1 Fix — batch fetch by IDs
-func (r *addressRepository) FindByIDs(ids []uint) (map[uint]*domain.Address, error) {
-	var addresses []*domain.Address
-	if err := r.db.Where("id IN ?", ids).Find(&addresses).Error; err != nil {
+// N+1 Fix — batch fetch by IDs
+func (r *addressRepository) FindByIDs(ids []uint) (map[uint]*entities.Address, error) {
+	var addresses []*entities.Address
+	if err := r.DB().Where("id IN ?", ids).Find(&addresses).Error; err != nil {
 		return nil, apperrors.Internal("failed to fetch addresses", err)
 	}
 
-	addressMap := make(map[uint]*domain.Address, len(addresses))
+	addressMap := make(map[uint]*entities.Address, len(addresses))
 	for _, a := range addresses {
 		addressMap[a.ID] = a
 	}
 	return addressMap, nil
 }
 
-func (r *addressRepository) Update(address *domain.Address) error {
-	if err := r.db.Save(address).Error; err != nil {
-		return apperrors.Internal("failed to update address", err)
-	}
-	return nil
-}
-
-func (r *addressRepository) Delete(id uint) error {
-	if err := r.db.Delete(&domain.Address{}, id).Error; err != nil {
-		return apperrors.Internal("failed to delete address", err)
-	}
-	return nil
-}
-
 func (r *addressRepository) ClearDefault(userID uint) error {
-	if err := r.db.Model(&domain.Address{}).
+	if err := r.DB().Model(&entities.Address{}).
 		Where("user_id = ? AND is_default = ?", userID, true).
 		Update("is_default", false).Error; err != nil {
 		return apperrors.Internal("failed to clear default", err)
@@ -85,9 +60,9 @@ func (r *addressRepository) ClearDefault(userID uint) error {
 	return nil
 }
 
-func (r *addressRepository) FindDefaultByUserID(userID uint) (*domain.Address, error) {
-	var address domain.Address
-	if err := r.db.Where("user_id = ? AND is_default = ?", userID, true).
+func (r *addressRepository) FindDefaultByUserID(userID uint) (*entities.Address, error) {
+	var address entities.Address
+	if err := r.DB().Where("user_id = ? AND is_default = ?", userID, true).
 		First(&address).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperrors.NotFound("no default address found", err)

@@ -1,61 +1,45 @@
-package repository
+package postgres
 
 import (
+	"context"
 	"errors"
 
-	domain     "github.com/akhilbabu26/multibrand_database_4/internal/models/product"
-	apperrors  "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
+	"github.com/akhilbabu26/multibrand_database_4/internal/models/contracts"
+	"github.com/akhilbabu26/multibrand_database_4/internal/models/dto"
+	"github.com/akhilbabu26/multibrand_database_4/internal/models/entities"
+
+	"github.com/akhilbabu26/multibrand_database_4/internal/repository/generic"
+	apperrors "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
 type productRepository struct {
-	db *gorm.DB
+	generic.Repository[entities.Product]
 }
 
-func NewProductRepository(db *gorm.DB) domain.ProductRepository {
-	return &productRepository{db: db}
+func NewProductRepository(baseRepo generic.Repository[entities.Product]) contracts.ProductRepository {
+	return &productRepository{Repository: baseRepo}
 }
 
-func (r *productRepository) WithTx(tx *gorm.DB) domain.ProductRepository {
-	return &productRepository{db: tx}
-}
-
-func (r *productRepository) Create(product *domain.Product) error {
-	if err := r.db.Create(product).Error; err != nil {
-		return apperrors.Internal("failed to create product", err)
+// WithTx returns a new productRepository scoped to the given transaction.
+func (r *productRepository) WithTx(tx *gorm.DB) contracts.ProductRepository {
+	return &productRepository{
+		Repository: generic.NewGenericRepository[entities.Product](tx),
 	}
-	return nil
 }
 
-func (r *productRepository) Update(product *domain.Product) error {
-	if err := r.db.Save(product).Error; err != nil {
-		return apperrors.Internal("failed to update product", err)
-	}
-	return nil
-}
+// FindByIDForUpdate acquires a row-level lock (SELECT … FOR UPDATE) to prevent
+// concurrent writes on the same product row during a transaction.
+func (r *productRepository) FindByIDForUpdate(ctx context.Context, id uint) (*entities.Product, error) {
+	var product entities.Product
+	err := r.DB().
+		WithContext(ctx).
+		Preload("Images").
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		First(&product, id).Error
 
-func (r *productRepository) Delete(id uint) error {
-	if err := r.db.Delete(&domain.Product{}, id).Error; err != nil {
-		return apperrors.Internal("failed to delete product", err)
-	}
-	return nil
-}
-
-func (r *productRepository) FindByID(id uint) (*domain.Product, error) {
-	var product domain.Product
-	if err := r.db.First(&product, id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, apperrors.ProductNotFound(err)
-		}
-		return nil, apperrors.Internal("failed to find product", err)
-	}
-	return &product, nil
-}
-
-func (r *productRepository) FindByIDForUpdate(id uint) (*domain.Product, error) {
-	var product domain.Product
-	if err := r.db.Clauses(clause.Locking{Strength: "UPDATE"}).First(&product, id).Error; err != nil {
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperrors.ProductNotFound(err)
 		}
@@ -64,21 +48,26 @@ func (r *productRepository) FindByIDForUpdate(id uint) (*domain.Product, error) 
 	return &product, nil
 }
 
-func (r *productRepository) ListAll(filters domain.ProductFilter) ([]*domain.Product, int64, error) {
-	var products []*domain.Product
-	var total int64
+// ListAll applies filters, counts the total matching rows, then fetches the
+// requested page — both using the same base query so they stay in sync.
+func (r *productRepository) ListAll(ctx context.Context, filters dto.ProductFilter) ([]*entities.Product, int64, error) {
+	// Normalise pagination defaults before building the query.
+	if filters.Page < 1 {
+		filters.Page = 1
+	}
+	if filters.Limit < 1 {
+		filters.Limit = 10
+	}
 
-	query := r.db.Model(&domain.Product{})
+	query := r.DB().WithContext(ctx).Model(&entities.Product{})
 
+	// --- filter predicates ---
 	if !filters.Inactive {
 		query = query.Where("is_active = ?", true)
 	}
 	if filters.Search != "" {
-		query = query.Where(
-			"name ILIKE ? OR description ILIKE ?",
-			"%"+filters.Search+"%",
-			"%"+filters.Search+"%",
-		)
+		like := "%" + filters.Search + "%"
+		query = query.Where("name ILIKE ? OR description ILIKE ?", like, like)
 	}
 	if filters.Size != "" {
 		query = query.Where("LOWER(size) = LOWER(?)", filters.Size)
@@ -102,17 +91,26 @@ func (r *productRepository) ListAll(filters domain.ProductFilter) ([]*domain.Pro
 		query = query.Where("stock > 0")
 	}
 
-	query.Count(&total)
-
-	if filters.Page < 1 {
-		filters.Page = 1
-	}
-	if filters.Limit < 1 {
-		filters.Limit = 10
+	// Count total matching rows (error was previously silently swallowed).
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, apperrors.Internal("failed to count products", err)
 	}
 
+	// Short-circuit: no need to hit DB again if there are no results.
+	if total == 0 {
+		return []*entities.Product{}, 0, nil
+	}
+
+	// Fetch the page — Preload keeps images in the same query session.
+	var products []*entities.Product
 	offset := (filters.Page - 1) * filters.Limit
-	if err := query.Offset(offset).Limit(filters.Limit).Find(&products).Error; err != nil {
+	err := query.
+		Preload("Images").
+		Offset(offset).
+		Limit(filters.Limit).
+		Find(&products).Error
+	if err != nil {
 		return nil, 0, apperrors.Internal("failed to list products", err)
 	}
 

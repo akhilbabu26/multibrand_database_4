@@ -1,33 +1,40 @@
-package repository
+package postgres
 
 import (
 	"errors"
 	"time"
 
-	domain "github.com/akhilbabu26/multibrand_database_4/internal/models/cart"
+	"github.com/akhilbabu26/multibrand_database_4/internal/models/contracts"
+	"github.com/akhilbabu26/multibrand_database_4/internal/models/dto"
+	"github.com/akhilbabu26/multibrand_database_4/internal/models/entities"
+	"github.com/akhilbabu26/multibrand_database_4/internal/repository/generic"
 	apperrors "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
 	"gorm.io/gorm"
 )
 
 type cartRepository struct {
-	db *gorm.DB
+	generic.Repository[entities.Cart]
 }
 
-func NewCartRepository(db *gorm.DB) domain.CartRepository {
-	return &cartRepository{db: db}
+func NewCartRepository(db *gorm.DB) contracts.CartRepository {
+	return &cartRepository{
+		Repository: generic.NewGenericRepository[entities.Cart](db),
+	}
 }
 
-func (r *cartRepository) WithTx(tx *gorm.DB) domain.CartRepository {
-	return &cartRepository{db: tx}
+func (r *cartRepository) WithTx(tx *gorm.DB) contracts.CartRepository {
+	return &cartRepository{
+		Repository: generic.NewGenericRepository[entities.Cart](tx),
+	}
 }
 
-func (r *cartRepository) GetOrCreateCart(userID uint) (*domain.Cart, error) {
-	var cart domain.Cart
-	err := r.db.Where("user_id = ?", userID).First(&cart).Error
+func (r *cartRepository) GetOrCreateCart(userID uint) (*entities.Cart, error) {
+	var cart entities.Cart
+	err := r.DB().Where("user_id = ?", userID).First(&cart).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			cart = domain.Cart{UserID: userID}
-			if err := r.db.Create(&cart).Error; err != nil {
+			cart = entities.Cart{UserID: userID}
+			if err := r.DB().Create(&cart).Error; err != nil {
 				return nil, apperrors.Internal("failed to create cart", err)
 			}
 			return &cart, nil
@@ -37,9 +44,9 @@ func (r *cartRepository) GetOrCreateCart(userID uint) (*domain.Cart, error) {
 	return &cart, nil
 }
 
-func (r *cartRepository) GetCartWithItems(userID uint) (*domain.Cart, error) {
-	var cart domain.Cart
-	if err := r.db.Where("user_id = ?", userID).
+func (r *cartRepository) GetCartWithItems(userID uint) (*entities.Cart, error) {
+	var cart entities.Cart
+	if err := r.DB().Where("user_id = ?", userID).
 		Preload("Items").
 		First(&cart).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -51,7 +58,7 @@ func (r *cartRepository) GetCartWithItems(userID uint) (*domain.Cart, error) {
 }
 
 // N+1 Fix — single JOIN query
-func (r *cartRepository) GetCartWithProducts(userID uint) (*domain.CartResponse, error) {
+func (r *cartRepository) GetCartWithProducts(userID uint) (*dto.CartResponse, error) {
 	type Result struct {
 		CartID    uint
 		UserID    uint
@@ -65,7 +72,7 @@ func (r *cartRepository) GetCartWithProducts(userID uint) (*domain.CartResponse,
 
 	var results []Result
 
-	err := r.db.Raw(`
+	err := r.DB().Raw(`
 		SELECT
 			c.id       AS cart_id,
 			c.user_id  AS user_id,
@@ -88,28 +95,28 @@ func (r *cartRepository) GetCartWithProducts(userID uint) (*domain.CartResponse,
 
 	if len(results) == 0 {
 		// Get cart ID even if it has no items
-		var cart domain.Cart
-		if err := r.db.Where("user_id = ?", userID).First(&cart).Error; err != nil {
+		var cart entities.Cart
+		if err := r.DB().Where("user_id = ?", userID).First(&cart).Error; err != nil {
 			// No cart exists yet, return empty response
-			return &domain.CartResponse{
+			return &dto.CartResponse{
 				ID:         0,
 				UserID:     userID,
-				Items:      []domain.CartItemResponse{},
+				Items:      []dto.CartItemResponse{},
 				TotalItems: 0,
 				TotalPrice: 0,
 			}, nil
 		}
 		// Cart exists but empty
-		return &domain.CartResponse{
+		return &dto.CartResponse{
 			ID:         cart.ID,
 			UserID:     userID,
-			Items:      []domain.CartItemResponse{},
+			Items:      []dto.CartItemResponse{},
 			TotalItems: 0,
 			TotalPrice: 0,
 		}, nil
 	}
 
-	var items []domain.CartItemResponse
+	var items []dto.CartItemResponse
 	var totalPrice float64
 	totalItems := 0
 
@@ -118,7 +125,7 @@ func (r *cartRepository) GetCartWithProducts(userID uint) (*domain.CartResponse,
 		totalPrice += subtotal
 		totalItems += r.Quantity
 
-		items = append(items, domain.CartItemResponse{
+		items = append(items, dto.CartItemResponse{
 			ID:        r.ItemID,
 			ProductID: r.ProductID,
 			Name:      r.Name,
@@ -129,7 +136,7 @@ func (r *cartRepository) GetCartWithProducts(userID uint) (*domain.CartResponse,
 		})
 	}
 
-	return &domain.CartResponse{
+	return &dto.CartResponse{
 		ID:         results[0].CartID,
 		UserID:     userID,
 		Items:      items,
@@ -138,9 +145,9 @@ func (r *cartRepository) GetCartWithProducts(userID uint) (*domain.CartResponse,
 	}, nil
 }
 
-func (r *cartRepository) GetCartItem(cartID, productID uint) (*domain.CartItem, error) {
-	var item domain.CartItem
-	if err := r.db.Where("cart_id = ? AND product_id = ?", cartID, productID).
+func (r *cartRepository) GetCartItem(cartID, productID uint) (*entities.CartItem, error) {
+	var item entities.CartItem
+	if err := r.DB().Where("cart_id = ? AND product_id = ?", cartID, productID).
 		First(&item).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -151,19 +158,19 @@ func (r *cartRepository) GetCartItem(cartID, productID uint) (*domain.CartItem, 
 }
 
 func (r *cartRepository) AddCartItem(cartID, productID uint, quantity int) error {
-	item := &domain.CartItem{
+	item := &entities.CartItem{
 		CartID:    cartID,
 		ProductID: productID,
 		Quantity:  quantity,
 	}
-	if err := r.db.Create(item).Error; err != nil {
+	if err := r.DB().Create(item).Error; err != nil {
 		return apperrors.Internal("failed to add cart item", err)
 	}
 	return nil
 }
 
 func (r *cartRepository) UpdateCartItem(cartID, productID uint, quantity int) error {
-	if err := r.db.Model(&domain.CartItem{}).
+	if err := r.DB().Model(&entities.CartItem{}).
 		Where("cart_id = ? AND product_id = ?", cartID, productID).
 		Update("quantity", quantity).Error; err != nil {
 		return apperrors.Internal("failed to update cart item", err)
@@ -172,16 +179,16 @@ func (r *cartRepository) UpdateCartItem(cartID, productID uint, quantity int) er
 }
 
 func (r *cartRepository) RemoveCartItem(cartID, productID uint) error {
-	if err := r.db.Where("cart_id = ? AND product_id = ?", cartID, productID).
-		Delete(&domain.CartItem{}).Error; err != nil {
+	if err := r.DB().Where("cart_id = ? AND product_id = ?", cartID, productID).
+		Delete(&entities.CartItem{}).Error; err != nil {
 		return apperrors.Internal("failed to remove cart item", err)
 	}
 	return nil
 }
 
 func (r *cartRepository) ClearCart(cartID uint) error {
-	if err := r.db.Where("cart_id = ?", cartID).
-		Delete(&domain.CartItem{}).Error; err != nil {
+	if err := r.DB().Where("cart_id = ?", cartID).
+		Delete(&entities.CartItem{}).Error; err != nil {
 		return apperrors.Internal("failed to clear cart", err)
 	}
 	return nil
