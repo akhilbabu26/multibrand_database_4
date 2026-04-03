@@ -24,23 +24,23 @@ const (
 
 type Order struct {
 	ID                uint          `gorm:"primaryKey;autoIncrement" json:"id"`
-	UserID            uint          `gorm:"not null;index" json:"user_id"`
-	AddressID         uint          `gorm:"not null" json:"address_id"`
-	Status            OrderStatus   `gorm:"type:varchar(20);default:'pending'" json:"status"`
-	PaymentMethod     PaymentMethod `gorm:"type:varchar(20);not null" json:"payment_method"`
-	PaymentStatus     PaymentStatus `gorm:"type:varchar(20);default:'pending'" json:"payment_status"`
+	UserID            uint          `gorm:"not null;index;constraint:OnDelete:CASCADE;constraint:OnUpdate:CASCADE" json:"user_id"`
+	AddressID         uint          `gorm:"not null;index;constraint:OnDelete:RESTRICT;constraint:OnUpdate:CASCADE" json:"address_id"`
+	Status            OrderStatus   `gorm:"type:varchar(20);default:'pending';index" json:"status"`
+	PaymentMethod     PaymentMethod `gorm:"type:varchar(20);not null;index" json:"payment_method"`
+	PaymentStatus     PaymentStatus `gorm:"type:varchar(20);default:'pending';index" json:"payment_status"`
 	TotalAmount       float64       `gorm:"not null" json:"total_amount"`
-	RazorpayOrderID   string        `gorm:"type:varchar(100)" json:"razorpay_order_id,omitempty"`
-	RazorpayPaymentID string        `gorm:"type:varchar(100)" json:"razorpay_payment_id,omitempty"`
-	Items             []OrderItem   `gorm:"foreignKey:OrderID" json:"items"`
+	RazorpayOrderID   string        `gorm:"type:varchar(100);index" json:"razorpay_order_id,omitempty"`
+	RazorpayPaymentID string        `gorm:"type:varchar(100);index" json:"razorpay_payment_id,omitempty"`
+	Items             []OrderItem   `gorm:"foreignKey:OrderID;constraint:OnDelete:CASCADE;constraint:OnUpdate:CASCADE" json:"items"`
 	CreatedAt         time.Time     `gorm:"index" json:"created_at"`
 	UpdatedAt         time.Time     `json:"updated_at"`
 }
 
 type OrderItem struct {
 	ID           uint    `gorm:"primaryKey;autoIncrement" json:"id"`
-	OrderID      uint    `gorm:"not null;index" json:"order_id"`
-	ProductID    uint    `gorm:"not null;index" json:"product_id"`
+	OrderID      uint    `gorm:"not null;index:,composite:order_product;constraint:OnDelete:CASCADE;constraint:OnUpdate:CASCADE" json:"order_id"`
+	ProductID    uint    `gorm:"not null;index:,composite:order_product;constraint:OnDelete:RESTRICT;constraint:OnUpdate:CASCADE" json:"product_id"`
 	ProductName  string  `gorm:"not null" json:"product_name"`
 	ProductImage string  `json:"product_image"`
 	Quantity     int     `gorm:"not null" json:"quantity"`

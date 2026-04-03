@@ -24,7 +24,7 @@ const (
 
 type ProductImage struct {
 	ID        uint   `gorm:"primaryKey;autoIncrement" json:"id"`
-	ProductID uint   `gorm:"index" json:"product_id"`
+	ProductID uint   `gorm:"not null;index;constraint:OnDelete:CASCADE;constraint:OnUpdate:CASCADE" json:"product_id"`
 	ImageURL  string `gorm:"not null" json:"image_url"`
 	IsPrimary bool   `gorm:"default:false" json:"is_primary"`
 }

@@ -442,7 +442,59 @@
       "cPassword": "123456",
       "role": "User",
       "isBlocked": false,
-      "cart": [],
+      "cart": [
+        {
+          "product_id": "ADIDAS002",
+          "name": "SL 722 RS Shoes - Brown Suede",
+          "type": "Casual Retro Runner",
+          "color": "Brown/Beige",
+          "original_price": 8999,
+          "sale_price": 7199,
+          "discount_percentage": 20,
+          "image_url": "https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/3825f6aac1cd4b93b0553c90131f94c6_9366/SL_72_RS_Shoes_Brown_JS0744_09_standard.jpg",
+          "description": "The iconic SL 72 silhouette updated with premium brown suede and classic gum sole for a timeless look.",
+          "cost_price": 4500,
+          "id": "adid_002",
+          "sizes": [
+            "US 7",
+            "US 8",
+            "US 9",
+            "US 10",
+            "US 11",
+            "US 12"
+          ],
+          "gender": "Men",
+          "category": "Running",
+          "quantity": 1,
+          "size": "US 7"
+        },
+        {
+          "product_id": "ADIDAS003",
+          "name": "Grand Court TD Lifestyle Shoes",
+          "type": "Casual Retro Runner",
+          "color": "Blue/White",
+          "original_price": 5999,
+          "sale_price": 5399,
+          "discount_percentage": 10,
+          "image_url": "https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/f0c7758ff0044e11b0ea282700e34abe_9366/Grand_Court_TD_Lifestyle_Court_Casual_Shoes_Blue_JQ0526_09_standard.jpg",
+          "description": "Inspired by classic tennis styles, these shoes offer a comfortable fit for everyday wear. Features blue accents.",
+          "id": "adid_003",
+          "cost_price": 3000,
+          "isActive": true,
+          "quantity": 1,
+          "sizes": [
+            "US 7",
+            "US 8",
+            "US 9",
+            "US 10",
+            "US 11",
+            "US 12"
+          ],
+          "gender": "Men",
+          "category": "Running",
+          "size": "US 12"
+        }
+      ],
       "order": [
         {
           "name": "Akhil babu",
