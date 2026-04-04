@@ -1,63 +1,103 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { AuthContext } from './AuthContext';
-import UserService from '../services/UserService';
+import wishlistService from '../services/wishlistService';
 import toast from 'react-hot-toast';
 
 export const WishlistContext = createContext();
 
 export function WishlistProvider({ children }) {
   const [wishlist, setWishlist] = useState([]);
-  const { currentUser } = useContext(AuthContext);
+  const [loading, setLoading] = useState(false);
+  const { isAuthenticated } = useContext(AuthContext);
 
-  // Load wishlist from currentUser when component mounts or user changes
+  const fetchWishlist = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await wishlistService.getWishlist();
+      setWishlist(res?.data || []);
+    } catch (err) {
+      setWishlist([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    if (currentUser?.wishlist) {
-      setWishlist(currentUser.wishlist);
+    if (isAuthenticated) {
+      fetchWishlist();
     } else {
       setWishlist([]);
     }
-  }, [currentUser]);
+  }, [isAuthenticated, fetchWishlist]);
 
-  const toggleWishlist = async (product) => {
-    if (!currentUser) {
+  const addToWishlist = useCallback(async (product) => {
+    if (!isAuthenticated) {
       toast.error("Please login to manage wishlist");
       return;
     }
-
     try {
-      const exists = wishlist.some(item => item.product_id === product.product_id);
-      const newWishlist = exists
-        ? wishlist.filter(item => item.product_id !== product.product_id)
-        : [...wishlist, product];
-
-      await UserService.updateWishlist(currentUser.id, newWishlist);
-      
-      // Update local storage with latest user data
-      const userStr = localStorage.getItem("user");
-      if (userStr) {
-        const user = JSON.parse(userStr);
-        const updatedUser = { ...user, wishlist: newWishlist };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-      }
-      
-      setWishlist(newWishlist);
-
-      if (!exists) toast.success(`Added to Wishlist 💖`);
-      if (exists) toast.success(`Removed from Wishlist`);
-
+      await wishlistService.addToWishlist(product.id);
+      await fetchWishlist();
+      toast.success("Added to wishlist 💖");
     } catch (err) {
-      console.error("Failed to update wishlist", err);
-      toast.error("Error updating wishlist");
+      toast.error(err?.message || "Failed to add to wishlist");
     }
-  };
+  }, [isAuthenticated, fetchWishlist]);
 
-  const isInWishlist = (productId) => {
+  const removeFromWishlist = useCallback(async (productId) => {
+    try {
+      await wishlistService.removeFromWishlist(productId);
+      setWishlist(prev => prev.filter(item => item.product_id !== productId));
+      toast.success("Removed from wishlist");
+    } catch (err) {
+      toast.error("Failed to remove from wishlist");
+    }
+  }, []);
+
+  const toggleWishlist = useCallback(async (product) => {
+    if (!isAuthenticated) {
+      toast.error("Please login to manage wishlist");
+      return;
+    }
+    const exists = wishlist.some(item => item.product_id === product.id);
+    if (exists) {
+      await removeFromWishlist(product.id);
+    } else {
+      await addToWishlist(product);
+    }
+  }, [isAuthenticated, wishlist, addToWishlist, removeFromWishlist]);
+
+  // product_id is the key since that's what backend returns
+  const isInWishlist = useCallback((productId) => {
     return wishlist.some(item => item.product_id === productId);
-  };
+  }, [wishlist]);
+
+  const moveToCart = useCallback(async (productId) => {
+    try {
+      await wishlistService.moveToCart(productId);
+      setWishlist(prev => prev.filter(item => item.product_id !== productId));
+      toast.success("Moved to cart 🛒");
+    } catch (err) {
+      toast.error("Failed to move to cart");
+    }
+  }, []);
+
+  const value = useMemo(() => ({
+    wishlist,
+    loading,
+    fetchWishlist,
+    addToWishlist,
+    removeFromWishlist,
+    toggleWishlist,
+    isInWishlist,
+    moveToCart,
+  }), [wishlist, loading, fetchWishlist, addToWishlist, removeFromWishlist, toggleWishlist, isInWishlist, moveToCart]);
 
   return (
-    <WishlistContext.Provider value={{ wishlist, toggleWishlist, isInWishlist }}>
+    <WishlistContext.Provider value={value}>
       {children}
     </WishlistContext.Provider>
   );
 }
+
+export default WishlistProvider;

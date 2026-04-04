@@ -8,6 +8,7 @@ import (
 	apperrors "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
 	"github.com/akhilbabu26/multibrand_database_4/pkg/validator"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type AuthHandler struct {
@@ -117,6 +118,8 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	apperrors.HandleSuccess(c, "logged out successfully", nil)
 }
 
+// FIX 2: error is now logged via zap but client always gets 200
+// so we never reveal whether the email exists in our system
 func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 	var req dto.ForgotPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -124,7 +127,17 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 		return
 	}
 
-	h.usecase.ForgotPassword(c.Request.Context(), req.Email)
+	if err := validator.ValidateStruct(req); err != nil {
+		apperrors.HandleError(c, apperrors.ValidationFailed(validator.FormatValidationError(err)))
+		return
+	}
+
+	if err := h.usecase.ForgotPassword(c.Request.Context(), req.Email); err != nil {
+		// log internally but never expose to client — security best practice
+		zap.L().Warn("forgot password failed", zap.String("email", req.Email), zap.Error(err))
+	}
+
+	// always return 200 regardless of outcome
 	apperrors.HandleSuccess(c, "if your email exists you will receive an otp", nil)
 }
 

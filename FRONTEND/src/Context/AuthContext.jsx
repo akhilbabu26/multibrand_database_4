@@ -1,88 +1,169 @@
-import React, { createContext, useEffect, useState } from 'react'
-import { api } from "../api/Api"
+import React, { createContext, useEffect, useState, useCallback, useMemo } from 'react';
+import authService from '../services/auth.service';
 
-export const AuthContext = createContext()
+export const AuthContext = createContext();
 
-function AuthProvider({children}) {
+export function AuthProvider({ children }) {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const [currentUser, setCurrentUser] = useState(() => {
-  const storedUser = localStorage.getItem("user")
-    try {
-      return storedUser ? JSON.parse(storedUser) : null;
-    } catch (error) {
-      localStorage.removeItem("user") // Clear invalid data
-      return null
-    }
-  });
-
-  const [allUsers, setAllUsers] = useState([])
-  const [loading, setLoading] = useState(true) // Add loading state
-
+  // Check if user is authenticated on mount
   useEffect(() => {
-    const fetchAllUser = async () => {
+  const checkAuth = async () => {
+    const token = localStorage.getItem('access_token');
 
+    if (token) {
       try {
-        setLoading(true)
-        const response = await api.get("/users")
-        setAllUsers(response?.data || [])
+        const userRes = await api.get('/user/profile');
+        const user = userRes.data?.data || userRes.data;
+        localStorage.setItem('user', JSON.stringify(user));
+        setCurrentUser(user);
+        setIsAuthenticated(true);
       } catch (err) {
-        setAllUsers([])
-      } finally {
-        setLoading(false)
+        // Token invalid or expired
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
+        setIsAuthenticated(false);
       }
-    }
-    fetchAllUser()
-  }, [])
-
-  const updateCurrentUser = (userData) => {
-    setCurrentUser(userData)
-    if (userData) {
-      localStorage.setItem("user", JSON.stringify(userData))
     } else {
-      localStorage.removeItem("user")
+      setIsAuthenticated(false);
     }
+    setLoading(false);
   };
 
-  // Auto-refresh user on focus
-  useEffect(() => {
-    const refreshUserData = async () => {
-      if (!currentUser?.id) return
-    
-      try {
-        const response = await api.get(`/users/${currentUser.id}`)
-        const latestUserData = response.data
-        
-        // Only update if data actually changed
-        if (JSON.stringify(latestUserData) !== JSON.stringify(currentUser)) {
-          updateCurrentUser(latestUserData);
-        }
-      } catch (error) {
-        console.error("Failed to refresh user data:", error)
+  checkAuth();
+}, []);
+
+  const login = useCallback(async (email, password) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await authService.login(email, password);
+      
+      // authService.login returns res.data directly, so user is at response.user
+      if (response?.user) {
+        localStorage.setItem('user', JSON.stringify(response.user));
+        setCurrentUser(response.user);
       }
-    };
+      
+      setIsAuthenticated(true);
+      return response; // return the full res.data
+    } catch (err) {
+      const errorMessage = err.message || 'Login failed';
+      setError(errorMessage);
+      setIsAuthenticated(false);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+}, []);
 
-    // Refresh window
-    const handleFocus = () => {
-      refreshUserData();
-    };
+  const signup = useCallback(async (name, email, password, cpassword) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await authService.signup(name, email, password, cpassword);
+      return response;
+    } catch (err) {
+      const errorMessage = err.message || 'Signup failed';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [currentUser?.id]);
+  const verifyOTP = useCallback(async (email, otp) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await authService.verifyOTP(email, otp);
+      return response;
+    } catch (err) {
+      const errorMessage = err.message || 'OTP verification failed';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const value = {
-    currentUser, 
-    setCurrentUser: updateCurrentUser,
-    allUsers, 
-    setAllUsers,
-    loading 
-  }
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout();
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      // Always clear state regardless of API success/failure
+      setCurrentUser(null);
+      setIsAuthenticated(false);
+    }
+  }, []);
+
+  const forgotPassword = useCallback(async (email) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await authService.forgotPassword(email);
+      return response;
+    } catch (err) {
+      const errorMessage = err.message || 'Password reset failed';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+ const resetPassword = useCallback(async (email, otp, password, cpassword) => {
+    setLoading(true);
+    setError(null);
+    try {
+        const response = await authService.resetPassword(email, otp, password, cpassword);
+        return response;
+    } catch (err) {
+        const errorMessage = err.message || 'Password reset failed';
+        setError(errorMessage);
+        throw err;
+    } finally {
+        setLoading(false);
+    }
+}, []);
+
+  const value = useMemo(() => ({
+    currentUser,
+    setCurrentUser,
+    isAuthenticated,
+    loading,
+    error,
+    setError,
+    login,
+    logout,
+    signup,
+    verifyOTP,
+    forgotPassword,
+    resetPassword,
+  }), [
+    currentUser,
+    isAuthenticated,
+    loading,
+    error,
+    login,
+    logout,
+    signup,
+    verifyOTP,
+    forgotPassword,
+    resetPassword,
+  ]);
 
   return (
     <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
-export default AuthProvider
+export default AuthProvider;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "../api/Api";
+import api from "../services/api";
 
 function useFetch(url, reload) {
   const [data, setData] = useState([]);
@@ -7,20 +7,22 @@ function useFetch(url, reload) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    let isMounted = true; // Prevent state update after unmount
+    let isMounted = true;
     setLoading(true);
 
     api
       .get(url)
       .then((res) => {
         if (isMounted) {
-          setData(res.data);
+          const result = res.data?.data ?? res.data;
+          setData(Array.isArray(result) ? result : []);
           setError(null);
         }
       })
       .catch((err) => {
         if (isMounted) {
           setError(err);
+          setData([]);
         }
       })
       .finally(() => {

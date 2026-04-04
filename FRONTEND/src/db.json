@@ -420,143 +420,6 @@
       ],
       "wishlist": [],
       "create_at": "2025-11-27T10:55:53.420Z"
-    },
-    {
-      "id": "de26",
-      "name": "akhil",
-      "email": "123@gmail.com",
-      "password": "123456",
-      "cPassword": "123456",
-      "role": "User",
-      "isBlocked": false,
-      "cart": [],
-      "order": [],
-      "wishlist": [],
-      "create_at": "2026-03-22T14:00:30.866Z"
-    },
-    {
-      "id": "6651",
-      "name": "qqq",
-      "email": "a@gmail.com",
-      "password": "123456",
-      "cPassword": "123456",
-      "role": "User",
-      "isBlocked": false,
-      "cart": [
-        {
-          "product_id": "ADIDAS002",
-          "name": "SL 722 RS Shoes - Brown Suede",
-          "type": "Casual Retro Runner",
-          "color": "Brown/Beige",
-          "original_price": 8999,
-          "sale_price": 7199,
-          "discount_percentage": 20,
-          "image_url": "https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/3825f6aac1cd4b93b0553c90131f94c6_9366/SL_72_RS_Shoes_Brown_JS0744_09_standard.jpg",
-          "description": "The iconic SL 72 silhouette updated with premium brown suede and classic gum sole for a timeless look.",
-          "cost_price": 4500,
-          "id": "adid_002",
-          "sizes": [
-            "US 7",
-            "US 8",
-            "US 9",
-            "US 10",
-            "US 11",
-            "US 12"
-          ],
-          "gender": "Men",
-          "category": "Running",
-          "quantity": 1,
-          "size": "US 7"
-        },
-        {
-          "product_id": "ADIDAS003",
-          "name": "Grand Court TD Lifestyle Shoes",
-          "type": "Casual Retro Runner",
-          "color": "Blue/White",
-          "original_price": 5999,
-          "sale_price": 5399,
-          "discount_percentage": 10,
-          "image_url": "https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/f0c7758ff0044e11b0ea282700e34abe_9366/Grand_Court_TD_Lifestyle_Court_Casual_Shoes_Blue_JQ0526_09_standard.jpg",
-          "description": "Inspired by classic tennis styles, these shoes offer a comfortable fit for everyday wear. Features blue accents.",
-          "id": "adid_003",
-          "cost_price": 3000,
-          "isActive": true,
-          "quantity": 1,
-          "sizes": [
-            "US 7",
-            "US 8",
-            "US 9",
-            "US 10",
-            "US 11",
-            "US 12"
-          ],
-          "gender": "Men",
-          "category": "Running",
-          "size": "US 12"
-        }
-      ],
-      "order": [
-        {
-          "name": "Akhil babu",
-          "number": "98765433",
-          "email": "akhil2672001-1@okicici",
-          "address": "akhil",
-          "city": "Pulpally",
-          "pinCode": "673579",
-          "items": [
-            {
-              "product_id": "ADIDAS004",
-              "name": "GRAND COURT 2.0 Shoes",
-              "type": "Casual Retro Runner",
-              "color": "White/Green",
-              "original_price": 6499,
-              "sale_price": 5200,
-              "discount_percentage": 20,
-              "image_url": "https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/0a43a14932c941bf8e4370a01bb26f4b_9366/GRAND_COURT_2.0_SHOES_White_JS1736_09_standard.jpg",
-              "description": "The updated Grand Court with Cloudfoam cushioning for superior comfort. A clean, white canvas for any outfit.",
-              "id": "adid_004",
-              "cost_price": 3250,
-              "isActive": true,
-              "quantity": 1
-            }
-          ],
-          "orderDate": "2026-03-24T11:55:50.250Z",
-          "orderId": "ORD-1774353350250",
-          "status": "pending",
-          "totalAmount": 5200
-        },
-        {
-          "name": "Akhil Babu",
-          "number": "9876543",
-          "email": "akhil2672001@gmail.com",
-          "address": "akhil",
-          "city": "Pulpally",
-          "pinCode": "673579",
-          "items": [
-            {
-              "product_id": "ADIDAS003",
-              "name": "Grand Court TD Lifestyle Shoes",
-              "type": "Casual Retro Runner",
-              "color": "Blue/White",
-              "original_price": 5999,
-              "sale_price": 5399,
-              "discount_percentage": 10,
-              "image_url": "https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/f0c7758ff0044e11b0ea282700e34abe_9366/Grand_Court_TD_Lifestyle_Court_Casual_Shoes_Blue_JQ0526_09_standard.jpg",
-              "description": "Inspired by classic tennis styles, these shoes offer a comfortable fit for everyday wear. Features blue accents.",
-              "id": "adid_003",
-              "cost_price": 3000,
-              "isActive": true,
-              "quantity": 2
-            }
-          ],
-          "orderDate": "2026-03-24T12:07:20.880Z",
-          "orderId": "ORD-1774354040880",
-          "status": "confirmed",
-          "totalAmount": 10798
-        }
-      ],
-      "wishlist": [],
-      "create_at": "2026-03-24T11:53:14.910Z"
     }
   ],
   "products": [
@@ -571,17 +434,7 @@
       "image_url": "https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/3825f6aac1cd4b93b0553c90131f94c6_9366/SL_72_RS_Shoes_Brown_JS0744_09_standard.jpg",
       "description": "The iconic SL 72 silhouette updated with premium brown suede and classic gum sole for a timeless look.",
       "cost_price": 4500,
-      "id": "adid_002",
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Running"
+      "id": "adid_002"
     },
     {
       "product_id": "ADIDAS003",
@@ -596,17 +449,7 @@
       "id": "adid_003",
       "cost_price": 3000,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Running"
+      "quantity": 1
     },
     {
       "product_id": "ADIDAS004",
@@ -621,17 +464,7 @@
       "id": "adid_004",
       "cost_price": 3250,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Running"
+      "quantity": 1
     },
     {
       "product_id": "ADIDAS005",
@@ -646,17 +479,7 @@
       "id": "adid_005",
       "cost_price": 5000,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Running"
+      "quantity": 1
     },
     {
       "product_id": "ADIDAS006",
@@ -671,17 +494,7 @@
       "id": "adid_006",
       "cost_price": 5000,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Running"
+      "quantity": 1
     },
     {
       "product_id": "ADIDAS007",
@@ -696,17 +509,7 @@
       "id": "adid_007",
       "cost_price": 5000,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Running"
+      "quantity": 1
     },
     {
       "product_id": "ADIDAS008",
@@ -721,17 +524,7 @@
       "id": "adid_008",
       "cost_price": 2750,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Running"
+      "quantity": 1
     },
     {
       "product_id": "ADIDAS009",
@@ -746,17 +539,7 @@
       "id": "adid_009",
       "cost_price": 5000,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Running"
+      "quantity": 1
     },
     {
       "product_id": "ADIDAS010",
@@ -771,17 +554,7 @@
       "id": "adid_010",
       "cost_price": 5000,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Unisex",
-      "category": "Running"
+      "quantity": 1
     },
     {
       "product_id": "NIKE001",
@@ -796,17 +569,7 @@
       "id": "nike_001",
       "cost_price": 4850,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Unisex",
-      "category": "Basketball"
+      "quantity": 1
     },
     {
       "product_id": "NIKE002",
@@ -821,17 +584,7 @@
       "id": "nike_002",
       "cost_price": 4500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Unisex",
-      "category": "Basketball"
+      "quantity": 1
     },
     {
       "product_id": "NIKE003",
@@ -846,17 +599,7 @@
       "id": "nike_003",
       "cost_price": 3500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Basketball"
+      "quantity": 1
     },
     {
       "product_id": "NIKE004",
@@ -871,17 +614,7 @@
       "id": "nike_004",
       "cost_price": 7500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Basketball"
+      "quantity": 1
     },
     {
       "product_id": "NIKE005",
@@ -896,17 +629,7 @@
       "id": "nike_005",
       "cost_price": 3250,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Basketball"
+      "quantity": 1
     },
     {
       "product_id": "NIKE006",
@@ -921,17 +644,7 @@
       "id": "nike_006",
       "cost_price": 3250,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Basketball"
+      "quantity": 1
     },
     {
       "product_id": "NIKE007",
@@ -946,17 +659,7 @@
       "id": "nike_007",
       "cost_price": 4500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Basketball"
+      "quantity": 1
     },
     {
       "product_id": "NIKE008",
@@ -971,17 +674,7 @@
       "id": "nike_008",
       "cost_price": 6500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Basketball"
+      "quantity": 1
     },
     {
       "product_id": "NIKE009",
@@ -996,17 +689,7 @@
       "id": "nike_009",
       "cost_price": 6500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Unisex",
-      "category": "Basketball"
+      "quantity": 1
     },
     {
       "product_id": "NIKE010",
@@ -1021,17 +704,7 @@
       "id": "nike_010",
       "cost_price": 5000,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Unisex",
-      "category": "Basketball"
+      "quantity": 1
     },
     {
       "product_id": "PUMA001",
@@ -1046,17 +719,7 @@
       "id": "puma_001",
       "cost_price": 5500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Basketball"
+      "quantity": 1
     },
     {
       "product_id": "PUMA002",
@@ -1071,17 +734,7 @@
       "id": "puma_002",
       "cost_price": 3500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "PUMA003",
@@ -1096,17 +749,7 @@
       "id": "puma_003",
       "cost_price": 4000,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "PUMA004",
@@ -1121,17 +764,7 @@
       "id": "puma_004",
       "cost_price": 2750,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "PUMA005",
@@ -1146,17 +779,7 @@
       "id": "puma_005",
       "cost_price": 3750,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Unisex",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "PUMA006",
@@ -1171,17 +794,7 @@
       "id": "puma_006",
       "cost_price": 6500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Unisex",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "PUMA007",
@@ -1196,17 +809,7 @@
       "id": "puma_007",
       "cost_price": 2750,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "PUMA008",
@@ -1221,17 +824,7 @@
       "id": "puma_008",
       "cost_price": 6000,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Unisex",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "PUMA009",
@@ -1246,17 +839,7 @@
       "id": "puma_009",
       "cost_price": 3500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "PUMA010",
@@ -1271,17 +854,7 @@
       "id": "puma_010",
       "cost_price": 3000,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "REEBOK001",
@@ -1296,17 +869,7 @@
       "id": "rbk_001",
       "cost_price": 3500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "REEBOK002",
@@ -1321,17 +884,7 @@
       "id": "rbk_002",
       "cost_price": 4000,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "REEBOK003",
@@ -1346,17 +899,7 @@
       "id": "rbk_003",
       "cost_price": 6500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "REEBOK004",
@@ -1371,17 +914,7 @@
       "id": "rbk_004",
       "cost_price": 5000,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "REEBOK005",
@@ -1396,17 +929,7 @@
       "id": "rbk_005",
       "cost_price": 7500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "REEBOK006",
@@ -1421,17 +944,7 @@
       "id": "rbk_006",
       "cost_price": 3500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Unisex",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "REEBOK007",
@@ -1446,17 +959,7 @@
       "id": "rbk_007",
       "cost_price": 4000,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "REEBOK008",
@@ -1471,17 +974,7 @@
       "id": "rbk_008",
       "cost_price": 7500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Unisex",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "REEBOK009",
@@ -1496,17 +989,7 @@
       "id": "rbk_009",
       "cost_price": 2500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Unisex",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "REEBOK010",
@@ -1521,17 +1004,7 @@
       "id": "rbk_010",
       "cost_price": 3750,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Unisex",
-      "category": "Lifestyle"
+      "quantity": 1
     },
     {
       "product_id": "NB001",
@@ -1546,17 +1019,7 @@
       "id": "nb_001",
       "cost_price": 4500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Running"
+      "quantity": 1
     },
     {
       "product_id": "NB002",
@@ -1571,17 +1034,7 @@
       "id": "nb_002",
       "cost_price": 6500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Running"
+      "quantity": 1
     },
     {
       "product_id": "NB003",
@@ -1596,17 +1049,7 @@
       "id": "nb_003",
       "cost_price": 7000,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Running"
+      "quantity": 1
     },
     {
       "product_id": "NB004",
@@ -1621,17 +1064,7 @@
       "id": "nb_004",
       "cost_price": 6000,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Running"
+      "quantity": 1
     },
     {
       "product_id": "NB005",
@@ -1646,17 +1079,7 @@
       "id": "nb_005",
       "cost_price": 5500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Unisex",
-      "category": "Running"
+      "quantity": 1
     },
     {
       "product_id": "NB006",
@@ -1671,17 +1094,7 @@
       "id": "nb_006",
       "cost_price": 6500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Unisex",
-      "category": "Running"
+      "quantity": 1
     },
     {
       "product_id": "NB007",
@@ -1696,17 +1109,7 @@
       "id": "nb_007",
       "cost_price": 10000,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Running"
+      "quantity": 1
     },
     {
       "product_id": "NB008",
@@ -1721,17 +1124,7 @@
       "id": "nb_008",
       "cost_price": 10000,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Unisex",
-      "category": "Running"
+      "quantity": 1
     },
     {
       "product_id": "NB009",
@@ -1746,17 +1139,7 @@
       "id": "nb_009",
       "cost_price": 4500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Unisex",
-      "category": "Running"
+      "quantity": 1
     },
     {
       "product_id": "NB010",
@@ -1771,17 +1154,7 @@
       "id": "nb_010",
       "cost_price": 5500,
       "isActive": true,
-      "quantity": 1,
-      "sizes": [
-        "US 7",
-        "US 8",
-        "US 9",
-        "US 10",
-        "US 11",
-        "US 12"
-      ],
-      "gender": "Men",
-      "category": "Running"
+      "quantity": 1
     }
   ]
 }

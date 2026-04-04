@@ -23,10 +23,12 @@ type UserRepository interface {
 	DeleteExpiredPending() error
 }
 
+// FIX 4b: BlockUser and DeleteUser now receive requestingID so the
+// self-check lives in the usecase layer, not just the handler
 type UserUsecase interface {
 	GetUser(ctx context.Context, id uint) (*entities.User, error)
 	ListUsers(ctx context.Context, page, limit int) ([]*entities.User, int64, error)
-	BlockUser(ctx context.Context, id uint) error
+	BlockUser(ctx context.Context, requestingID uint, targetID uint) error
 	UnblockUser(ctx context.Context, id uint) error
-	DeleteUser(ctx context.Context, id uint) error
+	DeleteUser(ctx context.Context, requestingID uint, targetID uint) error
 }

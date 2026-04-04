@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from "../context/AuthContext";
-import { api } from "../api/Api";
+import { AuthContext } from '../Context/AuthContext';
+import api from '../services/api';
 import toast from 'react-hot-toast';
 
 function OrdersPage() {

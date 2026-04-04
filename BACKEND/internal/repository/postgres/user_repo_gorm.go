@@ -6,7 +6,6 @@ import (
 
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/contracts"
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/entities"
-
 	"github.com/akhilbabu26/multibrand_database_4/internal/repository/generic"
 	apperrors "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
 	"gorm.io/gorm"
@@ -28,31 +27,36 @@ func (r *userRepository) WithTx(tx *gorm.DB) contracts.UserRepository {
 	}
 }
 
-// --------USER OPERATIONS--------
+// ─────────────────────────────────────────
+// USER OPERATIONS
+// ─────────────────────────────────────────
 
 func (r *userRepository) FindByEmail(email string) (*entities.User, error) {
 	var user entities.User
-
 	if err := r.DB().Where("email = ?", email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperrors.UserNotFound(err)
 		}
-		return nil, apperrors.Internal("faild to find user", err)
+		return nil, apperrors.Internal("failed to find user", err)
 	}
-
 	return &user, nil
 }
 
+// FIX 3: separate count query from paged query so future filters
+// don't corrupt the total count used by the pagination bar
 func (r *userRepository) ListUsers(page, limit int) ([]*entities.User, int64, error) {
 	var users []*entities.User
 	var total int64
 
-	query := r.DB().Model(&entities.User{})
-	query.Count(&total) // get total count for frontend pagination bar
+	// count on a fresh query — never shares state with the paged query
+	if err := r.DB().Model(&entities.User{}).Count(&total).Error; err != nil {
+		return nil, 0, apperrors.Internal("failed to count users", err)
+	}
 
 	offset := (page - 1) * limit
-	if err := query.Offset(offset).Limit(limit).Find(&users).Error; err != nil {
-		return nil, 0, apperrors.Internal("faild to list users", err)
+	if err := r.DB().Model(&entities.User{}).
+		Offset(offset).Limit(limit).Find(&users).Error; err != nil {
+		return nil, 0, apperrors.Internal("failed to list users", err)
 	}
 
 	return users, total, nil
@@ -76,7 +80,9 @@ func (r *userRepository) UnblockUser(id uint) error {
 	return nil
 }
 
+// ─────────────────────────────────────────
 // PENDING USER OPERATIONS
+// ─────────────────────────────────────────
 
 func (r *userRepository) SavePendingUser(p *entities.PendingUser) error {
 	r.DB().Where("email = ?", p.Email).Delete(&entities.PendingUser{})

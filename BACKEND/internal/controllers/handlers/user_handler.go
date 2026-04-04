@@ -48,7 +48,7 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 		page = 1
 	}
 	if limit < 1 || limit > 50 {
-		limit = 10 // safe fallback preventing 10,000 limits
+		limit = 10
 	}
 
 	users, total, err := h.usecase.ListUsers(c.Request.Context(), page, limit)
@@ -81,6 +81,8 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 	apperrors.HandleSuccess(c, "user fetched", user)
 }
 
+// FIX 4c: removed self-check from handler — now handled in usecase
+// pass requestingID as first arg so usecase can enforce the rule
 func (h *UserHandler) BlockUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -89,12 +91,8 @@ func (h *UserHandler) BlockUser(c *gin.Context) {
 	}
 
 	loggedInID, _ := c.Get("userID")
-	if uint(id) == loggedInID.(uint) {
-		apperrors.HandleError(c, apperrors.CannotBlockSelf())
-		return
-	}
 
-	if err := h.usecase.BlockUser(c.Request.Context(), uint(id)); err != nil {
+	if err := h.usecase.BlockUser(c.Request.Context(), loggedInID.(uint), uint(id)); err != nil {
 		apperrors.HandleError(c, err)
 		return
 	}
@@ -117,6 +115,7 @@ func (h *UserHandler) UnblockUser(c *gin.Context) {
 	apperrors.HandleSuccess(c, "user unblocked successfully", nil)
 }
 
+// FIX 4c: same as BlockUser — removed self-check, pass requestingID
 func (h *UserHandler) DeleteUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -125,12 +124,8 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 	}
 
 	loggedInID, _ := c.Get("userID")
-	if uint(id) == loggedInID.(uint) {
-		apperrors.HandleError(c, apperrors.CannotDeleteSelf())
-		return
-	}
 
-	if err := h.usecase.DeleteUser(c.Request.Context(), uint(id)); err != nil {
+	if err := h.usecase.DeleteUser(c.Request.Context(), loggedInID.(uint), uint(id)); err != nil {
 		apperrors.HandleError(c, err)
 		return
 	}
