@@ -1,21 +1,17 @@
-import { Formik,Form, Field } from "formik"
+import { Formik, Form, Field } from "formik"
 import React, { useContext, useState } from "react"
 import { LogValidation } from "./LogValidation"
-import {Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { AuthContext } from "../../Context/AuthContext"
-import toast from "react-hot-toast";
-import { useLocation } from 'react-router-dom'
-
-
+import toast from "react-hot-toast"
+import { getErrorMessage } from "../../lib/http"
 
 const values = {
-    email: "",
-    password: "",
+  email: "",
+  password: "",
 }
 
-
 export default function Login() {
-
   const { login } = useContext(AuthContext)
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
@@ -33,120 +29,106 @@ export default function Login() {
 
       const response = await login(values.email, values.password)
       toast.success(`Welcome!`)
-      console.log('Login response:', response)
-      console.log('Navigating to:', response?.user?.role === "admin" ? "/admin" : from)
 
-      // inside handleLogin after success:
-      if (response?.user?.role === "admin") {
+      const role = String(response?.user?.role ?? "").toLowerCase()
+
+      if (role === "admin") {
         navigate("/admin")
       } else {
-        navigate(from, { replace: true }) // ← goes back to /allshoe/... instead of /
+        navigate(from, { replace: true })
       }
     } catch (error) {
-      console.error("Login error:", error)
-      
-      // Handle different error types
-      let errorMessage = "Login failed. Please try again."
-      
-      if (error?.response?.data?.message) {
-        errorMessage = error.response.data.message
-      } else if (error?.message) {
-        errorMessage = error.message
-      }
-      
-      toast.error(errorMessage)
+      toast.error(getErrorMessage(error) || "Login failed. Please try again.")
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <>  
-      <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          {/* <img
-            alt="Your Company"
-            src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-            className="mx-auto h-10 w-auto"
-          /> */}
-          <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
-            Sign in to your account
-          </h2>
-        </div>
+    <div
+      className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
+      style={{
+        backgroundImage:
+          "url('https://images.unsplash.com/photo-1501785888041-af3ef285b470')",
+      }}
+    >
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
 
-        <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+      {/* Glass Card */}
+      <div className="relative z-10 w-full max-w-md p-8 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg text-white">
+        
+        <h2 className="text-2xl font-bold text-center mb-6">
+          Login
+        </h2>
 
-            <Formik
-            initialValues={values}
-            validationSchema={LogValidation}
-            onSubmit={handleLogin}
-            >
+        <Formik
+          initialValues={values}
+          validationSchema={LogValidation}
+          onSubmit={handleLogin}
+        >
+          {({ errors, touched }) => (
+            <Form className="space-y-6">
 
-                {({errors,touched})=>(
-                    <Form className="space-y-6">
-                    <div>
-                        <label htmlFor="email" className="block text-sm/6 font-medium text-gray-900">
-                            Email address
-                        </label>
-                        <div className="mt-2">
-                            <Field
-                            id="email"
-                            name="email"
-                            type="email"
-                            autoComplete="email"
-                            className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                            />
-                            {errors.email && touched.email && <p className="text-red-500 text-sm">{errors.email}</p>}
-                        </div>
-                    </div>
-
-                    <div>
-                        <div className="flex items-center justify-between">
-                            <label htmlFor="password" className="block text-sm/6 font-medium text-gray-900">
-                            Password
-                            </label>
-                            <div className="text-sm">
-                                <Link to="/forgot-password" title="Click here to reset your password" id="forgot-password" className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors">
-                                    Forgot password?
-                                </Link>
-                            </div>
-                        </div>
-                        <div className="mt-2">
-                            <Field
-                            id="password"
-                            name="password"
-                            type="password"
-                            autoComplete="current-password"
-                            className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                            />
-                            {errors.password && touched.password && <p className="text-red-500 text-sm">{errors.password}</p>}
-                        </div>
-                    </div>
-
-                    <div>
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isLoading ? "Signing in..." : "Sign in"}
-                        </button>
-                    </div>
-            </Form>
+              {/* Email */}
+              <div>
+                <Field
+                  name="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  className="w-full bg-transparent border-b border-white/50 py-2 text-white placeholder-white/70 focus:outline-none"
+                />
+                {errors.email && touched.email && (
+                  <p className="text-red-400 text-sm">{errors.email}</p>
                 )}
+              </div>
 
-            
-            </Formik>
-          
+              {/* Password */}
+              <div>
+                <Field
+                  name="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  className="w-full bg-transparent border-b border-white/50 py-2 text-white placeholder-white/70 focus:outline-none"
+                />
+                {errors.password && touched.password && (
+                  <p className="text-red-400 text-sm">{errors.password}</p>
+                )}
+              </div>
 
-          <p className="mt-10 text-center text-sm/6 text-gray-500">
-            If your not a member?{' '}
-            <Link to="/register" className="font-semibold text-indigo-600 hover:text-indigo-500">
-              Sign up
-            </Link>
-          </p>
-        </div>
+              {/* Options */}
+              <div className="flex justify-between text-sm text-white/80">
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" className="accent-white" />
+                  Remember me
+                </label>
+
+                <Link to="/forgot-password" className="hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
+
+              {/* Button */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-2 bg-white text-black font-semibold rounded-md hover:bg-gray-200 transition disabled:opacity-50"
+              >
+                {isLoading ? "Signing in..." : "Log in"}
+              </button>
+
+            </Form>
+          )}
+        </Formik>
+
+        {/* Register */}
+        <p className="text-center text-sm mt-6 text-white/70">
+          Don’t have an account?{" "}
+          <Link to="/register" className="underline">
+            Register
+          </Link>
+        </p>
       </div>
-    </>
+    </div>
   )
 }

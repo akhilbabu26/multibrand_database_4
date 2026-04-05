@@ -1,52 +1,37 @@
 import api from './api';
+import { unwrapData } from '../lib/http';
 
 export const addressService = {
-    /**
-     * Get all user addresses
-     */
     getAddresses: async () => {
-        try {
-            const res = await api.get('/address');
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        const res = await api.get('/addresses');
+        const data = unwrapData(res.data);
+        if (Array.isArray(data)) return data;
+        return data?.addresses ?? [];
     },
 
-    /**
-     * Create new address
-     */
-    createAddress: async (addressData) => {
-        try {
-            const res = await api.post('/address', addressData);
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+    getAddress: async (id) => {
+        const res = await api.get(`/addresses/${id}`);
+        return unwrapData(res.data);
     },
 
-    /**
-     * Update address
-     */
-    updateAddress: async (addressId, addressData) => {
-        try {
-            const res = await api.patch(`/address/${addressId}`, addressData);
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+    createAddress: async (payload) => {
+        const res = await api.post('/addresses', payload);
+        return res.data;
     },
 
-    /**
-     * Delete address
-     */
-    deleteAddress: async (addressId) => {
-        try {
-            const res = await api.delete(`/address/${addressId}`);
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+    updateAddress: async (id, payload) => {
+        const res = await api.patch(`/addresses/${id}`, payload);
+        return res.data;
+    },
+
+    deleteAddress: async (id) => {
+        const res = await api.delete(`/addresses/${id}`);
+        return res.data;
+    },
+
+    setDefault: async (id) => {
+        const res = await api.patch(`/addresses/${id}/default`);
+        return res.data;
     },
 };
 

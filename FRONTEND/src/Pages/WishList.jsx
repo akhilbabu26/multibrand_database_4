@@ -1,25 +1,15 @@
 import React from "react";
 import { useWishlist } from "../Hooks/useWishlist";
-import { useCart } from "../Hooks/useCart";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Hooks/useAuth";
 
 function WishList() {
-  const { wishlist, removeFromWishlist } = useWishlist();
-  const { addToCart } = useCart();
+  const { wishlist, removeFromWishlist, moveToCart } = useWishlist();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
-  const handleMoveToCart = (product) => {
-    addToCart(product);
-    removeFromWishlist(product.product_id);
-  };
-
-  const calculateSalePrice = (product) => {
-    return Math.round(
-      product.original_price -
-      (product.original_price * product.discount_percentage) / 100
-    );
+  const handleMoveToCart = async (productId) => {
+    await moveToCart(productId);
   };
 
   if (!currentUser) {
@@ -69,6 +59,7 @@ function WishList() {
                   className="w-full h-64 object-cover rounded-md bg-gray-200 group-hover:opacity-90 transition"
                 />
                 <button
+                  type="button"
                   onClick={() => removeFromWishlist(product.product_id)}
                   className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-red-50 hover:text-red-600 transition"
                   title="Remove from wishlist"
@@ -81,27 +72,18 @@ function WishList() {
 
               <div className="mt-4">
                 <h3 className="text-sm font-semibold text-gray-800 line-clamp-2">{product.name}</h3>
-                <p className="mt-1 text-sm text-gray-500">{product.color}</p>
 
-                <div className="flex items-center space-x-2 mt-2 flex-wrap">
-                  <span className="text-sm font-bold text-gray-400 line-through">
-                    ₹{product.original_price}
-                  </span>
-                  <span className="text-sm font-bold text-emerald-500">
-                    {product.discount_percentage}% OFF
-                  </span>
-                </div>
-                
                 <div className="flex items-center justify-between mt-3">
                   <span className="text-lg font-bold text-gray-900">
-                    ₹{calculateSalePrice(product)}
+                    ₹{Number(product.sale_price || 0).toFixed(0)}
                   </span>
-                  
+
                   <button
-                    onClick={() => handleMoveToCart(product)}
+                    type="button"
+                    onClick={() => handleMoveToCart(product.product_id)}
                     className="bg-black text-white px-4 py-2 rounded text-sm hover:bg-gray-800 transition transform active:scale-95"
                   >
-                    Add to Cart
+                    Move to cart
                   </button>
                 </div>
               </div>

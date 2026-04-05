@@ -1,16 +1,17 @@
 import api from './api';
+import { unwrapData } from '../lib/http';
 
 export const authService = {
     /**
      * Signup user and send OTP
      */
-    signup: async (name, email, password, cpassword) => {
+    signup: async (name, email, password, cPassword) => {
         try {
             const res = await api.post('/auth/signup', {
                 name,
                 email,
                 password,
-                cpassword,
+                cPassword,
             });
             return res.data;
         } catch (error) {
@@ -43,7 +44,7 @@ export const authService = {
 
         // Fetch user profile after login
         const userRes = await api.get('/user/profile');
-        const user = userRes.data?.data || userRes.data;
+        const user = unwrapData(userRes.data);
         localStorage.setItem('user', JSON.stringify(user));
 
         return { ...res.data, user };

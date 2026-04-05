@@ -104,7 +104,7 @@ export default function VerifyOTP() {
       setCanResend(false)
       setOtp(Array(6).fill(''))
       inputRefs.current[0]?.focus()
-    } catch (err) {
+    } catch {
       toast.error('Failed to resend OTP. Try again.')
     }
   }

@@ -1,117 +1,57 @@
 import api from './api';
 
 export const orderService = {
-    /**
-     * Place order from cart
-     */
-    placeOrder: async (shippingAddressId) => {
-        try {
-            const res = await api.post('/orders', { shipping_address_id: shippingAddressId });
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+    placeOrder: async (addressId, paymentMethod) => {
+        const res = await api.post('/orders', {
+            address_id: addressId,
+            payment_method: paymentMethod,
+        });
+        return res.data;
     },
 
-    /**
-     * Buy single product directly
-     */
-    buyNow: async (productId, quantity, shippingAddressId) => {
-        try {
-            const res = await api.post('/orders/buy-now', {
-                product_id: productId,
-                quantity,
-                shipping_address_id: shippingAddressId,
-            });
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+    buyNow: async (productId, quantity, addressId, paymentMethod) => {
+        const res = await api.post('/orders/buy-now', {
+            product_id: productId,
+            quantity,
+            address_id: addressId,
+            payment_method: paymentMethod,
+        });
+        return res.data;
     },
 
-    /**
-     * Get user's orders
-     */
-    getMyOrders: async () => {
-        try {
-            const res = await api.get('/orders');
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+    getMyOrders: async (params = {}) => {
+        const res = await api.get('/orders', { params });
+        return res.data;
     },
 
-    /**
-     * Get order details
-     */
     getOrder: async (orderId) => {
-        try {
-            const res = await api.get(`/orders/${orderId}`);
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        const res = await api.get(`/orders/${orderId}`);
+        return res.data;
     },
 
-    /**
-     * Cancel order
-     */
     cancelOrder: async (orderId) => {
-        try {
-            const res = await api.patch(`/orders/${orderId}/cancel`);
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        const res = await api.patch(`/orders/${orderId}/cancel`);
+        return res.data;
     },
 
-    // ADMIN ENDPOINTS
-    /**
-     * Get all orders (admin)
-     */
-    getAllOrders: async (filters = {}) => {
-        try {
-            const res = await api.get('/admin/orders', { params: filters });
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+    getAllOrders: async (params = {}) => {
+        const res = await api.get('/admin/orders', { params });
+        return res.data;
     },
 
-    /**
-     * Get order details (admin)
-     */
     getAdminOrder: async (orderId) => {
-        try {
-            const res = await api.get(`/admin/orders/${orderId}`);
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        const res = await api.get(`/admin/orders/${orderId}`);
+        return res.data;
     },
 
-    /**
-     * Update order status (admin)
-     */
     updateOrderStatus: async (orderId, status) => {
-        try {
-            const res = await api.patch(`/admin/orders/${orderId}/status`, { status });
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        const res = await api.patch(`/admin/orders/${orderId}/status`, { status });
+        return res.data;
     },
 
-    /**
-     * Cancel order (admin)
-     */
     adminCancelOrder: async (orderId) => {
-        try {
-            const res = await api.patch(`/admin/orders/${orderId}/cancel`);
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        const res = await api.patch(`/admin/orders/${orderId}/cancel`);
+        return res.data;
     },
 };
 

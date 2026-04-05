@@ -74,9 +74,11 @@ func (u *addressUsecase) UpdateAddress(ctx context.Context, userID, addressID ui
 		address.PinCode = *req.PinCode
 	}
 
-	if req.IsDefault != nil && *req.IsDefault {
-		u.repo.ClearDefault(userID)
-		address.IsDefault = true
+	if req.IsDefault != nil {
+		if *req.IsDefault {
+			u.repo.ClearDefault(userID)
+		}
+		address.IsDefault = *req.IsDefault
 	}
 
 	return u.repo.Update(ctx, address)

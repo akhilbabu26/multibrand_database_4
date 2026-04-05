@@ -25,7 +25,7 @@ export default function Register() {
         name: values.name,
         email: values.email,
         password: values.password,
-        cpassword: values.cPassword,  // Backend expects lowercase 'cpassword'
+        cPassword: values.cPassword,
       }
       await api.post('/auth/signup', payload)
       toast.success('OTP sent to your email!')

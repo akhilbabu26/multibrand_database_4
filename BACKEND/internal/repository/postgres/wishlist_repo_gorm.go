@@ -86,7 +86,13 @@ func (r *wishlistRepository) GetWishlistWithProducts(userID uint) ([]*dto.Wishli
 			w.created_at,
 			p.name,
 			p.sale_price,
-			p.image_url
+			COALESCE(
+				(SELECT pi.image_url FROM product_images pi
+				 WHERE pi.product_id = p.id
+				 ORDER BY pi.is_primary DESC, pi.id ASC
+				 LIMIT 1),
+				''
+			) AS image_url
 		FROM wishlists w
 		JOIN products p ON p.id = w.product_id
 		WHERE w.user_id  = ?

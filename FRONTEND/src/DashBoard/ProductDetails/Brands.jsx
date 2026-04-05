@@ -1,23 +1,19 @@
-import { useEffect, useState } from "react"
-import useFetch from "../../hooks/useFetch"
+import { useMemo, useState } from "react"
+import useFetch from "../../Hooks/useFetch"
 import ShowProduct from "./ShowProduct"
 import { useNavigate } from "react-router-dom"
 
 function Brands() {
     const [selectedBrand, setSelectedBrand] = useState("Casual Retro Runner")
-    const { data, loading, error} = useFetch("/products")
+    const { data, loading, error} = useFetch("/admin/products?limit=100")
     const navigate = useNavigate()
 
-    const [products, setProducts] = useState([])
+    const [hiddenIds, setHiddenIds] = useState(() => new Set())
 
-    // Update local state when data loads
-    useEffect(() => {
-        if (data) {
-            setProducts(data)
-        }
-    }, [data])
-
-    const brands = products?.filter(item => item.type === selectedBrand) || []
+    const brands = useMemo(
+        () => (data || []).filter((item) => item.type === selectedBrand && !hiddenIds.has(item.id)),
+        [data, selectedBrand, hiddenIds]
+    )
 
     const brandFilters = [
         { name: "ADIDAS", type: "Casual Retro Runner" },
@@ -29,7 +25,7 @@ function Brands() {
 
     // Remove product from state immediately
     const handleProductDelete = (deletedProductId) => {
-        setProducts(prev => prev.filter(product => product.id !== deletedProductId))
+        setHiddenIds((prev) => new Set(prev).add(deletedProductId))
     }
 
     if (loading) {

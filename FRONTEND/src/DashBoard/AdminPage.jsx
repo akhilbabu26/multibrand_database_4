@@ -3,17 +3,11 @@ import React from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, Home, Users, Package, ShoppingCart, LogOut } from "lucide-react";
 import logo from "../assets/unnamed.jpg"; 
-import useFetch from "../Hooks/useFetch";
-
 function AdminPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true) 
   const location = useLocation()
   const navigate = useNavigate()
   const datas = JSON.parse(localStorage.getItem('user'))
-
-  // all users
-  const {data} = useFetch("/users")
-  const userData = data?.filter(user => user?.role !== "Admin")
 
   const navItems = [
     { icon: Home, label: "Dashboard", path: "dashboard" },

@@ -1,7 +1,9 @@
+/* eslint-disable react-refresh/only-export-components -- context + provider pattern */
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { AuthContext } from './AuthContext';
 import cartService from '../services/cartService';
 import toast from 'react-hot-toast';
+import { unwrapData, getErrorMessage } from '../lib/http';
 
 export const CartContext = createContext();
 
@@ -10,80 +12,112 @@ export function CartProvider({ children }) {
   const [cartTotal, setCartTotal] = useState(0);
   const [cartCount, setCartCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const { isAuthenticated } = useContext(AuthContext);
+  const { isAuthenticated, currentUser } = useContext(AuthContext);
+  // Cart API is user-role only; admins get 403 if we call it
+  const isCustomer =
+    isAuthenticated &&
+    String(currentUser?.role ?? "").toLowerCase() === "user";
 
   const fetchCart = useCallback(async () => {
+    if (!isCustomer) {
+      setCart([]);
+      setCartTotal(0);
+      setCartCount(0);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const res = await cartService.getCart();
-      const cartData = res?.data;
+      const cartData = unwrapData(res) ?? unwrapData(res?.data) ?? res?.data;
       setCart(cartData?.items || []);
       setCartTotal(cartData?.total_price || 0);
       setCartCount(cartData?.total_items || 0);
-    } catch (err) {
+    } catch (e) {
       setCart([]);
+      setCartTotal(0);
+      setCartCount(0);
+      if (isCustomer) {
+        toast.error(getErrorMessage(e) || "Could not load cart");
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isCustomer]);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isCustomer) {
       fetchCart();
     } else {
       setCart([]);
       setCartTotal(0);
       setCartCount(0);
     }
-  }, [isAuthenticated, fetchCart]);
+  }, [isCustomer, fetchCart]);
 
-  const addToCart = useCallback(async (product) => {
-    if (!isAuthenticated) {
-      toast.error("Please login to add items to cart");
+  const addToCart = useCallback(async (product, quantity = 1) => {
+    if (!isCustomer) {
+      toast.error("Please login as a customer to add items to cart");
+      return false;
+    }
+    const pid = product?.id ?? product?.product_id;
+    if (!pid) {
+      toast.error("Invalid product");
       return false;
     }
     try {
-      await cartService.addToCart(product.id);
-      await fetchCart(); // refetch to get accurate totals from backend
+      await cartService.addToCart(pid, quantity);
+      await fetchCart();
       toast.success("Added to cart 🛒");
       return true;
     } catch (err) {
-      toast.error(err?.message || "Failed to add to cart");
+      toast.error(getErrorMessage(err) || "Failed to add to cart");
       return false;
     }
-  }, [isAuthenticated, fetchCart]);
+  }, [isCustomer, fetchCart]);
 
   const removeFromCart = useCallback(async (productId) => {
+    if (!isCustomer) return;
     try {
       await cartService.removeFromCart(productId);
       await fetchCart();
       toast.success("Removed from cart");
-    } catch (err) {
+    } catch {
       toast.error("Failed to remove item");
     }
-  }, [fetchCart]);
+  }, [isCustomer, fetchCart]);
 
   const updateQuantity = useCallback(async (productId, quantity) => {
-    if (quantity < 1) return;
+    if (!isCustomer) return;
+    if (quantity < 1) {
+      try {
+        await cartService.removeFromCart(productId);
+        await fetchCart();
+      } catch {
+        toast.error("Failed to update cart");
+      }
+      return;
+    }
     try {
       await cartService.updateQuantity(productId, quantity);
       await fetchCart();
-    } catch (err) {
+    } catch {
       toast.error("Failed to update quantity");
     }
-  }, [fetchCart]);
+  }, [isCustomer, fetchCart]);
 
   const clearCart = useCallback(async () => {
+    if (!isCustomer) return;
     try {
       await cartService.clearCart();
       setCart([]);
       setCartTotal(0);
       setCartCount(0);
       toast.success("Cart cleared");
-    } catch (err) {
+    } catch {
       toast.error("Failed to clear cart");
     }
-  }, []);
+  }, [isCustomer]);
 
   const value = {
     cart,

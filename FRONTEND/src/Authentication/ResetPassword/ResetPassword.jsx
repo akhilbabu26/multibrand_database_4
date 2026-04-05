@@ -2,9 +2,7 @@ import React, { useState, useContext  } from 'react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import api from '../../services/api';
 import toast from 'react-hot-toast';
-import authService from '../../services/auth.service';
 import { AuthContext } from '../../Context/AuthContext';
 
 const ResetPasswordSchema = Yup.object().shape({

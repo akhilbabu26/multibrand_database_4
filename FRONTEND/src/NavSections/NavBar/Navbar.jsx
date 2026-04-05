@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { AuthContext } from '../../Context/AuthContext'
 
 // Premium icons from react-icons (you need to install: npm install react-icons)
-import { FiSearch, FiHeart, FiUser, FiLogOut, FiLogIn, FiShoppingBag, FiShoppingCart, FiClipboard } from 'react-icons/fi'
+import { FiSearch, FiHeart, FiUser, FiLogOut, FiLogIn, FiShoppingBag, FiShoppingCart, FiClipboard, FiMapPin } from 'react-icons/fi'
 import { HiOutlineCube, HiOutlineGift, HiOutlineStar, HiOutlineTruck } from 'react-icons/hi'
 import { IoMdMenu, IoMdClose } from 'react-icons/io'
 import { RiUserLine, RiUserFollowLine } from 'react-icons/ri'
@@ -39,11 +39,19 @@ export default function Navbar() {
             <div className="px-4 pt-6 space-y-3">
               {/* Search */}
               <button
-                onClick={() => { navigate("/SearchPage"); setOpen(false); }}
+                onClick={() => { navigate("/searchPage"); setOpen(false); }}
                 className="flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors group"
               >
                 <FiSearch className="text-lg text-gray-500 group-hover:text-indigo-600 transition-colors" />
                 <span className="font-medium">SEARCH</span>
+              </button>
+
+              <button
+                onClick={() => { navigate("/addresses"); setOpen(false); }}
+                className="flex items-center gap-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors group"
+              >
+                <FiMapPin className="text-lg text-gray-500 group-hover:text-indigo-600 transition-colors" />
+                <span className="font-medium">ADDRESSES</span>
               </button>
 
               {/* Orders */}
@@ -101,14 +109,24 @@ export default function Navbar() {
 
               {/* Search */}
               <Link
-                to="/SearchPage"
+                to="/searchPage"
                 className="p-2 text-gray-500 hover:text-indigo-600 transition-colors group relative"
                 title="Search Products"
               >
                 <FiSearch className="text-xl group-hover:scale-110 transition-transform" />
               </Link>
+              <button
+                type="button"
+                className="hidden lg:flex items-center gap-2 text-gray-500 hover:text-indigo-600 transition-colors group"
+                onClick={() => navigate("/addresses")}
+                title="Saved addresses"
+              >
+                <FiMapPin className="text-xl group-hover:scale-110 transition-transform" />
+                <span className="text-sm font-medium">ADDRESSES</span>
+              </button>
               {/* Orders */}
               <button
+                type="button"
                 className="hidden lg:flex items-center gap-2 text-gray-500 hover:text-indigo-600 transition-colors group"
                 onClick={() => navigate("/orders")}
                 title="Order History"
@@ -119,6 +137,7 @@ export default function Navbar() {
 
               {/* Wishlist */}
               <button
+                type="button"
                 className="flex items-center gap-2 text-gray-500 hover:text-indigo-600 transition-colors group"
                 onClick={() => navigate("/wishlist")}
                 title="Your Wishlist"
@@ -129,6 +148,7 @@ export default function Navbar() {
 
               {/* Cart */}
               <button
+                type="button"
                 className="flex items-center gap-2 text-gray-500 hover:text-indigo-600 transition-colors group"
                 onClick={() => navigate("/cart")}
                 title="Shopping Cart"
@@ -140,6 +160,7 @@ export default function Navbar() {
               {/* Login/Logout */}
               {currentUser ? (
                 <button
+                  type="button"
                   className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-medium hover:from-red-600 hover:to-red-700 transition-all group shadow-sm"
                   onClick={handleLogout}
                   title="Logout"
@@ -150,6 +171,7 @@ export default function Navbar() {
                 </button>
               ) : (
                 <button
+                  type="button"
                   className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 text-white text-sm font-medium hover:from-indigo-600 hover:to-indigo-700 transition-all group shadow-sm"
                   onClick={() => navigate("/login")}
                   title="Login to Account"

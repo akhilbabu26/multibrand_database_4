@@ -1,5 +1,8 @@
+/* eslint-disable react-refresh/only-export-components -- context + provider pattern */
 import React, { createContext, useEffect, useState, useCallback, useMemo } from 'react';
 import authService from '../services/auth.service';
+import api from '../services/api';
+import { unwrapData, getErrorMessage } from '../lib/http';
 
 export const AuthContext = createContext();
 
@@ -17,11 +20,11 @@ export function AuthProvider({ children }) {
     if (token) {
       try {
         const userRes = await api.get('/user/profile');
-        const user = userRes.data?.data || userRes.data;
+        const user = unwrapData(userRes.data);
         localStorage.setItem('user', JSON.stringify(user));
         setCurrentUser(user);
         setIsAuthenticated(true);
-      } catch (err) {
+      } catch {
         // Token invalid or expired
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
@@ -52,7 +55,7 @@ export function AuthProvider({ children }) {
       setIsAuthenticated(true);
       return response; // return the full res.data
     } catch (err) {
-      const errorMessage = err.message || 'Login failed';
+      const errorMessage = getErrorMessage(err) || 'Login failed';
       setError(errorMessage);
       setIsAuthenticated(false);
       throw err;
@@ -68,7 +71,7 @@ export function AuthProvider({ children }) {
       const response = await authService.signup(name, email, password, cpassword);
       return response;
     } catch (err) {
-      const errorMessage = err.message || 'Signup failed';
+      const errorMessage = getErrorMessage(err) || 'Signup failed';
       setError(errorMessage);
       throw err;
     } finally {
@@ -83,7 +86,7 @@ export function AuthProvider({ children }) {
       const response = await authService.verifyOTP(email, otp);
       return response;
     } catch (err) {
-      const errorMessage = err.message || 'OTP verification failed';
+      const errorMessage = getErrorMessage(err) || 'OTP verification failed';
       setError(errorMessage);
       throw err;
     } finally {
@@ -110,7 +113,7 @@ export function AuthProvider({ children }) {
       const response = await authService.forgotPassword(email);
       return response;
     } catch (err) {
-      const errorMessage = err.message || 'Password reset failed';
+      const errorMessage = getErrorMessage(err) || 'Password reset failed';
       setError(errorMessage);
       throw err;
     } finally {
@@ -125,7 +128,7 @@ export function AuthProvider({ children }) {
         const response = await authService.resetPassword(email, otp, password, cpassword);
         return response;
     } catch (err) {
-        const errorMessage = err.message || 'Password reset failed';
+        const errorMessage = getErrorMessage(err) || 'Password reset failed';
         setError(errorMessage);
         throw err;
     } finally {

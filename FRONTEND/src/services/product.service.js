@@ -32,9 +32,8 @@ export const productService = {
      */
     createProduct: async (formData) => {
         try {
-            const res = await api.post('/admin/products', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
+            // Let axios set multipart boundary — manual Content-Type breaks uploads
+            const res = await api.post('/admin/products', formData);
             return res.data;
         } catch (error) {
             throw error.response?.data || error;
@@ -46,9 +45,7 @@ export const productService = {
      */
     updateProduct: async (id, formData) => {
         try {
-            const res = await api.patch(`/admin/products/${id}`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
+            const res = await api.patch(`/admin/products/${id}`, formData);
             return res.data;
         } catch (error) {
             throw error.response?.data || error;

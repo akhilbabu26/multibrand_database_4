@@ -18,7 +18,8 @@ export const cartService = {
      */
     addToCart: async (productId, quantity = 1) => {
         try {
-            const res = await api.post(`/cart/${productId}`, { quantity });
+            const id = encodeURIComponent(String(productId));
+            const res = await api.post(`/cart/${id}`, { quantity });
             return res.data;
         } catch (error) {
             throw error.response?.data || error;
@@ -30,7 +31,8 @@ export const cartService = {
      */
     updateQuantity: async (productId, quantity) => {
         try {
-            const res = await api.patch(`/cart/${productId}`, { quantity });
+            const id = encodeURIComponent(String(productId));
+            const res = await api.patch(`/cart/${id}`, { quantity });
             return res.data;
         } catch (error) {
             throw error.response?.data || error;
@@ -42,7 +44,8 @@ export const cartService = {
      */
     removeFromCart: async (productId) => {
         try {
-            const res = await api.delete(`/cart/${productId}`);
+            const id = encodeURIComponent(String(productId));
+            const res = await api.delete(`/cart/${id}`);
             return res.data;
         } catch (error) {
             throw error.response?.data || error;

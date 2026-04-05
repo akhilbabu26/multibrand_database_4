@@ -22,32 +22,32 @@ type ProductFilter struct {
 }
 
 type CreateProductRequest struct {
-	Name               string                  `json:"name" validate:"required,min=2"`
-	Type               string                  `json:"type" validate:"required"`
-	Color              string                  `json:"color" validate:"required"`
-	Size               entities.Size           `json:"size" validate:"required,shoe_size"`
-	Gender             entities.Gender         `json:"gender" validate:"required,gender"`
-	CostPrice          float64                 `json:"cost_price" validate:"required,gt=0"`
-	OriginalPrice      float64                 `json:"original_price" validate:"required,gt=0"`
-	DiscountPercentage float64                 `json:"discount_percentage" validate:"min=0,max=100"`
+	Name               string                  `json:"name" form:"name" validate:"required,min=2"`
+	Type               string                  `json:"type" form:"type" validate:"required"`
+	Color              string                  `json:"color" form:"color" validate:"required"`
+	Size               entities.Size           `json:"size" form:"size" validate:"required,shoe_size"`
+	Gender             entities.Gender         `json:"gender" form:"gender" validate:"required,gender"`
+	CostPrice          float64                 `json:"cost_price" form:"cost_price" validate:"required,gt=0"`
+	OriginalPrice      float64                 `json:"original_price" form:"original_price" validate:"required,gt=0"`
+	DiscountPercentage float64                 `json:"discount_percentage" form:"discount_percentage" validate:"min=0,max=100"`
 	Images             []*multipart.FileHeader `form:"images" json:"-"`
-	Description        string                  `json:"description"`
-	Stock              int                     `json:"stock" validate:"min=0"`
+	Description        string                  `json:"description" form:"description"`
+	Stock              int                     `json:"stock" form:"stock" validate:"min=0"`
 }
 
 type UpdateProductRequest struct {
-	Name               *string                 `json:"name"`
-	Type               *string                 `json:"type"`
-	Color              *string                 `json:"color"`
-	Size               *entities.Size          `json:"size" validate:"omitempty,shoe_size"`
-	Gender             *entities.Gender        `json:"gender" validate:"omitempty,gender"`
-	CostPrice          *float64                `json:"cost_price" validate:"omitempty,gt=0"`
-	OriginalPrice      *float64                `json:"original_price" validate:"omitempty,gt=0"`
-	DiscountPercentage *float64                `json:"discount_percentage" validate:"omitempty,min=0,max=100"`
+	Name               *string                 `json:"name" form:"name"`
+	Type               *string                 `json:"type" form:"type"`
+	Color              *string                 `json:"color" form:"color"`
+	Size               *entities.Size          `json:"size" form:"size" validate:"omitempty,shoe_size"`
+	Gender             *entities.Gender        `json:"gender" form:"gender" validate:"omitempty,gender"`
+	CostPrice          *float64                `json:"cost_price" form:"cost_price" validate:"omitempty,gt=0"`
+	OriginalPrice      *float64                `json:"original_price" form:"original_price" validate:"omitempty,gt=0"`
+	DiscountPercentage *float64                `json:"discount_percentage" form:"discount_percentage" validate:"omitempty,min=0,max=100"`
 	Images             []*multipart.FileHeader `form:"images" json:"-"`
-	Description        *string                 `json:"description"`
-	Stock              *int                    `json:"stock" validate:"omitempty,min=0"`
-	IsActive           *bool                   `json:"is_active"`
+	Description        *string                 `json:"description" form:"description"`
+	Stock              *int                    `json:"stock" form:"stock" validate:"omitempty,min=0"`
+	IsActive           *bool                   `json:"is_active" form:"is_active"`
 }
 
 type CustomerProductResponse struct {

@@ -1,8 +1,11 @@
 import axios from 'axios';
 
-// Create axios instance
+const rawBase = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/, '');
+const baseURL = rawBase.endsWith('/api/v1') ? rawBase : `${rawBase}/api/v1`;
+
+// Axios instance — paths are relative to /api/v1 (matches Go gin group)
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
+    baseURL,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -29,6 +32,11 @@ api.interceptors.request.use(
         const token = localStorage.getItem('access_token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
+        }
+        // Default Content-Type is application/json; for FormData the browser must set
+        // multipart/form-data with a boundary — leaving json here breaks admin uploads.
+        if (config.data instanceof FormData) {
+            delete config.headers['Content-Type'];
         }
         return config;
     },
@@ -71,7 +79,7 @@ api.interceptors.response.use(
                     { refresh_token: refreshToken }
                 );
 
-                const { access_token } = response.data.data;
+                const { access_token } = response.data?.data ?? response.data;
                 localStorage.setItem('access_token', access_token);
                 api.defaults.headers.Authorization = `Bearer ${access_token}`;
                 

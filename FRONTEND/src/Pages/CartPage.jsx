@@ -1,8 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../Hooks/useCart";
-import toast from "react-hot-toast";
-
 function CartPage() {
   const navigate = useNavigate();
   const { cart, removeFromCart, updateQuantity, cartTotal } = useCart();
@@ -35,11 +33,12 @@ function CartPage() {
         {/* CART ITEMS */}
         <div className="lg:col-span-2 space-y-4">
           {cart.map((product) => {
-            const salePrice = Math.round(
-                product.original_price -
-                  (product.original_price * (product.discount_percentage || 0)) / 100
-              );
-            
+            const unit = Number(product.sale_price ?? 0);
+            const lineTotal =
+              product.subtotal != null
+                ? Number(product.subtotal)
+                : unit * (product.quantity || 1);
+
             return (
                 <div
                   key={product.product_id}
@@ -65,18 +64,10 @@ function CartPage() {
                           </svg>
                         </button>
                       </div>
-                      <p className="text-sm text-gray-500 mb-2">{product.color}</p>
                       
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-bold text-gray-900">₹{salePrice}</span>
-                        {product.discount_percentage > 0 && (
-                          <>
-                            <span className="text-sm line-through text-gray-400">₹{product.original_price}</span>
-                            <span className="text-xs font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded">
-                              {product.discount_percentage}% OFF
-                            </span>
-                          </>
-                        )}
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-lg font-bold text-gray-900">₹{unit}</span>
+                        <span className="text-sm text-gray-500">each</span>
                       </div>
                     </div>
     
@@ -100,7 +91,7 @@ function CartPage() {
                       </div>
                       
                       <p className="text-lg font-bold text-gray-900">
-                        ₹{salePrice * (product.quantity || 1)}
+                        ₹{lineTotal.toFixed(0)}
                       </p>
                     </div>
                   </div>

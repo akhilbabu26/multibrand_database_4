@@ -18,6 +18,7 @@ import OrderDetailPage from './Pages/OrederDetailPage'
 import ForgotPassword from './Authentication/ForgotPassword/ForgotPassword'
 import ResetPassword from './Authentication/ResetPassword/ResetPassword'
 import PaymentPage from './Pages/PaymentPage'
+import MyAddresses from './Pages/MyAddresses'
 
 // admin side
 import AdminPage from './DashBoard/AdminPage'
@@ -32,9 +33,8 @@ import Brands from './DashBoard/ProductDetails/Brands'
 import AddProduct from './DashBoard/ProductDetails/AddProduct'
 
 function App() {
-  const { loading, isAuthenticated, currentUser } = useContext(AuthContext)
-  
-  console.log('App state:', { loading, isAuthenticated, currentUser })
+  const { loading } = useContext(AuthContext)
+
   // Don't render any routes until auth check is complete
   if (loading) {
     return (
@@ -66,6 +66,7 @@ function App() {
           <Route path='/orderPage' element={<OrderPage/>}/>
           <Route path='/product/:productId' element={<ProductDetail/>}/>
           <Route path='/orders' element={<OrderDetailPage/>}/>
+          <Route path='/addresses' element={<MyAddresses/>}/>
         </Route>
 
         {/* admin */}

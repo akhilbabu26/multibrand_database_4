@@ -18,7 +18,8 @@ export const wishlistService = {
      */
     addToWishlist: async (productId) => {
         try {
-            const res = await api.post(`/wishlist/${productId}`);
+            const id = encodeURIComponent(String(productId));
+            const res = await api.post(`/wishlist/${id}`);
             return res.data;
         } catch (error) {
             throw error.response?.data || error;
@@ -30,7 +31,18 @@ export const wishlistService = {
      */
     removeFromWishlist: async (productId) => {
         try {
-            const res = await api.delete(`/wishlist/${productId}`);
+            const id = encodeURIComponent(String(productId));
+            const res = await api.delete(`/wishlist/${id}`);
+            return res.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
+    },
+
+    moveToCart: async (productId) => {
+        try {
+            const id = encodeURIComponent(String(productId));
+            const res = await api.post(`/wishlist/${id}/move-to-cart`);
             return res.data;
         } catch (error) {
             throw error.response?.data || error;

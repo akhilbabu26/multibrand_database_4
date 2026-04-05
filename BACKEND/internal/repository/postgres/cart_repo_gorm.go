@@ -80,7 +80,13 @@ func (r *cartRepository) GetCartWithProducts(userID uint) (*dto.CartResponse, er
 			ci.product_id,
 			ci.quantity,
 			p.name,
-			p.image_url,
+			COALESCE(
+				(SELECT pi.image_url FROM product_images pi
+				 WHERE pi.product_id = p.id
+				 ORDER BY pi.is_primary DESC, pi.id ASC
+				 LIMIT 1),
+				''
+			) AS image_url,
 			p.sale_price
 		FROM carts c
 		JOIN cart_items ci ON ci.cart_id = c.id

@@ -1,188 +1,156 @@
 import { CheckIcon } from "@heroicons/react/20/solid";
-import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../Context/AuthContext";
-import useFetch from "../hooks/useFetch";
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import orderService from "../services/order.service";
+import toast from "react-hot-toast";
+import { unwrapData, getErrorMessage } from "../lib/http";
 
 export default function OrderPage() {
-  const { currentUser } = useContext(AuthContext);
-  const { data } = useFetch("/users");
-  const [latestOrder, setLatestOrder] = useState(null);
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
-  const currentUserdata = data.find((val) => val.email === currentUser?.email);
+  const location = useLocation();
+  const lastOrderId = location.state?.lastOrderId;
 
   useEffect(() => {
-    if (currentUserdata?.order && currentUserdata.order.length > 0) {
-      // Get the most recent order (last one in the array)
-      const orders = currentUserdata.order;
-      const mostRecentOrder = orders[orders.length - 1];
-      setLatestOrder(mostRecentOrder);
-    }
-  }, [currentUserdata]);
+    let cancelled = false;
+    (async () => {
+      if (!lastOrderId) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const raw = await orderService.getOrder(lastOrderId);
+        const data = unwrapData(raw) ?? raw;
+        if (!cancelled) setOrder(data);
+      } catch (e) {
+        toast.error(getErrorMessage(e) || "Could not load order");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [lastOrderId]);
 
-  // If no orders found
-  if (!latestOrder) {
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[40vh]">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-indigo-600 border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!order) {
     return (
       <div className="min-h-screen bg-gray-50 py-20 px-6">
         <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-10 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100">
-            <CheckIcon className="h-10 w-10 text-yellow-600" />
-          </div>
-          <h1 className="mt-6 text-3xl font-bold text-gray-900">
-            No Orders Found
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900">No order to display</h1>
           <p className="mt-2 text-gray-600">
-            You haven't placed any orders yet.
+            Complete a purchase or open this page from your order confirmation.
           </p>
-          <div className="text-center mt-10">
-            <button
-              onClick={() => navigate("/")}
-              className="bg-indigo-600 text-white px-5 py-3 rounded-lg font-semibold hover:bg-indigo-500"
-            >
-              Start Shopping
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => navigate("/orders")}
+            className="mt-8 bg-indigo-600 text-white px-5 py-3 rounded-lg font-semibold hover:bg-indigo-500"
+          >
+            My orders
+          </button>
         </div>
       </div>
     );
   }
 
+  const addr = order.address || {};
+
   return (
     <div className="min-h-screen bg-gray-50 py-20 px-6">
       <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-10">
-        
-        {/* Success Message */}
         <div className="text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
             <CheckIcon className="h-10 w-10 text-green-600" />
           </div>
           <h1 className="mt-6 text-3xl font-bold text-gray-900">
-            Order Placed Successfully!
+            Order received
           </h1>
           <p className="mt-2 text-gray-600">
-            Thank you for your purchase. Your order has been confirmed.
+            Thank you. We will keep you updated on the status.
           </p>
-          
-          {/* Order Details */}
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 text-left md:text-center">
             <div>
-              <strong>Order ID:</strong> {latestOrder.orderId}
+              <strong>Order ID:</strong> {order.id}
             </div>
             <div>
-              <strong>Order Date:</strong> {new Date(latestOrder.orderDate).toLocaleDateString()}
+              <strong>Placed:</strong>{" "}
+              {order.created_at
+                ? new Date(order.created_at).toLocaleString()
+                : "—"}
             </div>
             <div>
-              <strong>Status:</strong> 
+              <strong>Status:</strong>{" "}
               <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                {latestOrder.status}
+                {order.status}
               </span>
             </div>
             <div>
-              <strong>Total Amount:</strong> ₹{latestOrder.totalAmount?.toLocaleString()}
-            </div>
-          </div>
-        </div>
-
-        {/* Shipping Information */}
-        <div className="mt-8 p-6 bg-gray-50 rounded-lg">
-          <h3 className="font-semibold text-lg mb-4">Shipping Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <strong>Name:</strong> {latestOrder.name}
-            </div>
-            <div>
-              <strong>Email:</strong> {latestOrder.email}
-            </div>
-            <div>
-              <strong>Phone:</strong> {latestOrder.number}
-            </div>
-            <div>
-              <strong>City:</strong> {latestOrder.city}
+              <strong>Payment:</strong> {order.payment_method} ({order.payment_status})
             </div>
             <div className="md:col-span-2">
-              <strong>Address:</strong> {latestOrder.address}
-            </div>
-            <div>
-              <strong>PIN Code:</strong> {latestOrder.pinCode}
+              <strong>Total:</strong> ₹{Number(order.total_amount).toFixed(2)}
             </div>
           </div>
         </div>
 
-        {/* Ordered Items List */}
+        <div className="mt-8 p-6 bg-gray-50 rounded-lg">
+          <h3 className="font-semibold text-lg mb-4">Shipping address</h3>
+          <div className="text-sm text-gray-700 space-y-1">
+            <p className="font-medium">{addr.full_name}</p>
+            <p>{addr.phone}</p>
+            <p>
+              {addr.street}
+              {addr.landmark ? `, ${addr.landmark}` : ""}
+            </p>
+            <p>
+              {addr.city}, {addr.state} {addr.pin_code}
+            </p>
+          </div>
+        </div>
+
         <div className="mt-8">
-          <h3 className="font-semibold text-lg mb-4">Order Items</h3>
+          <h3 className="font-semibold text-lg mb-4">Items</h3>
           <div className="space-y-4">
-            {latestOrder.items?.reverse().map((item, index) => (
+            {(order.items || []).map((item) => (
               <div
-                key={item.product_id || index}
+                key={item.id}
                 className="flex items-center gap-4 rounded-xl border p-4"
               >
                 <img
-                  src={item.image_url}
-                  alt={item.name}
-                  className="w-20 h-20 rounded-lg object-cover"
+                  src={item.product_image}
+                  alt={item.product_name}
+                  className="w-20 h-20 rounded-lg object-cover bg-gray-100"
                 />
-
                 <div className="flex-1">
-                  <h3 className="font-semibold text-lg">{item.name}</h3>
-                  <p className="text-gray-500">{item.color}</p>
-                  <p className="text-gray-500">Qty: {item.quantity || 1}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-sm text-gray-900 line-through">
-                      ₹{item.original_price}
-                    </span>
-                    <span className="text-sm font-bold text-emerald-400">
-                      {item.discount_percentage}% OFF
-                    </span>
-                  </div>
+                  <h3 className="font-semibold">{item.product_name}</h3>
+                  <p className="text-gray-500 text-sm">Qty: {item.quantity}</p>
+                  <p className="text-sm font-medium mt-1">
+                    ₹{Number(item.price).toFixed(2)} each · line ₹
+                    {Number(item.subtotal).toFixed(2)}
+                  </p>
                 </div>
-
-                <p className="font-semibold text-gray-900">
-                  ₹{Math.round(
-                    item.original_price -
-                    (item.original_price * item.discount_percentage) / 100
-                  ).toLocaleString()}
-                  {item.quantity > 1 && (
-                    <span className="block text-sm text-gray-500">
-                      (₹{Math.round(
-                        (item.original_price - (item.original_price * item.discount_percentage) / 100) * 
-                        (item.quantity || 1)
-                      ).toLocaleString()} total)
-                    </span>
-                  )}
-                </p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Order Summary */}
-        <div className="mt-8 p-6 bg-gray-50 rounded-lg">
-          <h3 className="font-semibold text-lg mb-4">Order Summary</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span>Subtotal:</span>
-              <span>₹{latestOrder.totalAmount?.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Shipping:</span>
-              <span className="text-green-600">FREE</span>
-            </div>
-            <div className="flex justify-between border-t pt-2 font-semibold">
-              <span>Total:</span>
-              <span>₹{latestOrder.totalAmount?.toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Back Button */}
         <div className="text-center mt-10">
           <button
+            type="button"
             onClick={() => navigate("/")}
-            className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-500 transition-colors"
+            className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-500"
           >
-            Continue Shopping
+            Continue shopping
           </button>
         </div>
       </div>

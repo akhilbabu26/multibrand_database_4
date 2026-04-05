@@ -1,38 +1,48 @@
 import React, { useEffect, useState } from 'react'
 import api from '../services/api'
 import useFetch from '../Hooks/useFetch'
+import { unwrapData } from '../lib/http'
 
 function DashBoardPage() {
   const [users, setUsers] = useState([])
+  const [allOrders, setAllOrders] = useState([])
   const [loading, setLoading] = useState(true)
   
   useEffect(() => {
-    fetchAllUsers()
+    let cancelled = false
+    const run = async () => {
+      setLoading(true)
+      try {
+        const [usersRes, ordersRes] = await Promise.all([
+          api.get('/admin/users', { params: { page: 1, limit: 100 } }),
+          api.get('/admin/orders', { params: { page: 1, limit: 500 } }),
+        ])
+        if (cancelled) return
+        const usersInner = unwrapData(usersRes.data)
+        const list = usersInner?.users
+        setUsers(Array.isArray(list) ? list : [])
+        const ordersInner = unwrapData(ordersRes.data)
+        setAllOrders(Array.isArray(ordersInner?.orders) ? ordersInner.orders : [])
+      } catch (err) {
+        if (!cancelled) {
+          console.error(err)
+          setUsers([])
+          setAllOrders([])
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    run()
+    return () => { cancelled = true }
   }, [])
 
-  const fetchAllUsers = async () => {
-    try {
-      const res = await api.get("/users")
-      setUsers(res?.data || []) 
-    } catch (err) {
-      console.log(err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const regularUsers = users.filter(user => user.role !== "Admin")
+  const regularUsers = users.filter(
+    (user) => String(user.role ?? '').toLowerCase() !== 'admin'
+  )
   const { data, loading: productsLoading } = useFetch("/products")
 
-  // Get all orders from all users
-  const allOrders = regularUsers.flatMap(user => 
-    (user.order || []).map(order => ({
-      ...order,
-      userName: user.name,
-      userEmail: user.email,
-      userId: user.id
-    }))
-  )
+  const isBlocked = (user) => Boolean(user.is_blocked ?? user.isBlocked)
 
   // Order statistics
   const pendingOrders = allOrders.filter(order => order.status === 'pending')
@@ -41,8 +51,10 @@ function DashBoardPage() {
   const deliveredOrders = allOrders.filter(order => order.status === 'delivered')
   const cancelledOrders = allOrders.filter(order => order.status === 'cancelled')
 
-  // Total revenue from delivered orders
-  const totalRevenue = deliveredOrders.reduce((total, order) => total + (order.totalAmount || 0), 0)
+  const totalRevenue = deliveredOrders.reduce(
+    (total, order) => total + Number(order.total_amount ?? order.totalAmount ?? 0),
+    0
+  )
 
   if (loading || productsLoading) {
     return (
@@ -70,13 +82,13 @@ function DashBoardPage() {
           </div>
           <div className="bg-white p-6 rounded-lg border border-gray-200 text-center shadow-sm">
             <p className="text-3xl font-bold text-green-600">
-              {regularUsers.filter(user => !user.isBlocked).length}
+              {regularUsers.filter((user) => !isBlocked(user)).length}
             </p>
             <p className="text-gray-600 text-sm">Active Users</p>
           </div>
           <div className="bg-white p-6 rounded-lg border border-gray-200 text-center shadow-sm">
             <p className="text-3xl font-bold text-red-600">
-              {regularUsers.filter(user => user.isBlocked).length}
+              {regularUsers.filter((user) => isBlocked(user)).length}
             </p>
             <p className="text-gray-600 text-sm">Blocked Users</p>
           </div>
@@ -133,7 +145,10 @@ function DashBoardPage() {
           {/* success rate */}
           <div className="bg-white p-6 rounded-lg border border-gray-200 text-center shadow-sm">
             <p className="text-3xl font-bold text-indigo-600">
-              {deliveredOrders.length > 0 ? Math.round((deliveredOrders.length / allOrders.length) * 100) : 0}%
+              {allOrders.length > 0 && deliveredOrders.length > 0
+                ? Math.round((deliveredOrders.length / allOrders.length) * 100)
+                : 0}
+              %
             </p>
             <p className="text-gray-600 text-sm">Success Rate</p>
           </div>
@@ -146,7 +161,7 @@ function DashBoardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
           <div className="text-center">
             <p className="font-semibold text-gray-700">Active Customers</p>
-            <p className="text-2xl font-bold text-green-600">{regularUsers.filter(user => !user.isBlocked).length}</p>
+            <p className="text-2xl font-bold text-green-600">{regularUsers.filter((user) => !isBlocked(user)).length}</p>
           </div>
           <div className="text-center">
             <p className="font-semibold text-gray-700">Products Available</p>
@@ -155,9 +170,10 @@ function DashBoardPage() {
           <div className="text-center">
             <p className="font-semibold text-gray-700">Orders Today</p>
             <p className="text-2xl font-bold text-purple-600">
-              {allOrders.filter(order => 
-                new Date(order.orderDate).toDateString() === new Date().toDateString()
-              ).length}
+              {allOrders.filter((order) => {
+                const d = order.created_at ?? order.orderDate
+                return d && new Date(d).toDateString() === new Date().toDateString()
+              }).length}
             </p>
           </div>
           <div className="text-center">

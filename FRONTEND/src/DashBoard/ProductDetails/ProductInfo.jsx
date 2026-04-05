@@ -1,9 +1,9 @@
 import React from 'react'
-import useFetch from '../../hooks/useFetch'
+import useFetch from '../../Hooks/useFetch'
 import Brands from './Brands'
 
 function ProductInfo() {
-  const { data, loading } = useFetch("/products")
+  const { data, loading, meta } = useFetch("/admin/products?limit=100")
 
   if (loading) {
     return (
@@ -23,7 +23,7 @@ function ProductInfo() {
         <div className="mb-8">
           <h1 className="text-3xl font-light text-gray-900 mb-2">Product Management</h1>
           <div className="flex items-center gap-6">
-            <p className="text-gray-600">Total Products: <span className="font-medium text-gray-900">{data.length}</span></p>
+            <p className="text-gray-600">Total products: <span className="font-medium text-gray-900">{meta?.total ?? data.length}</span></p>
             
           </div>
 

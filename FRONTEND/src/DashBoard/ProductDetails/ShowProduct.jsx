@@ -7,13 +7,13 @@ function ShowProduct({ product, onProductDelete }) {
     const navigate = useNavigate()
 
     const handleEdit = () => {
-        navigate(`/admin/productEdit/${product.product_id}`)
+        navigate(`/admin/productEdit/${product.id}`)
     }
 
     const handleDelete = async () => {
         if (window.confirm(`Are you sure you want to delete "${product.name}"?`)) {
             try {
-                await api.delete(`/products/${product.id}`)
+                await api.delete(`/admin/products/${product.id}`)
                 
                 if (onProductDelete) {
                     onProductDelete(product.id)

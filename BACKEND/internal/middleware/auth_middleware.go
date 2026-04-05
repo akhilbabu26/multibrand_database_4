@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 	"strings"
-	
+
 	"github.com/akhilbabu26/multibrand_database_4/pkg/jwt"
 	"github.com/akhilbabu26/multibrand_database_4/pkg/redis"
 	"github.com/gin-gonic/gin"
@@ -51,7 +51,8 @@ func AuthMiddleware(secret string, tokenStore *redis.TokenStore) gin.HandlerFunc
 		// inject into context for handlers to use
 		c.Set("userID", claims.UserID)
 		c.Set("email", claims.Email)
-		c.Set("role", claims.Role)
+		// Match RoleMiddleware ("admin" / "user") even if DB/JWT ever stored mixed case
+		c.Set("role", strings.ToLower(strings.TrimSpace(claims.Role)))
 
 		c.Next()
 	}
