@@ -4,6 +4,7 @@
 
 export function appendCreateProduct(fd, values, imageFiles) {
   fd.append("name", values.name);
+  fd.append("brand", values.brand);
   fd.append("type", values.type);
   fd.append("color", values.color);
   fd.append("size", String(values.size));
@@ -23,6 +24,7 @@ export function appendCreateProduct(fd, values, imageFiles) {
 
 export function appendUpdateProduct(fd, values, imageFiles) {
   fd.append("name", values.name);
+  fd.append("brand", values.brand);
   fd.append("type", values.type);
   fd.append("color", values.color);
   fd.append("size", String(values.size));

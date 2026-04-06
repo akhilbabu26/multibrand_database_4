@@ -66,6 +66,8 @@ func (r *cartRepository) GetCartWithProducts(userID uint) (*dto.CartResponse, er
 		ProductID uint
 		Quantity  int
 		Name      string
+		Brand     string
+		Size      string
 		ImageURL  string
 		SalePrice float64
 	}
@@ -80,6 +82,8 @@ func (r *cartRepository) GetCartWithProducts(userID uint) (*dto.CartResponse, er
 			ci.product_id,
 			ci.quantity,
 			p.name,
+			p.brand,
+			p.size,
 			COALESCE(
 				(SELECT pi.image_url FROM product_images pi
 				 WHERE pi.product_id = p.id
@@ -135,6 +139,8 @@ func (r *cartRepository) GetCartWithProducts(userID uint) (*dto.CartResponse, er
 			ID:        r.ItemID,
 			ProductID: r.ProductID,
 			Name:      r.Name,
+			Brand:     r.Brand,
+			Size:      r.Size,
 			ImageURL:  r.ImageURL,
 			SalePrice: r.SalePrice,
 			Quantity:  r.Quantity,

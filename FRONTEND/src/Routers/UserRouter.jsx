@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { AuthContext } from '../Context/AuthContext'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import Navbar from '../NavSections/NavBar/Navbar'
+import CustomerLayout from '../components/layout/CustomerLayout'
 
 function UserRouter() {
   const { currentUser, isAuthenticated, loading } = useContext(AuthContext)
@@ -21,17 +21,14 @@ function UserRouter() {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  if (currentUser?.role === "admin") {
+  if (String(currentUser?.role ?? '').toLowerCase() === 'admin') {
     return <Navigate to="/admin" replace />
   }
 
   return (
-    <div>
-      <Navbar />
-      <main>
-        <Outlet />
-      </main>
-    </div>
+    <CustomerLayout>
+      <Outlet />
+    </CustomerLayout>
   )
 }
 

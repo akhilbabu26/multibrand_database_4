@@ -271,8 +271,8 @@ func (u *orderUsecase) GetOrder(ctx context.Context, userID, orderID uint) (*dto
 }
 
 // ✅ N+1 Fix — batch fetch addresses
-func (u *orderUsecase) GetMyOrders(ctx context.Context, userID uint, page, limit int) ([]*dto.OrderResponse, int64, error) {
-	orders, total, err := u.repo.FindByUserID(userID, page, limit)
+func (u *orderUsecase) GetMyOrders(ctx context.Context, userID uint, filter dto.OrderFilter) ([]*dto.OrderResponse, int64, error) {
+	orders, total, err := u.repo.FindByUserID(userID, filter)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -313,8 +313,8 @@ func (u *orderUsecase) GetMyOrders(ctx context.Context, userID uint, page, limit
 // ─────────────────────────────────────────
 
 // N+1 Fix — batch fetch addresses
-func (u *orderUsecase) GetAllOrders(ctx context.Context, page, limit int) ([]*dto.OrderResponse, int64, error) {
-	orders, total, err := u.repo.FindAll(page, limit)
+func (u *orderUsecase) GetAllOrders(ctx context.Context, filter dto.OrderFilter) ([]*dto.OrderResponse, int64, error) {
+	orders, total, err := u.repo.FindAll(filter)
 	if err != nil {
 		return nil, 0, err
 	}

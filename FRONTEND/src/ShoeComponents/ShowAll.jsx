@@ -4,12 +4,12 @@ import useFetch from '../Hooks/useFetch'
 import ProductCard from './ProductCard'
 
 function ShowAll() {
-  const { type } = useParams()
+  const { type: brand } = useParams()
   const navigate = useNavigate()
 
-  // Use backend filter instead of fetching all and filtering frontend
+  // Use backend filter with brand instead of type
   const { data, loading } = useFetch(
-    `/products?type=${encodeURIComponent(type)}`
+    `/products?brand=${encodeURIComponent(brand)}`
   )
 
   return (
@@ -18,11 +18,11 @@ function ShowAll() {
         <img
           src='https://images.unsplash.com/photo-1556906781-9a412961c28c?q=80&w=2000&auto=format&fit=crop'
           className="w-full h-full object-cover transform hover:scale-105 transition duration-700"
-          alt={type}
+          alt={brand}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
           <h1 className="text-4xl font-black text-white uppercase tracking-tighter">
-            {type}
+            {brand}
           </h1>
         </div>
       </div>

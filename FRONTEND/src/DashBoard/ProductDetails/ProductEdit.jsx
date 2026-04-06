@@ -45,6 +45,7 @@ function ProductEdit() {
 
   const initialValues = {
     name: product.name || "",
+    brand: product.brand || "Adidas",
     type: product.type || "Casual Retro Runner",
     color: product.color || "",
     original_price: product.original_price || 0,
@@ -106,6 +107,16 @@ function ProductEdit() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Brand</label>
+                    <Field as="select" name="brand" className="w-full px-4 py-3 border rounded-xl bg-gray-50">
+                      <option value="Adidas">Adidas</option>
+                      <option value="Nike">Nike</option>
+                      <option value="Puma">Puma</option>
+                      <option value="Reebok">Reebok</option>
+                      <option value="New Balance">New Balance</option>
+                    </Field>
+                  </div>
+                  <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Type</label>
                     <Field as="select" name="type" className="w-full px-4 py-3 border rounded-xl bg-gray-50">
                       <option value="Casual Retro Runner">Retro Runner</option>
@@ -115,6 +126,8 @@ function ProductEdit() {
                       <option value="Premium Heritage Runner">Heritage Runner</option>
                     </Field>
                   </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Color</label>
                     <Field name="color" className="w-full px-4 py-3 border rounded-xl bg-gray-50" required />

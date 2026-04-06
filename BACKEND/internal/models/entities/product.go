@@ -6,6 +6,7 @@ import (
 
 type Size string
 type Gender string
+type Brand string
 
 const (
 	Size38 Size = "38"
@@ -20,6 +21,12 @@ const (
 	GenderWomen  Gender = "women"
 	GenderUnisex Gender = "unisex"
 	GenderKids   Gender = "kids"
+
+	BrandAdidas Brand = "Adidas"
+	BrandNike Brand = "Nike"
+	BrandPuma Brand = "Puma"
+	BrandReebok Brand = "Reebok"
+	BrandNewBalance Brand = "New Balance"
 )
 
 type ProductImage struct {
@@ -32,6 +39,7 @@ type ProductImage struct {
 type Product struct {
 	ID                 uint           `gorm:"primaryKey;autoIncrement" json:"id"`
 	Name               string         `gorm:"not null" json:"name"`
+	Brand              Brand          `gorm:"index;not null;default:'Adidas'" json:"brand"`
 	Type               string         `gorm:"index;not null" json:"type"`
 	Color              string         `gorm:"index" json:"color"`
 	Size               Size           `gorm:"type:varchar(10)" json:"size"`

@@ -67,7 +67,11 @@ func (r *productRepository) ListAll(ctx context.Context, filters dto.ProductFilt
 	}
 	if filters.Search != "" {
 		like := "%" + filters.Search + "%"
-		query = query.Where("name ILIKE ? OR description ILIKE ?", like, like)
+		query = query.Where("(name ILIKE ? OR description ILIKE ? OR brand ILIKE ? OR type ILIKE ? OR color ILIKE ? OR gender ILIKE ?)", 
+			like, like, like, like, like, like)
+	}
+	if filters.Brand != "" {
+		query = query.Where("LOWER(brand) = LOWER(?)", filters.Brand)
 	}
 	if filters.Size != "" {
 		query = query.Where("LOWER(size) = LOWER(?)", filters.Size)
@@ -115,4 +119,17 @@ func (r *productRepository) ListAll(ctx context.Context, filters dto.ProductFilt
 	}
 
 	return products, total, nil
+}
+
+// FindByID fetches a single product with its images preloaded.
+func (r *productRepository) FindByID(ctx context.Context, id uint) (*entities.Product, error) {
+	var product entities.Product
+	err := r.DB().WithContext(ctx).Preload("Images").First(&product, id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperrors.ProductNotFound(err)
+		}
+		return nil, apperrors.Internal("failed to find product", err)
+	}
+	return &product, nil
 }

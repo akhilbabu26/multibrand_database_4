@@ -13,7 +13,7 @@ type UserRepository interface {
 	WithTx(tx *gorm.DB) UserRepository
 
 	FindByEmail(email string) (*entities.User, error)
-	ListUsers(page, limit int) ([]*entities.User, int64, error)
+	ListUsers(search string, page, limit int) ([]*entities.User, int64, error)
 	BlockUser(id uint) error
 	UnblockUser(id uint) error
 
@@ -27,7 +27,7 @@ type UserRepository interface {
 // self-check lives in the usecase layer, not just the handler
 type UserUsecase interface {
 	GetUser(ctx context.Context, id uint) (*entities.User, error)
-	ListUsers(ctx context.Context, page, limit int) ([]*entities.User, int64, error)
+	ListUsers(ctx context.Context, search string, page, limit int) ([]*entities.User, int64, error)
 	BlockUser(ctx context.Context, requestingID uint, targetID uint) error
 	UnblockUser(ctx context.Context, id uint) error
 	DeleteUser(ctx context.Context, requestingID uint, targetID uint) error

@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/contracts"
+	"github.com/akhilbabu26/multibrand_database_4/internal/models/dto"
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/entities"
 	"github.com/akhilbabu26/multibrand_database_4/internal/repository/generic"
 	apperrors "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
@@ -40,38 +41,66 @@ func (r *orderRepository) FindByID(ctx context.Context, id uint) (*entities.Orde
 	return &order, nil
 }
 
-func (r *orderRepository) FindByUserID(userID uint, page, limit int) ([]*entities.Order, int64, error) {
+func (r *orderRepository) FindByUserID(userID uint, filter dto.OrderFilter) ([]*entities.Order, int64, error) {
 	var orders []*entities.Order
 	var total int64
 
 	query := r.DB().Model(&entities.Order{}).Where("user_id = ?", userID)
+
+	if filter.Status != "" {
+		query = query.Where("status = ?", filter.Status)
+	}
+	if filter.StartDate != nil {
+		query = query.Where("created_at >= ?", filter.StartDate)
+	}
+	if filter.EndDate != nil {
+		query = query.Where("created_at <= ?", filter.EndDate)
+	}
+	if filter.OrderID != "" {
+		query = query.Where("CAST(id AS TEXT) LIKE ?", "%"+filter.OrderID+"%")
+	}
+
 	query.Count(&total)
 
-	offset := (page - 1) * limit
+	offset := (filter.Page - 1) * filter.Limit
 	if err := query.Preload("Items", func(db *gorm.DB) *gorm.DB {
 		return db.Limit(100)
 	}).
 		Order("created_at DESC").
-		Offset(offset).Limit(limit).
+		Offset(offset).Limit(offset+filter.Limit).
 		Find(&orders).Error; err != nil {
 		return nil, 0, apperrors.Internal("failed to find orders", err)
 	}
 	return orders, total, nil
 }
 
-func (r *orderRepository) FindAll(page, limit int) ([]*entities.Order, int64, error) {
+func (r *orderRepository) FindAll(filter dto.OrderFilter) ([]*entities.Order, int64, error) {
 	var orders []*entities.Order
 	var total int64
 
 	query := r.DB().Model(&entities.Order{})
+
+	if filter.Status != "" {
+		query = query.Where("status = ?", filter.Status)
+	}
+	if filter.StartDate != nil {
+		query = query.Where("created_at >= ?", filter.StartDate)
+	}
+	if filter.EndDate != nil {
+		query = query.Where("created_at <= ?", filter.EndDate)
+	}
+	if filter.OrderID != "" {
+		query = query.Where("CAST(id AS TEXT) LIKE ?", "%"+filter.OrderID+"%")
+	}
+
 	query.Count(&total)
 
-	offset := (page - 1) * limit
+	offset := (filter.Page - 1) * filter.Limit
 	if err := query.Preload("Items", func(db *gorm.DB) *gorm.DB {
 		return db.Limit(100)
 	}).
 		Order("created_at DESC").
-		Offset(offset).Limit(limit).
+		Offset(offset).Limit(filter.Limit).
 		Find(&orders).Error; err != nil {
 		return nil, 0, apperrors.Internal("failed to find orders", err)
 	}

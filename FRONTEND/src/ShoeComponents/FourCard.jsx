@@ -4,20 +4,20 @@ import useFetch from '../Hooks/useFetch'
 import ProductCard from './ProductCard'
 
 const BRANDS = [
-  { label: 'ADIDAS',      type: 'Casual Retro Runner' },
-  { label: 'NIKE',        type: 'Lifestyle Basketball Sneaker' },
-  { label: 'PUMA',        type: 'Performance & Motorsport' },
-  { label: 'REEBOK',      type: 'Heritage Court & Fitness' },
-  { label: 'NEW BALANCE', type: 'Premium Heritage Runner' },
+  { label: 'ADIDAS',      value: 'Adidas' },
+  { label: 'NIKE',        value: 'Nike' },
+  { label: 'PUMA',        value: 'Puma' },
+  { label: 'REEBOK',      value: 'Reebok' },
+  { label: 'NEW BALANCE', value: 'New Balance' },
 ]
 
 function FourCard() {
   const [activeBrand, setActiveBrand] = useState(BRANDS[0])
   const navigate = useNavigate()
 
-  // Uses backend filter + limit instead of fetching everything
+  // Uses backend brand filter instead of type
   const { data, loading } = useFetch(
-    `/products?type=${encodeURIComponent(activeBrand.type)}&limit=4`
+    `/products?brand=${encodeURIComponent(activeBrand.value)}&limit=4`
   )
 
   return (
@@ -28,10 +28,10 @@ function FourCard() {
         <div className="flex flex-wrap justify-center gap-2 mb-6">
           {BRANDS.map((brand) => (
             <button
-              key={brand.type}
+              key={brand.value}
               onClick={() => setActiveBrand(brand)}
               className={`px-6 py-2 rounded-md text-sm font-medium transition-colors border
-                ${activeBrand.type === brand.type
+                ${activeBrand.value === brand.value
                   ? 'bg-black text-white border-black'
                   : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
                 }`}
@@ -68,7 +68,7 @@ function FourCard() {
 
         <button
           className="mt-8 px-6 py-2 bg-black text-white rounded-md hover:bg-gray-900 transition text-sm font-medium"
-          onClick={() => navigate(`/allshoe/${activeBrand.type}`)}
+          onClick={() => navigate(`/allshoe/${activeBrand.value}`)}
         >
           View All {activeBrand.label}
         </button>

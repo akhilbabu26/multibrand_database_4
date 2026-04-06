@@ -2,6 +2,7 @@ package handler
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/contracts"
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/dto"
@@ -17,6 +18,18 @@ type OrderHandler struct {
 
 func NewOrderHandler(usecase contracts.OrderUsecase) *OrderHandler {
 	return &OrderHandler{usecase: usecase}
+}
+
+// Helper to parse date from string (YYYY-MM-DD)
+func parseDate(d string) *time.Time {
+	if d == "" {
+		return nil
+	}
+	t, err := time.Parse("2006-01-02", d)
+	if err != nil {
+		return nil
+	}
+	return &t
 }
 
 // ─────────────────────────────────────────
@@ -139,7 +152,16 @@ func (h *OrderHandler) GetMyOrders(c *gin.Context) {
 		limit = 10
 	}
 
-	orders, total, err := h.usecase.GetMyOrders(c.Request.Context(), userID, page, limit)
+	filter := dto.OrderFilter{
+		Status:    entities.OrderStatus(c.Query("status")),
+		StartDate: parseDate(c.Query("start_date")),
+		EndDate:   parseDate(c.Query("end_date")),
+		OrderID:   c.Query("order_id"),
+		Page:      page,
+		Limit:     limit,
+	}
+
+	orders, total, err := h.usecase.GetMyOrders(c.Request.Context(), userID, filter)
 	if err != nil {
 		apperrors.HandleError(c, err)
 		return
@@ -168,7 +190,16 @@ func (h *OrderHandler) GetAllOrders(c *gin.Context) {
 		limit = 10
 	}
 
-	orders, total, err := h.usecase.GetAllOrders(c.Request.Context(), page, limit)
+	filter := dto.OrderFilter{
+		Status:    entities.OrderStatus(c.Query("status")),
+		StartDate: parseDate(c.Query("start_date")),
+		EndDate:   parseDate(c.Query("end_date")),
+		OrderID:   c.Query("order_id"),
+		Page:      page,
+		Limit:     limit,
+	}
+
+	orders, total, err := h.usecase.GetAllOrders(c.Request.Context(), filter)
 	if err != nil {
 		apperrors.HandleError(c, err)
 		return

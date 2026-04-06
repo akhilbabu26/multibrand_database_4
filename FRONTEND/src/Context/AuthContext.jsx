@@ -11,34 +11,40 @@ export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false); // Prevent multiple logout calls
 
   // Check if user is authenticated on mount
   useEffect(() => {
-  const checkAuth = async () => {
-    const token = localStorage.getItem('access_token');
+    const checkAuth = async () => {
+      const token = localStorage.getItem('access_token');
 
-    if (token) {
+      if (!token) {
+        setIsAuthenticated(false);
+        setLoading(false);
+        return;
+      }
+
       try {
         const userRes = await api.get('/user/profile');
         const user = unwrapData(userRes.data);
         localStorage.setItem('user', JSON.stringify(user));
         setCurrentUser(user);
         setIsAuthenticated(true);
-      } catch {
-        // Token invalid or expired
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
+      } catch (err) {
+        // Silent catch for initial check unless it's a real error
+        if (err.response?.status === 401) {
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('user');
+        }
         setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
       }
-    } else {
-      setIsAuthenticated(false);
-    }
-    setLoading(false);
-  };
+    };
 
-  checkAuth();
-}, []);
+    checkAuth();
+  }, []);
 
   const login = useCallback(async (email, password) => {
     setLoading(true);
@@ -95,16 +101,27 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(async () => {
+    // Prevent multiple simultaneous logout calls
+    if (isLoggingOut) {
+      console.warn('[Auth] Logout already in progress, ignoring duplicate call');
+      return;
+    }
+
+    setIsLoggingOut(true);
     try {
+      console.log('[Auth] Logout: Starting logout request...');
       await authService.logout();
+      console.log('[Auth] Logout: API call completed successfully');
     } catch (err) {
-      console.error('Logout error:', err);
+      console.error('[Auth] Logout error:', err.message || err);
     } finally {
       // Always clear state regardless of API success/failure
+      console.log('[Auth] Logout: Clearing auth state');
       setCurrentUser(null);
       setIsAuthenticated(false);
+      setIsLoggingOut(false);
     }
-  }, []);
+  }, [isLoggingOut]);
 
   const forgotPassword = useCallback(async (email) => {
     setLoading(true);
@@ -143,6 +160,7 @@ export function AuthProvider({ children }) {
     loading,
     error,
     setError,
+    isLoggingOut,
     login,
     logout,
     signup,
@@ -154,6 +172,7 @@ export function AuthProvider({ children }) {
     isAuthenticated,
     loading,
     error,
+    isLoggingOut,
     login,
     logout,
     signup,

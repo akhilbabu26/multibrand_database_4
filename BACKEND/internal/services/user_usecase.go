@@ -32,8 +32,8 @@ func (u *userUsecase) GetUser(ctx context.Context, userID uint) (*entities.User,
 // ADMIN USER MANAGEMENT
 // ─────────────────────────────────────────
 
-func (u *userUsecase) ListUsers(ctx context.Context, page, limit int) ([]*entities.User, int64, error) {
-	users, total, err := u.repo.ListUsers(page, limit)
+func (u *userUsecase) ListUsers(ctx context.Context, search string, page, limit int) ([]*entities.User, int64, error) {
+	users, total, err := u.repo.ListUsers(search, page, limit)
 	if err != nil {
 		return nil, 0, err
 	}

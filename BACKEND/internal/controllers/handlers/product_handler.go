@@ -119,6 +119,7 @@ func (h *ProductHandler) AdminListProducts(c *gin.Context) {
 
 	filters := dto.ProductFilter{
 		Search:   c.Query("search"),
+		Brand:    c.Query("brand"),
 		Type:     c.Query("type"),
 		Color:    c.Query("color"),
 		Size:     c.Query("size"),
@@ -178,6 +179,7 @@ func (h *ProductHandler) ListProducts(c *gin.Context) {
 
 	filters := dto.ProductFilter{
 		Search:   c.Query("search"),
+		Brand:    c.Query("brand"),
 		Type:     c.Query("type"),
 		Color:    c.Query("color"),
 		Size:     c.Query("size"),

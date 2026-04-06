@@ -59,6 +59,7 @@ func (u *productUsecase) uploadImages(ctx context.Context, fileHeaders []*multip
 func (u *productUsecase) CreateProduct(ctx context.Context, req dto.CreateProductRequest) error {
 	product := &entities.Product{
 		Name:               req.Name,
+		Brand:              req.Brand,	
 		Type:               req.Type,
 		Color:              req.Color,
 		Size:               req.Size,
@@ -99,6 +100,9 @@ func (u *productUsecase) UpdateProduct(ctx context.Context, id uint, req dto.Upd
 
 	if req.Name != nil {
 		product.Name = *req.Name
+	}
+	if req.Brand != nil {
+		product.Brand = *req.Brand
 	}
 	if req.Type != nil {
 		product.Type = *req.Type

@@ -44,18 +44,24 @@ func (r *userRepository) FindByEmail(email string) (*entities.User, error) {
 
 // FIX 3: separate count query from paged query so future filters
 // don't corrupt the total count used by the pagination bar
-func (r *userRepository) ListUsers(page, limit int) ([]*entities.User, int64, error) {
+func (r *userRepository) ListUsers(search string, page, limit int) ([]*entities.User, int64, error) {
 	var users []*entities.User
 	var total int64
 
+	query := r.DB().Model(&entities.User{})
+
+	if search != "" {
+		like := "%" + search + "%"
+		query = query.Where("name ILIKE ? OR email ILIKE ?", like, like)
+	}
+
 	// count on a fresh query — never shares state with the paged query
-	if err := r.DB().Model(&entities.User{}).Count(&total).Error; err != nil {
+	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, apperrors.Internal("failed to count users", err)
 	}
 
 	offset := (page - 1) * limit
-	if err := r.DB().Model(&entities.User{}).
-		Offset(offset).Limit(limit).Find(&users).Error; err != nil {
+	if err := query.Offset(offset).Limit(limit).Find(&users).Error; err != nil {
 		return nil, 0, apperrors.Internal("failed to list users", err)
 	}
 

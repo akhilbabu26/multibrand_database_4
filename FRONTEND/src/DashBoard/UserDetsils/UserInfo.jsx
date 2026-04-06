@@ -8,14 +8,16 @@ function UserInfo() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [search, setSearch] = useState("");
   const limit = 10;
 
-  const fetchUsers = useCallback(async (p = 1) => {
+  const fetchUsers = useCallback(async (p = 1, s = "") => {
     setLoading(true);
     try {
       const { users: rows, total: t, page: pg } = await userService.listUsers({
         page: p,
         limit,
+        search: s || undefined,
       });
       setUsers(rows);
       setTotal(t);
@@ -29,8 +31,11 @@ function UserInfo() {
   }, []);
 
   useEffect(() => {
-    fetchUsers(1);
-  }, [fetchUsers]);
+    const timer = setTimeout(() => {
+      fetchUsers(1, search);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search, fetchUsers]);
 
   const handleBlockToggle = async (user) => {
     try {
@@ -71,9 +76,25 @@ function UserInfo() {
   return (
     <div className="p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">User management</h1>
-          <p className="text-gray-600">Block, unblock, or remove customer accounts</p>
+        <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">User management</h1>
+            <p className="text-gray-600">Block, unblock, or remove customer accounts</p>
+          </div>
+          <div className="w-full md:w-80">
+             <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search user name or email..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                />
+                <svg className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+             </div>
+          </div>
         </div>
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -214,7 +235,7 @@ function UserInfo() {
             <button
               type="button"
               disabled={page <= 1}
-              onClick={() => fetchUsers(page - 1)}
+              onClick={() => fetchUsers(page - 1, search)}
               className="px-4 py-2 border rounded-lg disabled:opacity-40"
             >
               Previous
@@ -225,7 +246,7 @@ function UserInfo() {
             <button
               type="button"
               disabled={page * limit >= total}
-              onClick={() => fetchUsers(page + 1)}
+              onClick={() => fetchUsers(page + 1, search)}
               className="px-4 py-2 border rounded-lg disabled:opacity-40"
             >
               Next

@@ -5,6 +5,14 @@ import (
 
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/entities"
 )
+type OrderFilter struct {
+	Status    entities.OrderStatus
+	StartDate *time.Time
+	EndDate   *time.Time
+	OrderID   string
+	Page      int
+	Limit     int
+}
 
 type PlaceOrderRequest struct {
 	AddressID     uint                   `json:"address_id" validate:"required,gt=0"`

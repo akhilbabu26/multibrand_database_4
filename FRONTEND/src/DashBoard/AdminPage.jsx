@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import React from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, Home, Users, Package, ShoppingCart, LogOut } from "lucide-react";
+import { AuthContext } from "../Context/AuthContext";
 import logo from "../assets/unnamed.jpg"; 
 function AdminPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true) 
   const location = useLocation()
   const navigate = useNavigate()
+  const { logout, isLoggingOut } = useContext(AuthContext)
   const datas = JSON.parse(localStorage.getItem('user'))
 
   const navItems = [
@@ -18,19 +20,17 @@ function AdminPage() {
 
   const isActive = (path) => location.pathname.includes(path)
 
-  const handleLogout = () => {
-    // Clear user data from localStorage
-    localStorage.removeItem("user")
-    
-    // Clear any other related data
-    localStorage.removeItem("cart")
-    localStorage.removeItem("wishlist")
-    
-    // Redirect to login page
-    navigate("/login")
-    
-    // Optional: Show confirmation message
-    console.log("Admin logged out successfully")
+  const handleLogout = async () => {
+    try {
+      console.log('[AdminPage] Starting logout...')
+      await logout()
+      console.log('[AdminPage] Logout successful, navigating to login')
+      navigate("/login")
+    } catch (err) {
+      console.error('[AdminPage] Logout failed:', err)
+      // Still navigate to login even if API fails
+      navigate("/login")
+    }
   }
 
   const currentPage = navItems.find(item => isActive(item.path))?.label || "Dashboard"
@@ -98,13 +98,15 @@ function AdminPage() {
 
         {/* Logout - Subtle Red Accent */}
         <div className="p-4 border-t border-gray-800">
-          <div
+          <button
+            type="button"
+            disabled={isLoggingOut}
             onClick={handleLogout}
-            className="flex items-center gap-3 p-3 rounded-lg cursor-pointer text-gray-300 hover:bg-red-700/80 hover:text-white transition-colors duration-150"
+            className="flex w-full items-center gap-3 p-3 rounded-lg cursor-pointer text-gray-300 hover:bg-red-700/80 hover:text-white transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-gray-800"
           >
             <LogOut size={20} />
-            {sidebarOpen && <span className="text-sm">Logout</span>}
-          </div>
+            {sidebarOpen && <span className="text-sm">{isLoggingOut ? 'Logging out...' : 'Logout'}</span>}
+          </button>
         </div>
       </aside>
 

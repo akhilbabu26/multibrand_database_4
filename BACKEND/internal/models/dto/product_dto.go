@@ -9,6 +9,7 @@ import (
 
 type ProductFilter struct {
 	Search   string
+	Brand    string
 	Type     string
 	Color    string
 	Size     string
@@ -23,6 +24,7 @@ type ProductFilter struct {
 
 type CreateProductRequest struct {
 	Name               string                  `json:"name" form:"name" validate:"required,min=2"`
+	Brand              entities.Brand          `json:"brand" form:"brand" validate:"required"`
 	Type               string                  `json:"type" form:"type" validate:"required"`
 	Color              string                  `json:"color" form:"color" validate:"required"`
 	Size               entities.Size           `json:"size" form:"size" validate:"required,shoe_size"`
@@ -37,6 +39,7 @@ type CreateProductRequest struct {
 
 type UpdateProductRequest struct {
 	Name               *string                 `json:"name" form:"name"`
+	Brand              *entities.Brand         `json:"brand" form:"brand"`
 	Type               *string                 `json:"type" form:"type"`
 	Color              *string                 `json:"color" form:"color"`
 	Size               *entities.Size          `json:"size" form:"size" validate:"omitempty,shoe_size"`
@@ -53,6 +56,7 @@ type UpdateProductRequest struct {
 type CustomerProductResponse struct {
 	ID                 uint                    `json:"id"`
 	Name               string                  `json:"name"`
+	Brand              entities.Brand          `json:"brand"`
 	Type               string                  `json:"type"`
 	Color              string                  `json:"color"`
 	Size               entities.Size           `json:"size"`
@@ -62,11 +66,13 @@ type CustomerProductResponse struct {
 	SalePrice          float64                 `json:"sale_price"`
 	Images             []entities.ProductImage `json:"images"`
 	Description        string                  `json:"description"`
+	Stock              int                     `json:"stock"`
 }
 
 type AdminProductResponse struct {
 	ID                 uint                    `json:"id"`
 	Name               string                  `json:"name"`
+	Brand              entities.Brand          `json:"brand"`
 	Type               string                  `json:"type"`
 	Color              string                  `json:"color"`
 	Size               entities.Size           `json:"size"`
@@ -83,25 +89,33 @@ type AdminProductResponse struct {
 	UpdatedAt          time.Time               `json:"updated_at"`
 }
 func ToCustomerProductResponse(p *entities.Product) *CustomerProductResponse {
-return &CustomerProductResponse{
-ID:                 p.ID,
-Name:               p.Name,
-Type:               p.Type,
-Color:              p.Color,
-Size:               p.Size,
-Gender:             p.Gender,
-OriginalPrice:      p.OriginalPrice,
-DiscountPercentage: p.DiscountPercentage,
-SalePrice:          p.SalePrice,
-Images:             p.Images,
-Description:        p.Description,
-}
+	images := p.Images
+	if images == nil {
+		images = []entities.ProductImage{}
+	}
+
+	return &CustomerProductResponse{
+		ID:                 p.ID,
+		Name:               p.Name,
+		Brand:              p.Brand,
+		Type:               p.Type,
+		Color:              p.Color,
+		Size:               p.Size,
+		Gender:             p.Gender,
+		OriginalPrice:      p.OriginalPrice,
+		DiscountPercentage: p.DiscountPercentage,
+		SalePrice:          p.SalePrice,
+		Images:             images,
+		Description:        p.Description,
+		Stock:              p.Stock,
+	}
 }
 
 func ToAdminProductResponse(p *entities.Product) *AdminProductResponse {
 return &AdminProductResponse{
 ID:                 p.ID,
 Name:               p.Name,
+Brand:              p.Brand,		
 Type:               p.Type,
 Color:              p.Color,
 Size:               p.Size,

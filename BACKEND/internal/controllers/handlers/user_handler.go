@@ -43,6 +43,7 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 func (h *UserHandler) ListUsers(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	search := c.Query("search")
 
 	if page < 1 {
 		page = 1
@@ -51,7 +52,7 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 		limit = 10
 	}
 
-	users, total, err := h.usecase.ListUsers(c.Request.Context(), page, limit)
+	users, total, err := h.usecase.ListUsers(c.Request.Context(), search, page, limit)
 	if err != nil {
 		apperrors.HandleError(c, err)
 		return

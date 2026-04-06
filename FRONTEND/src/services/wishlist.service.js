@@ -1,24 +1,55 @@
 import api from './api';
 
-const wishlistService = {
+export const wishlistService = {
+    /**
+     * Get user's wishlist
+     */
     getWishlist: async () => {
-        const res = await api.get('/wishlist');
-        return res.data;
+        try {
+            const res = await api.get('/wishlist');
+            return res.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
     },
 
+    /**
+     * Add product to wishlist
+     */
     addToWishlist: async (productId) => {
-        const res = await api.post(`/wishlist/${productId}`);
-        return res.data;
+        try {
+            const id = encodeURIComponent(String(productId));
+            const res = await api.post(`/wishlist/${id}`);
+            return res.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
     },
 
+    /**
+     * Remove product from wishlist
+     */
     removeFromWishlist: async (productId) => {
-        const res = await api.delete(`/wishlist/${productId}`);
-        return res.data;
+        try {
+            const id = encodeURIComponent(String(productId));
+            const res = await api.delete(`/wishlist/${id}`);
+            return res.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
     },
 
+    /**
+     * Move from wishlist to cart
+     */
     moveToCart: async (productId) => {
-        const res = await api.post(`/wishlist/${productId}/move-to-cart`);
-        return res.data;
+        try {
+            const id = encodeURIComponent(String(productId));
+            const res = await api.post(`/wishlist/${id}/move-to-cart`);
+            return res.data;
+        } catch (error) {
+            throw error.response?.data || error;
+        }
     },
 };
 

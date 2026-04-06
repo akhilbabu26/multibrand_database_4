@@ -53,7 +53,12 @@ function CartPage() {
                   <div className="flex-1 flex flex-col justify-between">
                     <div>
                       <div className="flex justify-between items-start">
-                        <h3 className="text-lg font-bold text-gray-900">{product.name}</h3>
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900">{product.name}</h3>
+                          <p className="text-xs font-black uppercase tracking-widest text-gray-400">
+                             {product.brand} | Size {product.size}
+                          </p>
+                        </div>
                         <button
                           onClick={() => removeFromCart(product.product_id)}
                           className="text-gray-400 hover:text-red-500 transition p-1"

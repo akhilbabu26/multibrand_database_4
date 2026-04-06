@@ -4,97 +4,197 @@ import ShowProduct from "./ShowProduct"
 import { useNavigate } from "react-router-dom"
 
 function Brands() {
-    const [selectedBrand, setSelectedBrand] = useState("Casual Retro Runner")
-    const { data, loading, error} = useFetch("/admin/products?limit=100")
+    const [selectedBrand, setSelectedBrand] = useState("Adidas")
+    const [search, setSearch] = useState("")
+    const [color, setColor] = useState("")
+    const [gender, setGender] = useState("")
+    const [type, setType] = useState("")
+    
+    // Construct query parameters
+    const queryParams = new URLSearchParams()
+    if (selectedBrand) queryParams.append("brand", selectedBrand)
+    if (search) queryParams.append("search", search)
+    if (color) queryParams.append("color", color)
+    if (gender) queryParams.append("gender", gender)
+    if (type) queryParams.append("type", type)
+    queryParams.append("limit", "100")
+
+    const { data, loading, error } = useFetch(`/admin/products?${queryParams.toString()}`)
     const navigate = useNavigate()
 
     const [hiddenIds, setHiddenIds] = useState(() => new Set())
 
-    const brands = useMemo(
-        () => (data || []).filter((item) => item.type === selectedBrand && !hiddenIds.has(item.id)),
-        [data, selectedBrand, hiddenIds]
+    const filteredProducts = useMemo(
+        () => (data || []).filter((item) => !hiddenIds.has(item.id)),
+        [data, hiddenIds]
     )
 
-    const brandFilters = [
-        { name: "ADIDAS", type: "Casual Retro Runner" },
-        { name: "NIKE", type: "Lifestyle Basketball Sneaker" },
-        { name: "PUMA", type: "Performance & Motorsport" },
-        { name: "REEBOK", type: "Heritage Court & Fitness" },
-        { name: "NEW BALANCE", type: "Premium Heritage Runner" }
-    ]
+    const brandFilters = ["Adidas", "Nike", "Puma", "Reebok", "New Balance"]
 
     // Remove product from state immediately
     const handleProductDelete = (deletedProductId) => {
         setHiddenIds((prev) => new Set(prev).add(deletedProductId))
     }
 
-    if (loading) {
-        return <div>Loading...</div>
+    if (loading && !data) {
+        return (
+            <div className="flex justify-center items-center min-h-[400px]">
+                <div className="animate-spin h-8 w-8 border-4 border-gray-200 border-t-gray-900 rounded-full"></div>
+            </div>
+        )
     }
 
     if (error) {
-        return <div>Error loading products</div>
+        return (
+            <div className="p-8 text-center bg-red-50 text-red-600 rounded-2xl border border-red-100">
+                <p className="font-bold">Error loading products</p>
+                <p className="text-sm opacity-70">Please check your connection or try again later.</p>
+            </div>
+        )
     }
 
     return (
         <div className="bg-white">  
-            <div className="text-center mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
+            <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
                 
-                {/* Brand Filter Buttons */}
-                <div className="flex flex-wrap justify-center gap-4 mb-8">
-                    {brandFilters.map((brand) => (
-                        <button
-                            key={brand.type}
-                            onClick={() => setSelectedBrand(brand.type)}
-                            className={`inline-block rounded-md px-6 py-3 text-center font-medium border transition-colors duration-200 
-                                ${
-                                selectedBrand === brand.type
-                                    ? "bg-gray-900 text-white border-gray-900"
-                                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                            }`}
-                        >
-                            {brand.name}
-                        </button>
-                    ))}
+                {/* Search and Filters Bar */}
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {/* Search */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-gray-400">Search</label>
+                            <input 
+                                type="text"
+                                placeholder="Search products..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-gray-900 outline-none transition"
+                            />
+                        </div>
+
+                        {/* Gender */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-gray-400">Gender</label>
+                            <select 
+                                value={gender}
+                                onChange={(e) => setGender(e.target.value)}
+                                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-gray-900 outline-none transition"
+                            >
+                                <option value="">All Genders</option>
+                                <option value="men">Men</option>
+                                <option value="women">Women</option>
+                                <option value="unisex">Unisex</option>
+                                <option value="kids">Kids</option>
+                            </select>
+                        </div>
+
+                        {/* Type */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-gray-400">Type</label>
+                            <select 
+                                value={type}
+                                onChange={(e) => setType(e.target.value)}
+                                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-gray-900 outline-none transition"
+                            >
+                                <option value="">All Types</option>
+                                <option value="Lifestyle">Lifestyle</option>
+                                <option value="Running">Running</option>
+                                <option value="Basketball">Basketball</option>
+                                <option value="Training">Training</option>
+                            </select>
+                        </div>
+
+                        {/* Color */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-gray-400">Color</label>
+                            <input 
+                                type="text"
+                                placeholder="Filter by color..."
+                                value={color}
+                                onChange={(e) => setColor(e.target.value)}
+                                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-gray-900 outline-none transition"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Brand Filter Buttons */}
+                    <div className="mt-8 pt-8 border-t border-gray-100">
+                        <div className="flex flex-wrap justify-between items-center gap-4">
+                            <div className="flex flex-wrap gap-3">
+                                {brandFilters.map((brand) => (
+                                    <button
+                                        key={brand}
+                                        onClick={() => setSelectedBrand(brand === selectedBrand ? "" : brand)}
+                                        className={`px-6 py-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all duration-200 border
+                                            ${selectedBrand === brand
+                                                ? "bg-gray-900 text-white border-gray-900 scale-105 shadow-lg"
+                                                : "bg-white text-gray-600 border-gray-200 hover:border-gray-900"
+                                            }`}
+                                    >
+                                        {brand}
+                                    </button>
+                                ))}
+                            </div>
+                            
+                            <button 
+                                onClick={() => {
+                                    setSearch("")
+                                    setSelectedBrand("")
+                                    setGender("")
+                                    setColor("")
+                                    setType("")
+                                }}
+                                className="text-xs font-black uppercase tracking-widest text-red-500 hover:text-red-600 transition"
+                            >
+                                Reset All
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Products Table */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                     {/* Table Header */}
-                    <div className="hidden lg:grid grid-cols-12 px-6 py-4 bg-gray-100/50 border-b border-gray-200">
-                        <div className="col-span-4 font-medium text-gray-700 text-sm uppercase tracking-wide">Product</div>
-                        <div className="col-span-2 font-medium text-gray-700 text-sm uppercase tracking-wide text-center">Cost</div>
-                        <div className="col-span-2 font-medium text-gray-700 text-sm uppercase tracking-wide text-center">Selling</div>
-                        <div className="col-span-2 font-medium text-gray-700 text-sm uppercase tracking-wide text-center">Discount</div>
-                        <div className="col-span-2 font-medium text-gray-700 text-sm uppercase tracking-wide text-center">Actions</div>
+                    <div className="hidden lg:grid grid-cols-12 px-6 py-4 bg-gray-900 text-white border-b border-gray-800">
+                        <div className="col-span-4 font-black text-xs uppercase tracking-widest opacity-80">Product</div>
+                        <div className="col-span-2 font-black text-xs uppercase tracking-widest text-center opacity-80">Cost Price</div>
+                        <div className="col-span-2 font-black text-xs uppercase tracking-widest text-center opacity-80">Sale Price</div>
+                        <div className="col-span-2 font-black text-xs uppercase tracking-widest text-center opacity-80">Discount</div>
+                        <div className="col-span-2 font-black text-xs uppercase tracking-widest text-center opacity-80">Actions</div>
                     </div>
 
                     {/* Table Body */}
-                    <div className="divide-y divide-gray-200/60">
-                        {brands?.length > 0 ? (
-                            brands?.map(product => (
+                    <div className="divide-y divide-gray-100">
+                        {filteredProducts.length > 0 ? (
+                            filteredProducts.map(product => (
                                 <ShowProduct 
                                     key={product.id} 
                                     product={product}
-                                    onProductDelete={handleProductDelete}  // props passed to update delete product
+                                    onProductDelete={handleProductDelete}
                                 />
                             ))
                         ) : (
-                            <div className="text-center py-8 text-gray-500">
-                                No products found for selected brand
+                            <div className="text-center py-20 bg-gray-50/50">
+                                <p className="text-gray-400 font-medium">No products match your filters</p>
+                                <button 
+                                    onClick={() => setSelectedBrand("")}
+                                    className="mt-2 text-sm text-blue-600 font-bold hover:underline"
+                                >
+                                    Clear all filters
+                                </button>
                             </div>
                         )}
 
                         {/* Add Product Button */}
-                        <div className="p-4">
+                        <div className="p-6 bg-gray-50/50 border-t border-gray-100">
                             <button 
-                                className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-200 text-sm"
+                                className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 font-bold text-sm uppercase tracking-widest active:scale-95"
                                 onClick={() => navigate("/admin/addProduct")}
                             >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                 </svg>
-                                Add Product
+                                Add New Product
                             </button>
                         </div>
                     </div>

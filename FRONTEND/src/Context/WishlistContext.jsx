@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { AuthContext } from './AuthContext';
 import { CartContext } from './CartContext';
-import wishlistService from '../services/wishlistService';
+import wishlistService from '../services/wishlist.service';
 import toast from 'react-hot-toast';
 import { unwrapData, getErrorMessage } from '../lib/http';
 

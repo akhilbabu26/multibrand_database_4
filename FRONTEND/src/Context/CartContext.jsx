@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- context + provider pattern */
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import cartService from '../services/cart.service';
 import { AuthContext } from './AuthContext';
-import cartService from '../services/cartService';
 import toast from 'react-hot-toast';
 import { unwrapData, getErrorMessage } from '../lib/http';
 
