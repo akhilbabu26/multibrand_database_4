@@ -198,6 +198,15 @@ func (r *cartRepository) RemoveCartItem(cartID, productID uint) error {
 	return nil
 }
 
+func (r *cartRepository) IsInCart(userID, productID uint) bool {
+	var count int64
+	r.DB().Model(&entities.CartItem{}).
+		Joins("JOIN carts ON carts.id = cart_items.cart_id").
+		Where("carts.user_id = ? AND cart_items.product_id = ?", userID, productID).
+		Count(&count)
+	return count > 0
+}
+
 func (r *cartRepository) ClearCart(cartID uint) error {
 	if err := r.DB().Where("cart_id = ?", cartID).
 		Delete(&entities.CartItem{}).Error; err != nil {

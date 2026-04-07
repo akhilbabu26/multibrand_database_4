@@ -20,6 +20,7 @@ type CartRepository interface {
 	UpdateCartItem(cartID, productID uint, quantity int) error
 	RemoveCartItem(cartID, productID uint) error
 	ClearCart(cartID uint) error
+	IsInCart(userID, productID uint) bool
 }
 
 type CartUsecase interface {
@@ -29,4 +30,5 @@ type CartUsecase interface {
 	GetCart(ctx context.Context, userID uint) (*dto.CartResponse, error)
 	ClearCart(ctx context.Context, userID uint) error
 	AddToCartDirect(ctx context.Context, userID, productID uint) error
+	IsInCart(ctx context.Context, userID, productID uint) bool
 }

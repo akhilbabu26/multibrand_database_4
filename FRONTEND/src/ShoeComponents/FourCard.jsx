@@ -4,6 +4,7 @@ import useFetch from '../Hooks/useFetch'
 import ProductCard from './ProductCard'
 
 const BRANDS = [
+  { label: 'ALL',         value: 'all' },
   { label: 'ADIDAS',      value: 'Adidas' },
   { label: 'NIKE',        value: 'Nike' },
   { label: 'PUMA',        value: 'Puma' },
@@ -17,7 +18,9 @@ function FourCard() {
 
   // Uses backend brand filter instead of type
   const { data, loading } = useFetch(
-    `/products?brand=${encodeURIComponent(activeBrand.value)}&limit=4`
+    activeBrand.value === 'all' 
+      ? '/products'
+      : `/products?brand=${encodeURIComponent(activeBrand.value)}&limit=4`
   )
 
   return (
@@ -68,7 +71,7 @@ function FourCard() {
 
         <button
           className="mt-8 px-6 py-2 bg-black text-white rounded-md hover:bg-gray-900 transition text-sm font-medium"
-          onClick={() => navigate(`/allshoe/${activeBrand.value}`)}
+          onClick={() => navigate(activeBrand.value === 'all' ? '/allshoe/all' : `/allshoe/${activeBrand.value}`)}
         >
           View All {activeBrand.label}
         </button>

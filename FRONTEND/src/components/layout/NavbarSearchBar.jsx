@@ -202,11 +202,11 @@ export default function NavbarSearchBar({ onNavigate }) {
       <form
         role="search"
         onSubmit={onSubmit}
-        className="flex w-full items-stretch overflow-hidden rounded-lg border border-slate-300 bg-white shadow-sm ring-0 transition-[border-color,box-shadow] focus-within:border-indigo-500 focus-within:shadow-md focus-within:shadow-indigo-500/10 focus-within:ring-2 focus-within:ring-indigo-500/70 dark:border-slate-600 dark:bg-slate-900 dark:focus-within:border-indigo-400 dark:focus-within:ring-indigo-400/60"
+        className="flex w-full items-stretch overflow-hidden rounded-lg border border-slate-300 bg-white shadow-sm ring-0 transition-[border-color,box-shadow] focus-within:border-indigo-500 focus-within:shadow-md focus-within:shadow-indigo-500/10 focus-within:ring-2 focus-within:ring-indigo-500/70"
         aria-label="Site search"
       >
         {/* Department (Amazon-style left segment) */}
-        <div className="relative flex shrink-0 items-stretch border-r border-slate-200 dark:border-slate-600">
+        <div className="relative flex shrink-0 items-stretch border-r border-slate-200">
           <label htmlFor={`${listboxId}-dept`} className="sr-only">
             Search in category
           </label>
@@ -217,7 +217,7 @@ export default function NavbarSearchBar({ onNavigate }) {
               setDepartment(e.target.value);
               setActiveIndex(-1);
             }}
-            className="h-10 max-w-[min(9.5rem,32vw)] cursor-pointer appearance-none border-0 bg-slate-50 py-0 pl-3 pr-9 text-sm font-medium text-slate-700 outline-none transition hover:bg-slate-100 focus:ring-0 dark:bg-slate-800/90 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="h-10 max-w-[min(9.5rem,32vw)] cursor-pointer appearance-none border-0 bg-slate-50 py-0 pl-3 pr-9 text-sm font-medium text-slate-700 outline-none transition hover:bg-slate-100 focus:ring-0"
             aria-label="Search in category"
           >
             {SEARCH_DEPARTMENTS.map((d) => (
@@ -252,13 +252,13 @@ export default function NavbarSearchBar({ onNavigate }) {
           aria-activedescendant={
             activeIndex >= 0 ? `${listboxId}-opt-${activeIndex}` : undefined
           }
-          className="h-10 min-w-0 flex-1 border-0 bg-white px-3 text-sm text-slate-900 outline-none ring-0 placeholder:text-slate-400 focus:ring-0 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500"
+          className="h-10 min-w-0 flex-1 border-0 bg-white px-3 text-sm text-slate-900 outline-none ring-0 placeholder:text-slate-400 focus:ring-0"
         />
 
         {/* Submit */}
         <button
           type="submit"
-          className="flex h-10 shrink-0 items-center justify-center gap-1.5 border-l border-indigo-700/25 bg-indigo-600 px-4 text-sm font-semibold text-white transition hover:bg-indigo-700 focus:outline-none focus-visible:bg-indigo-700 dark:border-indigo-500/30"
+          className="flex h-10 shrink-0 items-center justify-center gap-1.5 border-l border-indigo-700/25 bg-indigo-600 px-4 text-sm font-semibold text-white transition hover:bg-indigo-700 focus:outline-none focus-visible:bg-indigo-700"
           aria-label="Search"
         >
           <Search className="h-4 w-4" strokeWidth={2.5} />
@@ -272,15 +272,15 @@ export default function NavbarSearchBar({ onNavigate }) {
           id={listboxId}
           role="listbox"
           ref={listRef}
-          className="absolute left-0 right-0 top-[calc(100%+4px)] z-[60] max-h-[min(20rem,50vh)] overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg shadow-slate-900/10 ring-1 ring-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 dark:ring-white/10"
+          className="absolute left-0 right-0 top-[calc(100%+4px)] z-[60] max-h-[min(20rem,50vh)] overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg shadow-slate-900/10 ring-1 ring-slate-900/5"
         >
           {loadingSuggest && suggestions.length === 0 && (
-            <div className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
+            <div className="px-4 py-3 text-sm text-slate-500">
               Searching…
             </div>
           )}
           {!loadingSuggest && suggestions.length === 0 && query.trim().length >= MIN_QUERY && (
-            <div className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">
+            <div className="px-4 py-3 text-sm text-slate-500">
               No suggestions — press Search to see results
             </div>
           )}
@@ -300,8 +300,8 @@ export default function NavbarSearchBar({ onNavigate }) {
                 aria-selected={selected}
                 className={`flex w-full items-center gap-3 px-3 py-2 text-left text-sm transition ${
                   selected
-                    ? 'bg-indigo-50 text-indigo-950 dark:bg-indigo-950/50 dark:text-indigo-100'
-                    : 'text-slate-800 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/80'
+                    ? 'bg-indigo-50 text-indigo-950'
+                    : 'text-slate-800 hover:bg-slate-50'
                 }`}
                 onMouseEnter={() => setActiveIndex(idx)}
                 onMouseDown={(e) => e.preventDefault()}
@@ -314,14 +314,14 @@ export default function NavbarSearchBar({ onNavigate }) {
                   <img
                     src={primary}
                     alt=""
-                    className="h-10 w-10 shrink-0 rounded-md bg-slate-100 object-cover dark:bg-slate-800"
+                    className="h-10 w-10 shrink-0 rounded-md bg-slate-100 object-cover"
                   />
                 ) : (
-                  <div className="h-10 w-10 shrink-0 rounded-md bg-slate-100 dark:bg-slate-800" />
+                  <div className="h-10 w-10 shrink-0 rounded-md bg-slate-100" />
                 )}
                 <span className="min-w-0 flex-1 truncate font-medium">{p.name}</span>
                 {p.sale_price != null && (
-                  <span className="shrink-0 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  <span className="shrink-0 text-xs font-semibold text-slate-500">
                     ₹{p.sale_price}
                   </span>
                 )}

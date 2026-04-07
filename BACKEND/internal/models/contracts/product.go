@@ -24,4 +24,7 @@ type ProductUsecase interface {
 
 	GetProduct(ctx context.Context, id uint) (*entities.Product, error)
 	ListProducts(ctx context.Context, filters dto.ProductFilter) ([]*entities.Product, int64, error)
+
+	GetProductForCustomer(ctx context.Context, id uint, userID *uint) (*dto.CustomerProductResponse, error)
+	ListProductsForCustomer(ctx context.Context, filters dto.ProductFilter, userID *uint) ([]*dto.CustomerProductResponse, int64, error)
 }

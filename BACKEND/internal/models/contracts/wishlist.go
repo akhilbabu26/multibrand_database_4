@@ -22,5 +22,6 @@ type WishlistUsecase interface {
 	AddToWishlist(ctx context.Context, userID, productID uint) error
 	RemoveFromWishlist(ctx context.Context, userID, productID uint) error
 	GetWishlist(ctx context.Context, userID uint) ([]*dto.WishlistResponse, error)
+	IsInWishlist(ctx context.Context, userID, productID uint) bool
 	MoveToCart(ctx context.Context, userID, productID uint) error
 }

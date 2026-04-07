@@ -52,6 +52,10 @@ func (u *wishlistUsecase) GetWishlist(ctx context.Context, userID uint) ([]*dto.
 	return u.repo.GetWishlistWithProducts(userID)
 }
 
+func (u *wishlistUsecase) IsInWishlist(ctx context.Context, userID, productID uint) bool {
+	return u.repo.IsInWishlist(userID, productID)
+}
+
 func (u *wishlistUsecase) MoveToCart(ctx context.Context, userID, productID uint) error {
 	if !u.repo.IsInWishlist(userID, productID) {
 		return apperrors.ProductNotInWishlist()

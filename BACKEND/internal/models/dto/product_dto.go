@@ -67,6 +67,8 @@ type CustomerProductResponse struct {
 	Images             []entities.ProductImage `json:"images"`
 	Description        string                  `json:"description"`
 	Stock              int                     `json:"stock"`
+	IsCart             bool                    `json:"is_cart"`
+	IsWishlist         bool                    `json:"is_wishlist"`
 }
 
 type AdminProductResponse struct {
@@ -88,6 +90,7 @@ type AdminProductResponse struct {
 	CreatedAt          time.Time               `json:"created_at"`
 	UpdatedAt          time.Time               `json:"updated_at"`
 }
+
 func ToCustomerProductResponse(p *entities.Product) *CustomerProductResponse {
 	images := p.Images
 	if images == nil {
@@ -108,27 +111,29 @@ func ToCustomerProductResponse(p *entities.Product) *CustomerProductResponse {
 		Images:             images,
 		Description:        p.Description,
 		Stock:              p.Stock,
+		IsCart:             false,
+		IsWishlist:         false,
 	}
 }
 
 func ToAdminProductResponse(p *entities.Product) *AdminProductResponse {
-return &AdminProductResponse{
-ID:                 p.ID,
-Name:               p.Name,
-Brand:              p.Brand,		
-Type:               p.Type,
-Color:              p.Color,
-Size:               p.Size,
-Gender:             p.Gender,
-CostPrice:          p.CostPrice,
-OriginalPrice:      p.OriginalPrice,
-DiscountPercentage: p.DiscountPercentage,
-SalePrice:          p.SalePrice,
-Images:             p.Images,
-Description:        p.Description,
-Stock:              p.Stock,
-IsActive:           p.IsActive,
-CreatedAt:          p.CreatedAt,
-UpdatedAt:          p.UpdatedAt,
-}
+	return &AdminProductResponse{
+		ID:                 p.ID,
+		Name:               p.Name,
+		Brand:              p.Brand,
+		Type:               p.Type,
+		Color:              p.Color,
+		Size:               p.Size,
+		Gender:             p.Gender,
+		CostPrice:          p.CostPrice,
+		OriginalPrice:      p.OriginalPrice,
+		DiscountPercentage: p.DiscountPercentage,
+		SalePrice:          p.SalePrice,
+		Images:             p.Images,
+		Description:        p.Description,
+		Stock:              p.Stock,
+		IsActive:           p.IsActive,
+		CreatedAt:          p.CreatedAt,
+		UpdatedAt:          p.UpdatedAt,
+	}
 }

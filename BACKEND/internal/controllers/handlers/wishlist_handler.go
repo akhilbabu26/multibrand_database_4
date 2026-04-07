@@ -78,3 +78,17 @@ func (h *WishlistHandler) MoveToCart(c *gin.Context) {
 
 	apperrors.HandleSuccess(c, "moved to cart successfully", nil)
 }
+
+func (h *WishlistHandler) CheckWishlistStatus(c *gin.Context) {
+	userID := c.MustGet("userID").(uint)
+	productID, err := strconv.Atoi(c.Param("productId"))
+	if err != nil {
+		apperrors.HandleError(c, apperrors.BadRequest("invalid product id", err))
+		return
+	}
+
+	isInWishlist := h.usecase.IsInWishlist(c.Request.Context(), userID, uint(productID))
+	apperrors.HandleSuccess(c, "wishlist status fetched", gin.H{
+		"is_wishlist": isInWishlist,
+	})
+}

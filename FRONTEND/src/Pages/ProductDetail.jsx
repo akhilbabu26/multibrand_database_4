@@ -60,10 +60,7 @@ function ProductDetailInner({ productId }) {
   // The size of the current product variant
   const currentProductSize = String(product?.size || "");
 
-  const isAddedToCart = cart.some(
-    (item) => String(item.product_id) === String(pid)
-  );
-  const isWishListed = isInWishlist(pid);
+  // Status calculations moved after loading/null checks to avoid TypeError
 
   if (loading) {
     return (
@@ -89,6 +86,12 @@ function ProductDetailInner({ productId }) {
       </div>
     );
   }
+
+  // Moved calculations here after null/loading checks
+  const isAddedToCart = product.is_cart || cart.some(
+    (item) => String(item.product_id) === String(pid)
+  );
+  const isWishListed = product.is_wishlist || isInWishlist(pid);
 
   const handleAddToCart = async () => {
     if (isAddedToCart) {

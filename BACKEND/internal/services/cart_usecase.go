@@ -116,6 +116,10 @@ func (u *cartUsecase) GetCart(ctx context.Context, userID uint) (*dto.CartRespon
 	return u.repo.GetCartWithProducts(userID)
 }
 
+func (u *cartUsecase) IsInCart(ctx context.Context, userID, productID uint) bool {
+	return u.repo.IsInCart(userID, productID)
+}
+
 func (u *cartUsecase) ClearCart(ctx context.Context, userID uint) error {
 	cart, err := u.repo.GetOrCreateCart(userID)
 	if err != nil {

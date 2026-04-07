@@ -8,8 +8,9 @@ export default function ProductCard({ product }) {
   const { toggleWishlist, isInWishlist } = useWishlist()
 
   // These two lines need updating since backend uses product_id in cart/wishlist items
-  const isAddedToCart = cart.some(item => item.product_id === product.id)
-  const isWishListed = isInWishlist(product.id)
+  // Use backend flags as primary source for initial load, then fallback to context checks
+  const isAddedToCart = product?.is_cart || cart.some(item => item.product_id === product?.id)
+  const isWishListed = product?.is_wishlist || isInWishlist(product?.id)
 
   
   const goToDetail = () => navigate(`/product/${product.id}`)

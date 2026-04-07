@@ -102,3 +102,17 @@ func (h *CartHandler) ClearCart(c *gin.Context) {
 
 	apperrors.HandleSuccess(c, "cart cleared", nil)
 }
+
+func (h *CartHandler) CheckCartStatus(c *gin.Context) {
+	userID := c.MustGet("userID").(uint)
+	productID, err := strconv.Atoi(c.Param("productId"))
+	if err != nil {
+		apperrors.HandleError(c, apperrors.BadRequest("invalid product id", err))
+		return
+	}
+
+	isInCart := h.usecase.IsInCart(c.Request.Context(), userID, uint(productID))
+	apperrors.HandleSuccess(c, "cart status fetched", gin.H{
+		"is_cart": isInCart,
+	})
+}

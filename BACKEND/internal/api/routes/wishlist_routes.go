@@ -13,6 +13,7 @@ func RegisterWishlistRoutes(r *gin.RouterGroup, app *bootstrap.App, h *handlers.
 	wishlist.Use(middleware.RoleMiddleware("user"))
 	{
 		wishlist.GET("", h.GetWishlist)
+		wishlist.GET("/status/:productId", h.CheckWishlistStatus)
 		wishlist.POST("/:productId", h.AddToWishlist)
 		wishlist.DELETE("/:productId", h.RemoveFromWishlist)
 		wishlist.POST("/:productId/move-to-cart", h.MoveToCart)

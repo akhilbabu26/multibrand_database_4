@@ -9,7 +9,9 @@ function ShowAll() {
 
   // Use backend filter with brand instead of type
   const { data, loading } = useFetch(
-    `/products?brand=${encodeURIComponent(brand)}`
+    brand === 'all'
+      ? '/products'
+      : `/products?brand=${encodeURIComponent(brand)}`
   )
 
   return (
@@ -22,7 +24,7 @@ function ShowAll() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
           <h1 className="text-4xl font-black text-white uppercase tracking-tighter">
-            {brand}
+            {brand === 'all' ? 'All Products' : brand}
           </h1>
         </div>
       </div>

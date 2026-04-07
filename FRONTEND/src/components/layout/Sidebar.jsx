@@ -48,32 +48,32 @@ export default function Sidebar({
 
       <aside
         id="app-sidebar"
-        className={`fixed left-0 top-16 z-40 flex h-[calc(100dvh-4rem)] w-[min(20rem,90vw)] flex-col border-r border-slate-200/80 bg-white shadow-2xl shadow-slate-900/10 transition-transform duration-300 ease-out dark:border-slate-800 dark:bg-slate-950 lg:w-80 lg:max-w-none lg:shadow-xl ${
+        className={`fixed left-0 top-16 z-40 flex h-[calc(100dvh-4rem)] w-[min(20rem,90vw)] flex-col border-r border-slate-200/80 bg-white shadow-2xl shadow-slate-900/10 transition-transform duration-300 ease-out lg:w-80 lg:max-w-none lg:shadow-xl ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 dark:border-slate-800">
+        <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             {avatarUrl ? (
               <img
                 src={avatarUrl}
                 alt=""
-                className="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-indigo-100 dark:ring-indigo-900/50"
+                className="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-indigo-100"
               />
             ) : (
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white ring-2 ring-indigo-100 dark:ring-indigo-900/50">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white ring-2 ring-indigo-100">
                 {requireAuth ? initials : '•'}
               </div>
             )}
             <div className="min-w-0">
-              <p className="truncate font-semibold text-slate-900 dark:text-white">
+              <p className="truncate font-semibold text-slate-900">
                 {requireAuth ? userName || 'Member' : 'Guest'}
               </p>
               {requireAuth && userEmail && (
-                <p className="truncate text-xs text-slate-500 dark:text-slate-400">{userEmail}</p>
+                <p className="truncate text-xs text-slate-500">{userEmail}</p>
               )}
               {!requireAuth && (
-                <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                <p className="truncate text-xs text-slate-500">
                   Sign in for cart & wishlist
                 </p>
               )}
@@ -82,7 +82,7 @@ export default function Sidebar({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-slate-200 lg:hidden"
+            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 lg:hidden"
             aria-label="Close menu"
           >
             <X className="h-5 w-5" strokeWidth={2} />
@@ -104,8 +104,8 @@ export default function Sidebar({
                   needsAuth && !requireAuth ? false : isActive && (needsAuth ? requireAuth : true);
                 return `${linkBase} ${
                   active
-                    ? 'bg-indigo-50 text-indigo-700 shadow-sm dark:bg-indigo-950/50 dark:text-indigo-300'
-                    : 'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900'
+                    ? 'bg-indigo-50 text-indigo-700 shadow-sm'
+                    : 'text-slate-700 hover:bg-slate-50'
                 }`;
               }}
             >
@@ -122,7 +122,7 @@ export default function Sidebar({
                 onClose();
                 onLogout();
               }}
-              className={`${linkBase} mt-auto text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40`}
+              className={`${linkBase} mt-auto text-rose-600 hover:bg-rose-50`}
             >
               <LogOut className="h-5 w-5 shrink-0" strokeWidth={2} />
               Logout
@@ -134,8 +134,8 @@ export default function Sidebar({
               className={({ isActive }) =>
                 `${linkBase} mt-auto ${
                   isActive
-                    ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300'
-                    : 'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-900'
+                    ? 'bg-indigo-50 text-indigo-700'
+                    : 'text-slate-700 hover:bg-slate-50'
                 }`
               }
             >

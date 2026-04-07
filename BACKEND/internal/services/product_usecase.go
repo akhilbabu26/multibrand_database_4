@@ -13,11 +13,23 @@ import (
 
 type productUsecase struct {
 	repo         contracts.ProductRepository
+	cartRepo     contracts.CartRepository
+	wishlistRepo contracts.WishlistRepository
 	imageService cloudinary.ImageService
 }
 
-func NewProductUsecase(repo contracts.ProductRepository, imageService cloudinary.ImageService) contracts.ProductUsecase {
-	return &productUsecase{repo: repo, imageService: imageService}
+func NewProductUsecase(
+	repo contracts.ProductRepository,
+	cartRepo contracts.CartRepository,
+	wishlistRepo contracts.WishlistRepository,
+	imageService cloudinary.ImageService,
+) contracts.ProductUsecase {
+	return &productUsecase{
+		repo:         repo,
+		cartRepo:     cartRepo,
+		wishlistRepo: wishlistRepo,
+		imageService: imageService,
+	}
 }
 
 // uploadImage opens, uploads, and closes a single file header.
@@ -171,4 +183,38 @@ func (u *productUsecase) GetProduct(ctx context.Context, id uint) (*entities.Pro
 
 func (u *productUsecase) ListProducts(ctx context.Context, filters dto.ProductFilter) ([]*entities.Product, int64, error) {
 	return u.repo.ListAll(ctx, filters)
+}
+
+func (u *productUsecase) GetProductForCustomer(ctx context.Context, id uint, userID *uint) (*dto.CustomerProductResponse, error) {
+	product, err := u.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := dto.ToCustomerProductResponse(product)
+	if userID != nil {
+		resp.IsCart = u.cartRepo.IsInCart(*userID, product.ID)
+		resp.IsWishlist = u.wishlistRepo.IsInWishlist(*userID, product.ID)
+	}
+
+	return resp, nil
+}
+
+func (u *productUsecase) ListProductsForCustomer(ctx context.Context, filters dto.ProductFilter, userID *uint) ([]*dto.CustomerProductResponse, int64, error) {
+	products, total, err := u.repo.ListAll(ctx, filters)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var response []*dto.CustomerProductResponse
+	for _, p := range products {
+		resp := dto.ToCustomerProductResponse(p)
+		if userID != nil {
+			resp.IsCart = u.cartRepo.IsInCart(*userID, p.ID)
+			resp.IsWishlist = u.wishlistRepo.IsInWishlist(*userID, p.ID)
+		}
+		response = append(response, resp)
+	}
+
+	return response, total, nil
 }

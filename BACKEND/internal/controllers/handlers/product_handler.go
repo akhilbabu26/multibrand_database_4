@@ -16,7 +16,9 @@ type ProductHandler struct {
 }
 
 func NewProductHandler(usecase contracts.ProductUsecase) *ProductHandler {
-	return &ProductHandler{usecase: usecase}
+	return &ProductHandler{
+		usecase: usecase,
+	}
 }
 
 // ─────────────────────────────────────────
@@ -162,13 +164,21 @@ func (h *ProductHandler) GetProduct(c *gin.Context) {
 		return
 	}
 
-	product, err := h.usecase.GetProduct(c.Request.Context(), uint(id))
+	// Extract user ID if authenticated
+	var userID *uint
+	if uID, exists := c.Get("userID"); exists {
+		if id, ok := uID.(uint); ok {
+			userID = &id
+		}
+	}
+
+	response, err := h.usecase.GetProductForCustomer(c.Request.Context(), uint(id), userID)
 	if err != nil {
 		apperrors.HandleError(c, err)
 		return
 	}
 
-	apperrors.HandleSuccess(c, "product fetched", dto.ToCustomerProductResponse(product))
+	apperrors.HandleSuccess(c, "product fetched", response)
 }
 
 func (h *ProductHandler) ListProducts(c *gin.Context) {
@@ -192,19 +202,22 @@ func (h *ProductHandler) ListProducts(c *gin.Context) {
 		Limit:    limit,
 	}
 
-	products, total, err := h.usecase.ListProducts(c.Request.Context(), filters)
+	// Extract user ID if authenticated
+	var userID *uint
+	if uID, exists := c.Get("userID"); exists {
+		if id, ok := uID.(uint); ok {
+			userID = &id
+		}
+	}
+
+	products, total, err := h.usecase.ListProductsForCustomer(c.Request.Context(), filters, userID)
 	if err != nil {
 		apperrors.HandleError(c, err)
 		return
 	}
 
-	var response []*dto.CustomerProductResponse
-	for _, p := range products {
-		response = append(response, dto.ToCustomerProductResponse(p))
-	}
-
 	apperrors.HandleSuccess(c, "products fetched", gin.H{
-		"products": response,
+		"products": products,
 		"total":    total,
 		"page":     page,
 		"limit":    limit,

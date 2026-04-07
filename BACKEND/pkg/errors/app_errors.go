@@ -1,6 +1,6 @@
 package errors
 
-import "net/http"
+import "github.com/akhilbabu26/multibrand_database_4/pkg/constant"
 
 // AppError is the central error type
 type AppError struct {
@@ -30,33 +30,33 @@ func New(code int, errorCode, message string, err error) *AppError {
 
 // COMMON ERROR BUILDERS
 func BadRequest(message string, err error) *AppError {
-	return New(http.StatusBadRequest, "BAD_REQUEST", message, err)
+	return New(constants.BADREQUEST, "BAD_REQUEST", message, err)
 }
 
 func Unauthorized(message string, err error) *AppError {
-	return New(http.StatusUnauthorized, "UNAUTHORIZED", message, err)
+	return New(constants.UNAUTHORIZED, "UNAUTHORIZED", message, err)
 }
 
 func Forbidden(message string, err error) *AppError {
-	return New(http.StatusForbidden, "FORBIDDEN", message, err)
+	return New(constants.NOTFOUND, "FORBIDDEN", message, err)
 }
 
 func NotFound(message string, err error) *AppError {
-	return New(http.StatusNotFound, "NOT_FOUND", message, err)
+	return New(constants.NOTFOUND, "NOT_FOUND", message, err)
 }
 
 func Conflict(message string, err error) *AppError {
-	return New(http.StatusConflict, "CONFLICT", message, err)
+	return New(constants.CONFLICT, "CONFLICT", message, err)
 }
 
 func Internal(message string, err error) *AppError {
-	return New(http.StatusInternalServerError, "INTERNAL_ERROR", message, err)
+	return New(constants.INTERNALSERVERERROR, "INTERNAL_ERROR", message, err)
 }
 
 // VALIDATION ERROR
 func ValidationFailed(details any) *AppError {
 	return &AppError{
-		Code:      http.StatusBadRequest,
+		Code:     constants.BADREQUEST,
 		Message:   "validation failed",
 		ErrorCode: "VALIDATION_ERROR",
 		Details:   details,

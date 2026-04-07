@@ -13,6 +13,7 @@ func RegisterCartRoutes(r *gin.RouterGroup, app *bootstrap.App, h *handlers.Cart
 	cart.Use(middleware.RoleMiddleware("user"))
 	{
 		cart.GET("", h.GetCart)
+		cart.GET("/status/:productId", h.CheckCartStatus)
 		cart.POST("/:productId", h.AddToCart)
 		cart.PATCH("/:productId", h.UpdateQuantity)
 		cart.DELETE("/:productId", h.RemoveFromCart)

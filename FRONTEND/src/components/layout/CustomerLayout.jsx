@@ -2,6 +2,7 @@ import { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../../Context/AuthContext';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
+import Footer from '../shared/Footer';
 import { useNavigate } from 'react-router-dom';
 
 /**
@@ -29,7 +30,7 @@ export default function CustomerLayout({ children }) {
   };
 
   return (
-    <div className="min-h-dvh bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-dvh bg-white flex flex-col">
       <Navbar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       <Sidebar
         open={sidebarOpen}
@@ -41,12 +42,13 @@ export default function CustomerLayout({ children }) {
         requireAuth={requireAuth}
       />
       <main
-        className={`transition-[margin] duration-300 ease-out ${
+        className={`flex-1 transition-[margin] duration-300 ease-out ${
           sidebarOpen ? 'lg:ml-80' : ''
         }`}
       >
         {children}
       </main>
+      <Footer />
     </div>
   );
 }

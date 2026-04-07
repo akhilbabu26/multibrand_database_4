@@ -41,17 +41,17 @@ func setupServer(app *bootstrap.App, appLogger *zap.Logger, jobCtx context.Conte
 		appLogger.Fatal("failed to initialize cloudinary service", zap.Error(err))
 	}
 	productBaseRepo := generic.NewGenericRepository[entities.Product](app.DB)
+	// repositories
 	pRepo := postgres.NewProductRepository(productBaseRepo)
-	pUsecase := usecases.NewProductUsecase(pRepo, imgService)
-	pHandler := handlers.NewProductHandler(pUsecase)
-
-	// wire cart
 	cRepo := postgres.NewCartRepository(app.DB)
+	wRepo := postgres.NewWishlistRepository(app.DB)
+
+	pUsecase := usecases.NewProductUsecase(pRepo, cRepo, wRepo, imgService)
+	pHandler := handlers.NewProductHandler(pUsecase)
 	cUsecase := usecases.NewCartUsecase(cRepo, pRepo)
 	cHandler := handlers.NewCartHandler(cUsecase)
 
 	// wire wishlist — depends on cartUsecase
-	wRepo := postgres.NewWishlistRepository(app.DB)
 	wUsecase := usecases.NewWishlistUsecase(wRepo, pRepo, cUsecase)
 	wHandler := handlers.NewWishlistHandler(wUsecase)
 
@@ -107,14 +107,14 @@ func setupServer(app *bootstrap.App, appLogger *zap.Logger, jobCtx context.Conte
 	api.Use(globalLimit)
 
 	// register routes
-	routes.RegisterAuthRoutes(api, app, auHandler)      // auth routes
-	routes.RegisterUserRoutes(api, app, uHandler)       // user routes
-	routes.RegisterProductRoutes(api, app, pHandler)    // product routes
-	routes.RegisterCartRoutes(api, app, cHandler)       // cart routes
-	routes.RegisterWishlistRoutes(api, app, wHandler)   // wishlist routes
-	routes.RegisterAddressRoutes(api, app, aHandler)    // address routes
-	routes.RegisterOrderRoutes(api, app, oHandler)      // order routes
-	routes.RegisterPaymentRoutes(api, app, payHandler)  // payment routes
+	routes.RegisterAuthRoutes(api, app, auHandler)     // auth routes
+	routes.RegisterUserRoutes(api, app, uHandler)      // user routes
+	routes.RegisterProductRoutes(api, app, pHandler)   // product routes
+	routes.RegisterCartRoutes(api, app, cHandler)      // cart routes
+	routes.RegisterWishlistRoutes(api, app, wHandler)  // wishlist routes
+	routes.RegisterAddressRoutes(api, app, aHandler)   // address routes
+	routes.RegisterOrderRoutes(api, app, oHandler)     // order routes
+	routes.RegisterPaymentRoutes(api, app, payHandler) // payment routes
 
 	return r
 }
