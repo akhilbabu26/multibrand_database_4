@@ -71,7 +71,7 @@ func (u *productUsecase) uploadImages(ctx context.Context, fileHeaders []*multip
 func (u *productUsecase) CreateProduct(ctx context.Context, req dto.CreateProductRequest) error {
 	product := &entities.Product{
 		Name:               req.Name,
-		Brand:              req.Brand,	
+		Brand:              req.Brand,
 		Type:               req.Type,
 		Color:              req.Color,
 		Size:               req.Size,
@@ -245,7 +245,25 @@ func (u *productUsecase) ListProductsForCustomer(ctx context.Context, filters dt
 	return response, total, nil
 }
 
+func (u *productUsecase) GetProductVariantsForCustomer(ctx context.Context, id uint, userID *uint) ([]*dto.CustomerProductResponse, error) {
+	variants, err := u.repo.GetProductVariants(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	var response []*dto.CustomerProductResponse
+	for _, p := range variants {
+		resp := dto.ToCustomerProductResponse(p)
+		if userID != nil {
+			resp.IsCart = u.cartRepo.IsInCart(*userID, p.ID)
+			resp.IsWishlist = u.wishlistRepo.IsInWishlist(*userID, p.ID)
+		}
+		response = append(response, resp)
+	}
+
+	return response, nil
+}
+
 func (u *productUsecase) GetProductMetadata(ctx context.Context) (*dto.ProductMetadataResponse, error) {
 	return u.repo.GetProductMetadata(ctx)
 }
-

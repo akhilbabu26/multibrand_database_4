@@ -21,14 +21,18 @@ export const productService = {
      * Expects FormData with image files
      */
     createProduct: async (formData) => {
-        return api.post('/admin/products', formData);
+        return api.post('/admin/products', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
     },
 
     /**
      * Update product (admin only)
      */
     updateProduct: async (id, formData) => {
-        return api.patch(`/admin/products/${id}`, formData);
+        return api.patch(`/admin/products/${id}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
     },
 
     /**

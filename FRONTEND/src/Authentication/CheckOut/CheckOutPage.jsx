@@ -10,7 +10,7 @@ import { PAYMENT_METHOD } from "../../constants/apiConstants";
 import { getErrorMessage } from "../../lib/http";
 
 const addressSchema = Yup.object({
-  full_name: Yup.string().min(2).required("Required"),
+  fullName: Yup.string().min(2).required("Required"),
   phone: Yup.string()
     .matches(/^[6-9]\d{9}$/, "10-digit Indian mobile")
     .required("Required"),
@@ -18,20 +18,20 @@ const addressSchema = Yup.object({
   landmark: Yup.string(),
   city: Yup.string().required("Required"),
   state: Yup.string().required("Required"),
-  pin_code: Yup.string()
+  pinCode: Yup.string()
     .matches(/^\d{6}$/, "6-digit PIN")
     .required("Required"),
 });
 
 const emptyAddress = {
-  full_name: "",
+  fullName: "",
   phone: "",
   street: "",
   landmark: "",
   city: "",
   state: "",
-  pin_code: "",
-  is_default: false,
+  pinCode: "",
+  isDefault: false,
 };
 
 function CheckOutPage() {
@@ -50,7 +50,7 @@ function CheckOutPage() {
 
   const displayItems = isBuyNow ? [buyNowItem] : cart;
   const displayTotal = isBuyNow 
-    ? (buyNowItem.sale_price * buyNowItem.quantity) 
+    ? (buyNowItem.salePrice * buyNowItem.quantity) 
     : cartTotal;
 
   const loadAddresses = useCallback(async () => {
@@ -61,7 +61,7 @@ function CheckOutPage() {
       setAddresses(arr);
       setSelectedId((prev) => {
         if (prev && arr.some((a) => a.id === prev)) return prev;
-        const def = arr.find((a) => a.is_default);
+        const def = arr.find((a) => a.isDefault);
         return def?.id ?? arr[0]?.id ?? null;
       });
       if (!arr.length) setShowNew(true);
@@ -79,15 +79,16 @@ function CheckOutPage() {
 
   const handleAddAddress = async (values, { resetForm }) => {
     try {
+      // Map camelCase form values to snake_case for backend
       await addressService.createAddress({
-        full_name: values.full_name,
+        full_name: values.fullName,
         phone: values.phone,
         street: values.street,
         landmark: values.landmark || "",
         city: values.city,
         state: values.state,
-        pin_code: values.pin_code,
-        is_default: values.is_default,
+        pin_code: values.pinCode,
+        is_default: values.isDefault,
       });
       toast.success("Address saved");
       resetForm();
@@ -112,7 +113,7 @@ function CheckOutPage() {
       let payload;
       if (isBuyNow) {
         payload = await orderService.buyNow(
-          buyNowItem.product_id,
+          buyNowItem.productId,
           buyNowItem.quantity,
           selectedId,
           paymentMethod
@@ -219,14 +220,14 @@ function CheckOutPage() {
                         className="mt-1.5 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <div>
-                        <p className="font-semibold text-gray-900">{a.full_name}</p>
+                        <p className="font-semibold text-gray-900">{a.fullName}</p>
                         <p className="text-sm text-gray-600">
                           {a.street}
                           {a.landmark ? `, ${a.landmark}` : ""}, {a.city}, {a.state}{" "}
-                          {a.pin_code}
+                          {a.pinCode}
                         </p>
                         <p className="text-sm text-gray-500">{a.phone}</p>
-                        {a.is_default && (
+                        {a.isDefault && (
                           <span className="text-xs font-bold text-indigo-600">Default</span>
                         )}
                       </div>
@@ -249,11 +250,11 @@ function CheckOutPage() {
                         Full name
                       </label>
                       <Field
-                        name="full_name"
+                        name="fullName"
                         className="w-full px-3 py-2 rounded-lg border border-gray-200"
                       />
-                      {errors.full_name && touched.full_name && (
-                        <p className="text-red-500 text-xs mt-1">{errors.full_name}</p>
+                      {errors.fullName && touched.fullName && (
+                        <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>
                       )}
                     </div>
                     <div>
@@ -273,11 +274,11 @@ function CheckOutPage() {
                         PIN code
                       </label>
                       <Field
-                        name="pin_code"
+                        name="pinCode"
                         className="w-full px-3 py-2 rounded-lg border border-gray-200"
                       />
-                      {errors.pin_code && touched.pin_code && (
-                        <p className="text-red-500 text-xs mt-1">{errors.pin_code}</p>
+                      {errors.pinCode && touched.pinCode && (
+                        <p className="text-red-500 text-xs mt-1">{errors.pinCode}</p>
                       )}
                     </div>
                     <div className="md:col-span-2">
@@ -326,7 +327,7 @@ function CheckOutPage() {
                       )}
                     </div>
                     <div className="md:col-span-2 flex items-center gap-2">
-                      <Field type="checkbox" name="is_default" className="rounded" />
+                      <Field type="checkbox" name="isDefault" className="rounded" />
                       <span className="text-sm text-gray-700">Set as default address</span>
                     </div>
                     <div className="md:col-span-2">
@@ -387,9 +388,9 @@ function CheckOutPage() {
           <h3 className="font-bold text-gray-900 mb-4">{isBuyNow ? "Direct Order" : "Summary"}</h3>
           <ul className="space-y-3 text-sm max-h-64 overflow-y-auto mb-4">
             {displayItems.map((item) => (
-              <li key={item.id ?? item.product_id} className="flex justify-between gap-4 group">
+              <li key={item.id ?? item.productId} className="flex justify-between gap-4 group">
                 <span 
-                  onClick={() => navigate(`/product/${item.product_id}`)}
+                  onClick={() => navigate(`/product/${item.productId}`)}
                   className="text-gray-700 truncate cursor-pointer group-hover:text-indigo-600 transition"
                   title="View details"
                 >

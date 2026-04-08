@@ -5,6 +5,7 @@ import (
 
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/contracts"
 	apperrors "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
+	"github.com/akhilbabu26/multibrand_database_4/pkg/validator"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,6 +30,11 @@ func (h *CartHandler) AddToCart(c *gin.Context) {
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		apperrors.HandleError(c, apperrors.BadRequest("invalid request payload", err))
+		return
+	}
+
+	if err := validator.ValidateStruct(req); err != nil {
+		apperrors.HandleError(c, apperrors.ValidationFailed(validator.FormatValidationError(err)))
 		return
 	}
 
@@ -69,6 +75,11 @@ func (h *CartHandler) UpdateQuantity(c *gin.Context) {
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		apperrors.HandleError(c, apperrors.BadRequest("invalid request payload", err))
+		return
+	}
+
+	if err := validator.ValidateStruct(req); err != nil {
+		apperrors.HandleError(c, apperrors.ValidationFailed(validator.FormatValidationError(err)))
 		return
 	}
 

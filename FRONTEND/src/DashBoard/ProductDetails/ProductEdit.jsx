@@ -102,14 +102,14 @@ function ProductEdit() {
     brand: product.brand || "Adidas",
     type: product.type || "Casual Retro Runner",
     color: product.color || "",
-    original_price: product.original_price || 0,
-    cost_price: product.cost_price || 0,
-    discount_percentage: product.discount_percentage || 0,
-    sale_price: product.sale_price || 0,
+    originalPrice: product.originalPrice || 0,
+    costPrice: product.costPrice || 0,
+    discountPercentage: product.discountPercentage || 0,
+    salePrice: product.salePrice || 0,
     size: product.size || "40",
     gender: product.gender || "unisex",
     stock: product.stock ?? 0,
-    is_active: product.is_active ?? true,
+    isActive: product.isActive ?? true,
     description: product.description || "",
   };
 
@@ -133,7 +133,7 @@ function ProductEdit() {
           setSubmitting(true);
           try {
             const fd = new FormData();
-            appendUpdateProduct(fd, { ...values, delete_image_ids: deletedImageIds }, selectedFiles.length ? selectedFiles : null);
+            appendUpdateProduct(fd, { ...values, deleteImageIds: deletedImageIds }, selectedFiles.length ? selectedFiles : null);
             await productService.updateProduct(product.id, fd);
             toast.success("Product updated");
             navigate("/admin/productInfo");
@@ -147,7 +147,7 @@ function ProductEdit() {
         {({ values, setFieldValue, isSubmitting }) => {
           const updateSalePrice = (orig, disc) => {
             const sale = Math.round(orig - (orig * disc) / 100);
-            setFieldValue("sale_price", sale);
+            setFieldValue("salePrice", sale);
           };
 
           return (
@@ -205,7 +205,7 @@ function ProductEdit() {
                   <Field as="textarea" name="description" rows="4" className="w-full px-4 py-3 border rounded-xl bg-gray-50" />
                 </div>
                 <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border">
-                  <Field type="checkbox" name="is_active" className="w-5 h-5 rounded text-indigo-600" />
+                  <Field type="checkbox" name="isActive" className="w-5 h-5 rounded text-indigo-600" />
                   <label className="text-sm font-bold text-gray-700">Active</label>
                 </div>
               </div>
@@ -216,37 +216,37 @@ function ProductEdit() {
                   <div className="grid grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-2">Cost (₹)</label>
-                      <Field name="cost_price" type="number" className="w-full px-4 py-3 border rounded-xl bg-gray-50" />
+                      <Field name="costPrice" type="number" className="w-full px-4 py-3 border rounded-xl bg-gray-50" />
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-2">Original (₹)</label>
                       <Field
-                        name="original_price"
+                        name="originalPrice"
                         type="number"
                         className="w-full px-4 py-3 border rounded-xl bg-gray-50"
                         onChange={(e) => {
                           const val = parseFloat(e.target.value) || 0;
-                          setFieldValue("original_price", val);
-                          updateSalePrice(val, values.discount_percentage);
+                          setFieldValue("originalPrice", val);
+                          updateSalePrice(val, values.discountPercentage);
                         }}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-2">Discount %</label>
                       <Field
-                        name="discount_percentage"
+                        name="discountPercentage"
                         type="number"
                         className="w-full px-4 py-3 border rounded-xl bg-gray-50"
                         onChange={(e) => {
                           const val = parseFloat(e.target.value) || 0;
-                          setFieldValue("discount_percentage", val);
-                          updateSalePrice(values.original_price, val);
+                          setFieldValue("discountPercentage", val);
+                          updateSalePrice(values.originalPrice, val);
                         }}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-indigo-600 mb-2">Sale (₹)</label>
-                      <Field name="sale_price" type="number" className="w-full px-4 py-3 border rounded-xl bg-indigo-50 font-bold" readOnly />
+                      <Field name="salePrice" type="number" className="w-full px-4 py-3 border rounded-xl bg-indigo-50 font-bold" readOnly />
                     </div>
                   </div>
                 </div>
@@ -292,7 +292,7 @@ function ProductEdit() {
                       .filter(img => !deletedImageIds.includes(img.id))
                       .map((img) => (
                         <div key={img.id} className="relative aspect-square rounded-2xl overflow-hidden border group">
-                          <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                          <img src={img.imageUrl} alt="" className="w-full h-full object-cover" />
                           
                           {/* Remove Button for Live Images */}
                           <button

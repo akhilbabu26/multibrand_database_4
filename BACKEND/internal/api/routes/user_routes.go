@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterUserRoutes(r *gin.RouterGroup, app *bootstrap.App, h *handlers.UserHandler){
-	
+func RegisterUserRoutes(r *gin.RouterGroup, app *bootstrap.App, h *handlers.UserHandler) {
+
 	// user protected routes
 	user := r.Group("/user")
 	user.Use(middleware.AuthMiddleware(app.Config.JWT.Secret, app.TokenStore))
@@ -20,7 +20,7 @@ func RegisterUserRoutes(r *gin.RouterGroup, app *bootstrap.App, h *handlers.User
 	admin := r.Group("/admin")
 	admin.Use(middleware.AuthMiddleware(app.Config.JWT.Secret, app.TokenStore))
 	admin.Use(middleware.RoleMiddleware("admin"))
-	{	
+	{
 		admin.GET("/profile", h.GetProfile)
 
 		// user management

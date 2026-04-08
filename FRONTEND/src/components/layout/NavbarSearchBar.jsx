@@ -285,9 +285,9 @@ export default function NavbarSearchBar({ onNavigate }) {
           )}
           {suggestions.map((p, idx) => {
             const primary =
-              p.images?.find((img) => img.is_primary)?.image_url ||
-              p.images?.[0]?.image_url ||
-              p.image_url;
+              p.images?.find((img) => img.isPrimary)?.imageUrl ||
+              p.images?.[0]?.imageUrl ||
+              p.imageUrl;
             const selected = idx === activeIndex;
             return (
               <button
@@ -319,9 +319,9 @@ export default function NavbarSearchBar({ onNavigate }) {
                   <div className="h-10 w-10 shrink-0 rounded-md bg-slate-100" />
                 )}
                 <span className="min-w-0 flex-1 truncate font-medium">{p.name}</span>
-                {p.sale_price != null && (
+                {p.salePrice != null && (
                   <span className="shrink-0 text-xs font-semibold text-slate-500">
-                    ₹{p.sale_price}
+                    ₹{p.salePrice}
                   </span>
                 )}
               </button>

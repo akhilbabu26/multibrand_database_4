@@ -25,10 +25,10 @@ export const authService = {
      */
     login: async (email, password) => {
         const data = await api.post('/auth/login', { email, password });
-        const { access_token, refresh_token } = data;
+        const { accessToken, refreshToken } = data;
 
-        localStorage.setItem('access_token', access_token);
-        localStorage.setItem('refresh_token', refresh_token);
+        localStorage.setItem('access_token', accessToken);
+        localStorage.setItem('refresh_token', refreshToken);
 
         // Fetch user profile after login
         const user = await api.get('/user/profile');

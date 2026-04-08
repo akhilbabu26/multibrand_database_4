@@ -103,7 +103,7 @@ func FormatValidationError(err error) *ValidationErrors {
 		case "gender":
 			ve.Add(field, "must be one of: men, women, unisex, kids")
 		case "omitempty":
-			
+
 		default:
 			ve.Add(field, fmt.Sprintf("invalid value for %s", field))
 		}

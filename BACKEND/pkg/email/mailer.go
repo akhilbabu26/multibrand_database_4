@@ -10,7 +10,7 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-type Mailer struct{
+type Mailer struct {
 	cfg *config.SMTPConfig
 }
 
@@ -23,7 +23,7 @@ func (m *Mailer) SendOTP(toEmail, name, otp string) error {
 	subject := "Verify your Multibrand account"
 
 	body, err := createOTPEmail(name, otp)
-	if err != nil{
+	if err != nil {
 		return fmt.Errorf("failed to build email body: %w", err)
 	}
 
@@ -99,7 +99,7 @@ func createOTPEmail(name, otp string) (string, error) {
 	return buf.String(), nil
 }
 
-//--- reset password mail format
+// --- reset password mail format
 func (m *Mailer) SendResetOTP(toEmail, name, otp string) error {
 	subject := "Reset your Multibrand password"
 	body, err := buildResetOTPEmail(name, otp)

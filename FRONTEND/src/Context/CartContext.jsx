@@ -5,6 +5,7 @@ import { AuthContext } from './AuthContext';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../lib/http';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const CartContext = createContext();
 
 export function CartProvider({ children }) {
@@ -31,8 +32,8 @@ export function CartProvider({ children }) {
     try {
       const cartData = await cartService.getCart();
       setCart(cartData?.items || []);
-      setCartTotal(cartData?.total_price || 0);
-      setCartCount(cartData?.total_items || 0);
+      setCartTotal(cartData?.totalPrice || 0);
+      setCartCount(cartData?.totalItems || 0);
     } catch (e) {
       setCart([]);
       setCartTotal(0);
@@ -60,7 +61,7 @@ export function CartProvider({ children }) {
       toast.error("Please login as a customer to add items to cart");
       return false;
     }
-    const pid = product?.id ?? product?.product_id;
+    const pid = product?.id ?? product?.productId;
     if (!pid) {
       toast.error("Invalid product");
       return false;
@@ -74,9 +75,8 @@ export function CartProvider({ children }) {
       return true;
     } catch (err) {
       toast.error(getErrorMessage(err) || "Failed to add to cart");
-      return false;
     }
-  }, [isCustomer, fetchCart]);
+  }, [isCustomer, fetchCart, queryClient]);
 
   const removeFromCart = useCallback(async (productId) => {
     if (!isCustomer) return;
@@ -92,7 +92,7 @@ export function CartProvider({ children }) {
     } catch {
       toast.error("Failed to remove item");
     }
-  }, [isCustomer, fetchCart]);
+  }, [isCustomer, fetchCart, queryClient]);
 
   const updateQuantity = useCallback(async (productId, quantity) => {
     if (!isCustomer) return;
@@ -116,7 +116,7 @@ export function CartProvider({ children }) {
     } catch {
       toast.error("Failed to update quantity");
     }
-  }, [isCustomer, fetchCart]);
+  }, [isCustomer, fetchCart, queryClient]);
 
   const clearCart = useCallback(async () => {
     if (!isCustomer) return;
@@ -130,7 +130,7 @@ export function CartProvider({ children }) {
     } catch {
       toast.error("Failed to clear cart");
     }
-  }, [isCustomer]);
+  }, [isCustomer, queryClient]);
 
   const value = {
     cart,

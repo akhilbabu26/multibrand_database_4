@@ -60,9 +60,9 @@ function OrdersInfo() {
     return () => clearTimeout(timer);
   }, [load, status, startDate, endDate, orderId]);
 
-  const updateOrderStatus = async (orderId, newStatus) => {
+  const updateOrderStatus = async (targetOrderId, newStatus) => {
     try {
-      await orderService.updateOrderStatus(orderId, newStatus);
+      await orderService.updateOrderStatus(targetOrderId, newStatus);
       toast.success("Status updated");
       load(page, status, startDate, endDate, orderId);
     } catch (e) {
@@ -70,10 +70,10 @@ function OrdersInfo() {
     }
   };
 
-  const adminCancel = async (orderId) => {
+  const adminCancel = async (targetOrderId) => {
     if (!window.confirm("Cancel this order? Stock will be restored.")) return;
     try {
-      await orderService.adminCancelOrder(orderId);
+      await orderService.adminCancelOrder(targetOrderId);
       toast.success("Order cancelled");
       load(page, status, startDate, endDate, orderId);
     } catch (e) {
@@ -222,8 +222,8 @@ function OrdersInfo() {
                   <div className="col-span-2">
                     <p className="font-medium text-gray-900">#{order.id}</p>
                     <p className="text-[10px] text-gray-400 uppercase font-black">
-                      {order.created_at
-                        ? new Date(order.created_at).toLocaleDateString()
+                      {order.createdAt
+                        ? new Date(order.createdAt).toLocaleDateString()
                         : ""}
                     </p>
                     <span
@@ -233,7 +233,7 @@ function OrdersInfo() {
                     </span>
                   </div>
                   <div className="col-span-3 text-sm">
-                    <p className="font-medium">{order.address?.full_name}</p>
+                    <p className="font-medium">{order.address?.fullName}</p>
                     <p className="text-gray-500">{order.address?.phone}</p>
                     <p className="text-gray-500 truncate">
                       {order.address?.city}, {order.address?.state}
@@ -243,7 +243,7 @@ function OrdersInfo() {
                     {(order.items || []).length} items
                   </div>
                   <div className="col-span-2 text-center font-bold">
-                    ₹{Number(order.total_amount).toFixed(2)}
+                    ₹{Number(order.totalAmount).toFixed(2)}
                   </div>
                   <div className="col-span-3 flex flex-col gap-2 items-center">
                     {nextStatuses(order.status).length > 0 && (
@@ -287,7 +287,7 @@ function OrdersInfo() {
                   <div>
                     <span className="font-bold text-gray-900 block">Order #{order.id}</span>
                     <span className="text-[10px] text-gray-400 uppercase font-black">
-                      {order.created_at ? new Date(order.created_at).toLocaleDateString() : ""}
+                      {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : ""}
                     </span>
                   </div>
                   <span className={`text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider border ${getStatusColor(order.status)}`}>
@@ -296,9 +296,9 @@ function OrdersInfo() {
                 </div>
                 
                 <div className="text-sm bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <p className="font-bold">{order.address?.full_name}</p>
+                  <p className="font-bold">{order.address?.fullName}</p>
                   <p className="text-gray-500 text-xs truncate">{order.address?.city}, {order.address?.state}</p>
-                  <p className="mt-2 font-black text-gray-900">₹{Number(order.total_amount).toFixed(2)}</p>
+                  <p className="mt-2 font-black text-gray-900">₹{Number(order.totalAmount).toFixed(2)}</p>
                 </div>
 
                 <div className="flex flex-col gap-2">

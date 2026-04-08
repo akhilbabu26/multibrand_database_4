@@ -8,7 +8,7 @@ import (
 )
 
 func RegisterAuthRoutes(r *gin.RouterGroup, app *bootstrap.App, h *handlers.AuthHandler) {
-	
+
 	// Apply brute-force protection (15 requests per minute)
 	auth := r.Group("/auth")
 	bruteForceBlocker := middleware.RateLimiter(app.Redis, "100-M")

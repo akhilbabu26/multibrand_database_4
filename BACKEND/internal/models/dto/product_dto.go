@@ -101,7 +101,6 @@ type ProductMetadataResponse struct {
 	Genders []string `json:"genders"`
 }
 
-
 func ToCustomerProductResponse(p *entities.Product) *CustomerProductResponse {
 	images := p.Images
 	if images == nil {

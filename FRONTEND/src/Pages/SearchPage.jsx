@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { FiSearch } from "react-icons/fi"
-import { useNavigate, useSearchParams } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { useProductFilters } from "../Hooks/useProductFilters"
 import productService from "../services/product.service"
 import ProductCard from "../ShoeComponents/ProductCard"
@@ -10,17 +10,16 @@ import { Menu, X } from "lucide-react"
 
 export default function SearchPage() {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
   const { filters, setFilter, setFilters, clearFilters, apiFilters } = useProductFilters()
   const [showFilters, setShowFilters] = useState(false)
   const [searchInput, setSearchInput] = useState(filters.q || "")
 
   // Sync local search input with unified 'q' param if it changes from outside
-  useEffect(() => {
-    if (filters.q !== searchInput) {
-      setSearchInput(filters.q)
-    }
-  }, [filters.q])
+  const [prevQ, setPrevQ] = useState(filters.q)
+  if (filters.q !== prevQ) {
+    setPrevQ(filters.q)
+    setSearchInput(filters.q)
+  }
 
   // Debounce search input update to URL
   useEffect(() => {
@@ -53,19 +52,7 @@ export default function SearchPage() {
     queryKey: ["products", apiFilters],
     queryFn: async () => {
       console.log('[SearchPage] Fetching products with API filters:', apiFilters)
-      const response = await productService.getProducts({
-        search: apiFilters.search || undefined,
-        brand: apiFilters.brand || undefined,
-        type: apiFilters.type || undefined,
-        gender: apiFilters.gender || undefined,
-        color: apiFilters.color || undefined,
-        size: apiFilters.size || undefined,
-        min_price: apiFilters.min_price || undefined,
-        max_price: apiFilters.max_price || undefined,
-        in_stock: apiFilters.in_stock || undefined,
-        page: apiFilters.page,
-        limit: apiFilters.limit,
-      })
+      const response = await productService.getProducts(apiFilters)
       console.log('[SearchPage] API Response:', response)
       return response
     },

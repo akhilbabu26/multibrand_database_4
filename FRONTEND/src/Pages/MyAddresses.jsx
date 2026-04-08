@@ -8,7 +8,7 @@ import { getErrorMessage } from "../lib/http";
 import { buildAddressUpdateBody } from "../lib/addressPayload";
 
 const schema = Yup.object({
-  full_name: Yup.string().min(2).required("Required"),
+  fullName: Yup.string().min(2).required("Required"),
   phone: Yup.string()
     .matches(/^[6-9]\d{9}$/, "10-digit mobile")
     .required("Required"),
@@ -16,20 +16,20 @@ const schema = Yup.object({
   landmark: Yup.string(),
   city: Yup.string().required("Required"),
   state: Yup.string().required("Required"),
-  pin_code: Yup.string()
+  pinCode: Yup.string()
     .matches(/^\d{6}$/, "6-digit PIN")
     .required("Required"),
 });
 
 const empty = {
-  full_name: "",
+  fullName: "",
   phone: "",
   street: "",
   landmark: "",
   city: "",
   state: "",
-  pin_code: "",
-  is_default: false,
+  pinCode: "",
+  isDefault: false,
 };
 
 export default function MyAddresses() {
@@ -100,25 +100,25 @@ export default function MyAddresses() {
           {list.map((a) => (
             <li key={a.id} className="border border-gray-100 bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition">
               <div>
-                <p className="font-semibold">{a.full_name}</p>
+                <p className="font-semibold">{a.fullName}</p>
                 <p className="text-sm text-gray-600">{a.phone}</p>
                 <p className="text-sm text-gray-700 mt-1">
                   {a.street}
                   {a.landmark ? `, ${a.landmark}` : ""}
                 </p>
                 <p className="text-sm text-gray-700">
-                  {a.city}, {a.state} {a.pin_code}
+                  {a.city}, {a.state} {a.pinCode}
                 </p>
-                {a.is_default && (
+                {a.isDefault && (
                   <span className="text-xs font-bold text-indigo-600">Default</span>
                 )}
               </div>
-              <div className="flex flex-wrap gap-2">
-                {!a.is_default && (
+              <div className="flex flex-wrap gap-2 mt-4">
+                {!a.isDefault && (
                   <button
                     type="button"
                     onClick={() => onDefault(a.id)}
-                    className="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50"
+                    className="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 transition"
                   >
                     Set default
                   </button>
@@ -126,14 +126,14 @@ export default function MyAddresses() {
                 <button
                   type="button"
                   onClick={() => setEditing(a)}
-                  className="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50"
+                  className="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 transition"
                 >
                   Edit
                 </button>
                 <button
                   type="button"
                   onClick={() => onDelete(a.id)}
-                  className="px-3 py-1.5 text-sm text-red-600 border border-red-100 rounded-lg hover:bg-red-50"
+                  className="px-3 py-1.5 text-sm text-red-600 border border-red-100 rounded-lg hover:bg-red-50 transition"
                 >
                   Delete
                 </button>
@@ -149,14 +149,14 @@ export default function MyAddresses() {
         initialValues={
           editing
             ? {
-                full_name: editing.full_name,
+                fullName: editing.fullName,
                 phone: editing.phone,
                 street: editing.street,
                 landmark: editing.landmark || "",
                 city: editing.city,
                 state: editing.state,
-                pin_code: editing.pin_code,
-                is_default: editing.is_default,
+                pinCode: editing.pinCode,
+                isDefault: editing.isDefault,
               }
             : empty
         }
@@ -172,8 +172,14 @@ export default function MyAddresses() {
               setEditing(null);
             } else {
               await addressService.createAddress({
-                ...values,
-                landmark: values.landmark ?? "",
+                full_name: values.fullName,
+                phone: values.phone,
+                street: values.street,
+                landmark: values.landmark || "",
+                city: values.city,
+                state: values.state,
+                pin_code: values.pinCode,
+                is_default: Boolean(values.isDefault),
               });
               toast.success("Address added");
               resetForm();
@@ -188,27 +194,27 @@ export default function MyAddresses() {
           <Form className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white border rounded-2xl p-6">
             <div className="md:col-span-2">
               <label className="text-xs font-bold text-gray-500 uppercase">Full name</label>
-              <Field name="full_name" className="mt-1 w-full border rounded-lg px-3 py-2" />
-              {errors.full_name && touched.full_name && (
-                <p className="text-red-500 text-xs">{errors.full_name}</p>
+              <Field name="fullName" className="mt-1 w-full border rounded-lg px-3 py-2" />
+              {errors.fullName && touched.fullName && (
+                <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>
               )}
             </div>
             <div>
               <label className="text-xs font-bold text-gray-500 uppercase">Phone</label>
               <Field name="phone" className="mt-1 w-full border rounded-lg px-3 py-2" />
-              {errors.phone && touched.phone && <p className="text-red-500 text-xs">{errors.phone}</p>}
+              {errors.phone && touched.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
             </div>
             <div>
               <label className="text-xs font-bold text-gray-500 uppercase">PIN</label>
-              <Field name="pin_code" className="mt-1 w-full border rounded-lg px-3 py-2" />
-              {errors.pin_code && touched.pin_code && (
-                <p className="text-red-500 text-xs">{errors.pin_code}</p>
+              <Field name="pinCode" className="mt-1 w-full border rounded-lg px-3 py-2" />
+              {errors.pinCode && touched.pinCode && (
+                <p className="text-red-500 text-xs mt-1">{errors.pinCode}</p>
               )}
             </div>
             <div className="md:col-span-2">
               <label className="text-xs font-bold text-gray-500 uppercase">Street</label>
               <Field name="street" className="mt-1 w-full border rounded-lg px-3 py-2" />
-              {errors.street && touched.street && <p className="text-red-500 text-xs">{errors.street}</p>}
+              {errors.street && touched.street && <p className="text-red-500 text-xs mt-1">{errors.street}</p>}
             </div>
             <div className="md:col-span-2">
               <label className="text-xs font-bold text-gray-500 uppercase">Landmark</label>
@@ -217,15 +223,15 @@ export default function MyAddresses() {
             <div>
               <label className="text-xs font-bold text-gray-500 uppercase">City</label>
               <Field name="city" className="mt-1 w-full border rounded-lg px-3 py-2" />
-              {errors.city && touched.city && <p className="text-red-500 text-xs">{errors.city}</p>}
+              {errors.city && touched.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
             </div>
             <div>
               <label className="text-xs font-bold text-gray-500 uppercase">State</label>
               <Field name="state" className="mt-1 w-full border rounded-lg px-3 py-2" />
-              {errors.state && touched.state && <p className="text-red-500 text-xs">{errors.state}</p>}
+              {errors.state && touched.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
             </div>
             <div className="md:col-span-2 flex items-center gap-2">
-              <Field type="checkbox" name="is_default" className="rounded" />
+              <Field type="checkbox" name="isDefault" className="rounded" />
               <span className="text-sm">Default address</span>
             </div>
             <div className="md:col-span-2 flex gap-3">

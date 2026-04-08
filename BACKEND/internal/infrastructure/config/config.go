@@ -9,12 +9,12 @@ import (
 )
 
 type Config struct {
-	App      AppConfig
-	Database DatabaseConfig
-	JWT      JWTConfig
-	SMTP     SMTPConfig
-	Redis    RedisConfig
-	Razorpay RazorpayConfig
+	App        AppConfig
+	Database   DatabaseConfig
+	JWT        JWTConfig
+	SMTP       SMTPConfig
+	Redis      RedisConfig
+	Razorpay   RazorpayConfig
 	Cloudinary CloudinaryConfig
 }
 
@@ -56,9 +56,9 @@ type RazorpayConfig struct {
 	KeySecret string
 }
 
-type CloudinaryConfig struct{
+type CloudinaryConfig struct {
 	CloudName string
-	APIKey string
+	APIKey    string
 	APISecret string
 }
 
@@ -125,8 +125,8 @@ func Load() (*Config, error) {
 		},
 		Cloudinary: CloudinaryConfig{
 			CloudName: getEnv("CLOUDINARY_CLOUD_NAME", ""),
-			APIKey: getEnv("CLOUDINARY_API_KEY", ""),
-			APISecret: getEnv("CLOUDINARY_API_SECRET",""),
+			APIKey:    getEnv("CLOUDINARY_API_KEY", ""),
+			APISecret: getEnv("CLOUDINARY_API_SECRET", ""),
 		},
 	}, nil
 }

@@ -41,7 +41,7 @@ function DashBoardPage() {
   )
   const { data, loading: productsLoading } = useFetch("/products")
 
-  const isBlocked = (user) => Boolean(user.is_blocked ?? user.isBlocked)
+  const isBlocked = (user) => Boolean(user.isBlocked)
 
   // Order statistics
   const pendingOrders = allOrders.filter(order => order.status === 'pending')
@@ -51,7 +51,7 @@ function DashBoardPage() {
   const cancelledOrders = allOrders.filter(order => order.status === 'cancelled')
 
   const totalRevenue = deliveredOrders.reduce(
-    (total, order) => total + Number(order.total_amount ?? order.totalAmount ?? 0),
+    (total, order) => total + Number(order.totalAmount ?? 0),
     0
   )
 
@@ -170,7 +170,7 @@ function DashBoardPage() {
             <p className="font-semibold text-gray-700">Orders Today</p>
             <p className="text-2xl font-bold text-purple-600">
               {allOrders.filter((order) => {
-                const d = order.created_at ?? order.orderDate
+                const d = order.createdAt
                 return d && new Date(d).toDateString() === new Date().toDateString()
               }).length}
             </p>

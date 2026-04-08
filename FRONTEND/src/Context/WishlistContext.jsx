@@ -6,6 +6,7 @@ import wishlistService from '../services/wishlist.service';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '../lib/http';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const WishlistContext = createContext();
 
 export function WishlistProvider({ children }) {
@@ -32,19 +33,19 @@ export function WishlistProvider({ children }) {
         const p = row.product;
         if (!p) {
           return {
-            product_id: row.product_id,
-            id: row.product_id,
+            productId: row.productId,
+            id: row.productId,
             name: 'Product',
-            sale_price: 0,
-            image_url: '',
+            salePrice: 0,
+            imageUrl: '',
           };
         }
         return {
-          product_id: row.product_id ?? p.id,
+          productId: row.productId ?? p.id,
           id: p.id,
           name: p.name,
-          sale_price: p.sale_price,
-          image_url: p.image_url,
+          salePrice: p.salePrice,
+          imageUrl: p.imageUrl,
         };
       });
       setWishlist(normalized);
@@ -71,7 +72,7 @@ export function WishlistProvider({ children }) {
       toast.error("Please login as a customer to use the wishlist");
       return;
     }
-    const pid = product?.id ?? product?.product_id;
+    const pid = product?.id ?? product?.productId;
     if (pid == null) {
       toast.error("Invalid product");
       return;
@@ -84,7 +85,7 @@ export function WishlistProvider({ children }) {
     } catch (err) {
       toast.error(getErrorMessage(err) || "Failed to add to wishlist");
     }
-  }, [isCustomer, fetchWishlist]);
+  }, [isCustomer, fetchWishlist, queryClient]);
 
   const removeFromWishlist = useCallback(async (productId) => {
     if (!isCustomer) return;
@@ -92,7 +93,7 @@ export function WishlistProvider({ children }) {
     try {
       await wishlistService.removeFromWishlist(productId);
       setWishlist((prev) =>
-        prev.filter((item) => String(item.product_id) !== idStr)
+        prev.filter((item) => String(item.productId) !== idStr)
       );
       await fetchWishlist();
       queryClient.invalidateQueries({ queryKey: ["products"] });
@@ -101,20 +102,20 @@ export function WishlistProvider({ children }) {
       toast.error(getErrorMessage(err) || "Failed to remove from wishlist");
       await fetchWishlist();
     }
-  }, [isCustomer, fetchWishlist]);
+  }, [isCustomer, fetchWishlist, queryClient]);
 
   const toggleWishlist = useCallback(async (product) => {
     if (!isCustomer) {
       toast.error("Please login as a customer to manage wishlist");
       return;
     }
-    const pid = product?.id ?? product?.product_id;
+    const pid = product?.id ?? product?.productId;
     if (pid == null) {
       toast.error("Invalid product");
       return;
     }
     const exists = wishlist.some(
-      (item) => String(item.product_id) === String(pid)
+      (item) => String(item.productId) === String(pid)
     );
     if (exists) {
       await removeFromWishlist(pid);
@@ -123,10 +124,10 @@ export function WishlistProvider({ children }) {
     }
   }, [isCustomer, wishlist, addToWishlist, removeFromWishlist]);
 
-  // product_id is the key since that's what backend returns
+  // productId is the key since that's what backend returns
   const isInWishlist = useCallback((productId) => {
     return wishlist.some(
-      (item) => String(item.product_id) === String(productId)
+      (item) => String(item.productId) === String(productId)
     );
   }, [wishlist]);
 
@@ -139,7 +140,7 @@ export function WishlistProvider({ children }) {
     try {
       await wishlistService.moveToCart(productId);
       setWishlist((prev) =>
-        prev.filter((item) => String(item.product_id) !== idStr)
+        prev.filter((item) => String(item.productId) !== idStr)
       );
       await cartCtx?.fetchCart?.();
       await fetchWishlist();
@@ -149,7 +150,7 @@ export function WishlistProvider({ children }) {
       toast.error(getErrorMessage(err) || "Failed to move to cart");
       await fetchWishlist();
     }
-  }, [isCustomer, cartCtx, fetchWishlist]);
+  }, [isCustomer, cartCtx, fetchWishlist, queryClient]);
 
   const value = useMemo(() => ({
     wishlist,

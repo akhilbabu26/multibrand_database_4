@@ -8,6 +8,7 @@ import (
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/contracts"
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/dto"
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/entities"
+	"github.com/akhilbabu26/multibrand_database_4/pkg/constant"
 	apperrors "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -41,8 +42,8 @@ func NewOrderUsecase(
 // ─────────────────────────────────────────
 
 func (u *orderUsecase) PlaceOrder(ctx context.Context, userID uint, req dto.PlaceOrderRequest) (*dto.OrderResponse, error) {
-	if req.PaymentMethod != entities.PaymentMethodsCOD &&
-		req.PaymentMethod != entities.PaymentMethodRazorpay {
+	if req.PaymentMethod != constant.PaymentMethodsCOD &&
+		req.PaymentMethod != constant.PaymentMethodRazorpay {
 		return nil, apperrors.InvalidPaymentMethod()
 	}
 
@@ -113,8 +114,8 @@ func (u *orderUsecase) PlaceOrder(ctx context.Context, userID uint, req dto.Plac
 			UserID:        userID,
 			AddressID:     req.AddressID,
 			PaymentMethod: req.PaymentMethod,
-			PaymentStatus: entities.PaymentStatusPending,
-			Status:        entities.OrderStatusPending,
+			PaymentStatus: constant.PaymentStatusPending,
+			Status:        constant.OrderStatusPending,
 			TotalAmount:   totalAmount,
 		}
 
@@ -140,8 +141,8 @@ func (u *orderUsecase) PlaceOrder(ctx context.Context, userID uint, req dto.Plac
 }
 
 func (u *orderUsecase) BuyNow(ctx context.Context, userID uint, req dto.BuyNowRequest) (*dto.OrderResponse, error) {
-	if req.PaymentMethod != entities.PaymentMethodsCOD &&
-		req.PaymentMethod != entities.PaymentMethodRazorpay {
+	if req.PaymentMethod != constant.PaymentMethodsCOD &&
+		req.PaymentMethod != constant.PaymentMethodRazorpay {
 		return nil, apperrors.InvalidPaymentMethod()
 	}
 
@@ -181,8 +182,8 @@ func (u *orderUsecase) BuyNow(ctx context.Context, userID uint, req dto.BuyNowRe
 			UserID:        userID,
 			AddressID:     req.AddressID,
 			PaymentMethod: req.PaymentMethod,
-			PaymentStatus: entities.PaymentStatusPending,
-			Status:        entities.OrderStatusPending,
+			PaymentStatus: constant.PaymentStatusPending,
+			Status:        constant.OrderStatusPending,
 			TotalAmount:   subtotal,
 		}
 		if createErr := txOrderRepo.Create(ctx, order); createErr != nil {
@@ -227,8 +228,8 @@ func (u *orderUsecase) CancelOrder(ctx context.Context, userID, orderID uint) er
 	if order.UserID != userID {
 		return apperrors.UnauthorizedAccess()
 	}
-	if order.Status != entities.OrderStatusPending &&
-		order.Status != entities.OrderStatusConfirmed {
+	if order.Status != constant.OrderStatusPending &&
+		order.Status != constant.OrderStatusConfirmed {
 		return apperrors.OrderCannotBeCancelled()
 	}
 
@@ -241,13 +242,13 @@ func (u *orderUsecase) CancelOrder(ctx context.Context, userID, orderID uint) er
 		u.productRepo.Update(ctx, product)
 	}
 
-	if err := u.repo.UpdateStatus(orderID, entities.OrderStatusCancelled); err != nil {
+	if err := u.repo.UpdateStatus(orderID, constant.OrderStatusCancelled); err != nil {
 		return err
 	}
 
-	if order.PaymentMethod == entities.PaymentMethodRazorpay &&
-		order.PaymentStatus == entities.PaymentStatusPaid {
-		u.repo.UpdatePayment(orderID, entities.PaymentStatusRefunded, order.RazorpayPaymentID)
+	if order.PaymentMethod == constant.PaymentMethodRazorpay &&
+		order.PaymentStatus == constant.PaymentStatusPaid {
+		u.repo.UpdatePayment(orderID, constant.PaymentStatusRefunded, order.RazorpayPaymentID)
 	}
 
 	return nil
@@ -368,7 +369,7 @@ func (u *orderUsecase) UpdateOrderStatus(ctx context.Context, orderID uint, req 
 		return err
 	}
 
-	if !entities.IsValidTransition(order.Status, req.Status) {
+	if !constant.IsValidTransition(order.Status, req.Status) {
 		return apperrors.InvalidStatusTransition(
 			string(order.Status),
 			string(req.Status),
@@ -384,8 +385,8 @@ func (u *orderUsecase) AdminCancelOrder(ctx context.Context, orderID uint) error
 		return err
 	}
 
-	if order.Status == entities.OrderStatusDelivered ||
-		order.Status == entities.OrderStatusCancelled {
+	if order.Status == constant.OrderStatusDelivered ||
+		order.Status == constant.OrderStatusCancelled {
 		return apperrors.OrderCannotBeCancelled()
 	}
 
@@ -398,13 +399,13 @@ func (u *orderUsecase) AdminCancelOrder(ctx context.Context, orderID uint) error
 		u.productRepo.Update(ctx, product)
 	}
 
-	if err := u.repo.UpdateStatus(orderID, entities.OrderStatusCancelled); err != nil {
+	if err := u.repo.UpdateStatus(orderID, constant.OrderStatusCancelled); err != nil {
 		return err
 	}
 
-	if order.PaymentMethod == entities.PaymentMethodRazorpay &&
-		order.PaymentStatus == entities.PaymentStatusPaid {
-		u.repo.UpdatePayment(orderID, entities.PaymentStatusRefunded, order.RazorpayPaymentID)
+	if order.PaymentMethod == constant.PaymentMethodRazorpay &&
+		order.PaymentStatus == constant.PaymentStatusPaid {
+		u.repo.UpdatePayment(orderID, constant.PaymentStatusRefunded, order.RazorpayPaymentID)
 	}
 
 	return nil

@@ -8,34 +8,34 @@ import (
 )
 
 // claims that holds payload
-type Claims struct{
-	UserID uint `json:"user_id"`
-	Email string `json:"email"`
-	Role string `json:"role"`
+type Claims struct {
+	UserID uint   `json:"user_id"`
+	Email  string `json:"email"`
+	Role   string `json:"role"`
 	jwt.RegisteredClaims
 }
 
-type TokenPair struct{
-	AccessToken string
+type TokenPair struct {
+	AccessToken  string
 	RefreshToken string
 }
 
-//Generate both tokens
-func GenerateTokenPair(userID uint, email, role, secret string) (*TokenPair, error){
+// Generate both tokens
+func GenerateTokenPair(userID uint, email, role, secret string) (*TokenPair, error) {
 	accessToken, err := generateToken(userID, email, role, secret, 15*time.Minute)
-	if err != nil{
+	if err != nil {
 		return nil, fmt.Errorf("failed to generate access token: %w", err)
 	}
 
 	refreshToken, err := generateToken(userID, email, role, secret, 7*24*time.Hour)
-	if err != nil{
+	if err != nil {
 		return nil, fmt.Errorf("failed to generate refresh token: %w", err)
 	}
 
 	return &TokenPair{
-		AccessToken: accessToken,
+		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
-	},nil
+	}, nil
 }
 
 // GenerateAccessToken generates only an access token (used during token refresh)
@@ -47,15 +47,15 @@ func GenerateAccessToken(userID uint, email, role, secret string) (string, error
 	return accessToken, nil
 }
 
-//Generate toke helper only for jwt
-func generateToken(userID uint, email, role, secret string, expiry time.Duration) (string, error){
+// Generate toke helper only for jwt
+func generateToken(userID uint, email, role, secret string, expiry time.Duration) (string, error) {
 	claims := &Claims{
 		UserID: userID,
-		Email: email,
-		Role: role,
+		Email:  email,
+		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiry)),
-			IssuedAt: jwt.NewNumericDate(time.Now()),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 
@@ -63,23 +63,23 @@ func generateToken(userID uint, email, role, secret string, expiry time.Duration
 	return token.SignedString([]byte(secret))
 }
 
-//Validate Token
-func ValidateToken(tokenStr, secret string)(*Claims, error){
-	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(t *jwt.Token) (interface{}, error){
+// Validate Token
+func ValidateToken(tokenStr, secret string) (*Claims, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(t *jwt.Token) (interface{}, error) {
 
 		// make sure signing method is HMAC
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok{
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
 		return []byte(secret), nil
 	})
 
-	if err != nil{
+	if err != nil {
 		return nil, fmt.Errorf("invalid token: %w", err)
 	}
 
 	claims, ok := token.Claims.(*Claims)
-	if !ok || !token.Valid{
+	if !ok || !token.Valid {
 		return nil, fmt.Errorf("invalid token claims")
 	}
 

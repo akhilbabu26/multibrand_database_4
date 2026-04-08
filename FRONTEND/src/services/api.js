@@ -11,6 +11,8 @@ const api = axios.create({
     },
 });
 
+import { toCamelCase } from '../lib/stringUtils';
+
 // Track if we're currently refreshing the token
 let isRefreshing = false;
 let failedQueue = [];
@@ -26,35 +28,27 @@ const processQueue = (error, token = null) => {
     failedQueue = [];
 };
 
-// REQUEST INTERCEPTOR - Add token to every request
+// REQUEST INTERCEPTOR - Attach Authorization header
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('access_token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
-        // Default Content-Type is application/json; for FormData the browser must set
-        // multipart/form-data with a boundary — leaving json here breaks admin uploads.
-        if (config.data instanceof FormData) {
-            delete config.headers['Content-Type'];
-        }
         return config;
     },
-    (error) => {
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
-
 // RESPONSE INTERCEPTOR - Handle envelope unwrapping and 401 refresh
 api.interceptors.response.use(
     (response) => {
         // Automatically unwrap the standard Go backend response envelope
         // Expected format: { success: true, message: "...", data: { ... } }
         if (response.data && response.data.data !== undefined && response.data.success !== undefined) {
-             console.debug(`[API] Unwrapping response for ${response.config.url}`);
-             return response.data.data;
+             console.debug(`[API] Unwrapping and transforming response for ${response.config.url}`);
+             return toCamelCase(response.data.data);
         }
-        return response.data;
+        return toCamelCase(response.data);
     },
     async (error) => {
         const originalRequest = error.config;

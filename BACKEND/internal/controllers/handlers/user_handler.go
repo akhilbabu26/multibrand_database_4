@@ -44,7 +44,7 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 func (h *UserHandler) ListUsers(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
-	
+
 	var isBlocked *bool
 	if val := c.Query("is_blocked"); val != "" {
 		b := val == "true"

@@ -12,15 +12,22 @@ export function unwrapData(body) {
 
 /**
  * Turns list endpoints into a flat array (products, orders, users, wishlist, etc.).
+ * Robustly checks for common entity collection keys or a generic 'items' fallback.
  */
 export function normalizeListPayload(inner) {
   if (inner == null) return [];
   if (Array.isArray(inner)) return inner;
-  if (Array.isArray(inner.products)) return inner.products;
-  if (Array.isArray(inner.orders)) return inner.orders;
-  if (Array.isArray(inner.users)) return inner.users;
-  if (Array.isArray(inner.wishlist)) return inner.wishlist;
-  if (Array.isArray(inner.addresses)) return inner.addresses;
+  
+  // Check for common entity keys
+  const keys = ['products', 'orders', 'users', 'wishlist', 'addresses', 'items', 'data'];
+  for (const key of keys) {
+    if (Array.isArray(inner[key])) return inner[key];
+  }
+
+  // Fallback: search for any array property if there's only one
+  const arrays = Object.values(inner).filter(v => Array.isArray(v));
+  if (arrays.length === 1) return arrays[0];
+
   return [];
 }
 

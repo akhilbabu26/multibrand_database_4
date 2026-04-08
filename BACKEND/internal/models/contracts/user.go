@@ -1,4 +1,3 @@
-
 package contracts
 
 import (

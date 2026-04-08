@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import toast from "react-hot-toast";
 import useFetch from "../Hooks/useFetch";
 import { useAuth } from "../Hooks/useAuth";
 import { useCart } from "../Hooks/useCart";
 import { useWishlist } from "../Hooks/useWishlist";
-import api from "../services/api";
-import { getErrorMessage } from "../lib/http";
 
 export default function ProductDetail() {
   const { productId } = useParams();
@@ -16,6 +13,12 @@ export default function ProductDetail() {
 function ProductDetailInner({ productId }) {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const handleBack = () => {
+    if (window.history.length > 2) navigate(-1);
+    else navigate('/');
+  };
+
   const { data: product, loading } = useFetch(`/products/${productId}`, null, {
     asEntity: true,
   });
@@ -24,38 +27,18 @@ function ProductDetailInner({ productId }) {
   const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [quantity, setQuantity] = useState(1);
-  const [variants, setVariants] = useState([]);
+  const { data: variantsResponse } = useFetch(`/products/${productId}/variants`, null);
+  const variants = variantsResponse || [];
+
   const [pickedImage, setPickedImage] = useState(null);
 
   const pid = product?.id;
 
-  // Fetch other sizes for the same model
-  useEffect(() => {
-    if (product?.name) {
-      const fetchVariants = async () => {
-        try {
-          const data = await api.get(`/products?search=${encodeURIComponent(product.name)}&limit=50`);
-          const list = data?.products || [];
-          // Filter to only those with the exact same name and brand to avoid irrelevant fuzzy search results
-          const actualVariants = list.filter(p => 
-            p.name === product.name && 
-            p.brand === product.brand &&
-            p.color === product.color
-          );
-          setVariants(actualVariants);
-        } catch (err) {
-          console.error("Failed to fetch product variants:", err);
-        }
-      };
-      fetchVariants();
-    }
-  }, [product?.name, product?.brand, product?.color]);
-
   const defaultImage =
     product &&
-    (product.images?.find((img) => img.is_primary)?.image_url ||
-      product.images?.[0]?.image_url ||
-      product.image_url);
+    (product.images?.find((img) => img.isPrimary)?.imageUrl ||
+      product.images?.[0]?.imageUrl ||
+      product.imageUrl);
   const mainImage = pickedImage ?? defaultImage ?? null;
 
   // The size of the current product variant
@@ -89,10 +72,10 @@ function ProductDetailInner({ productId }) {
   }
 
   // Moved calculations here after null/loading checks
-  const isAddedToCart = product.is_cart || cart.some(
-    (item) => String(item.product_id) === String(pid)
+  const isAddedToCart = product.isCart || cart.some(
+    (item) => String(item.productId) === String(pid)
   );
-  const isWishListed = product.is_wishlist || isInWishlist(pid);
+  const isWishListed = product.isWishlist || isInWishlist(pid);
 
   const handleAddToCart = async () => {
     if (isAddedToCart) {
@@ -112,10 +95,10 @@ function ProductDetailInner({ productId }) {
     navigate("/checkOut", { 
       state: { 
         buyNowItem: {
-          product_id: pid,
+          productId: pid,
           name: product.name,
-          image_url: mainImage,
-          sale_price: product.sale_price,
+          imageUrl: mainImage,
+          salePrice: product.salePrice,
           brand: product.brand,
           size: product.size,
           quantity: quantity
@@ -137,7 +120,7 @@ function ProductDetailInner({ productId }) {
       <div className="flex items-center justify-between mb-6">
         <button
           type="button"
-          onClick={() => navigate(-1)}
+          onClick={handleBack}
           className="flex items-center gap-2 text-gray-400 hover:text-indigo-600 transition group"
         >
           <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center group-hover:border-indigo-100 group-hover:bg-indigo-50">
@@ -188,9 +171,9 @@ function ProductDetailInner({ productId }) {
                 <span className="text-xs uppercase tracking-widest font-black">No product overview</span>
               </div>
             )}
-            {product.discount_percentage > 0 && (
+            {product.discountPercentage > 0 && (
               <span className="absolute top-8 left-8 bg-black text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-tighter shadow-xl">
-                -{product.discount_percentage}% OFF
+                -{product.discountPercentage}% OFF
               </span>
             )}
           </div>
@@ -201,15 +184,15 @@ function ProductDetailInner({ productId }) {
                 <button
                   type="button"
                   key={img.id || idx}
-                  onClick={() => setPickedImage(img.image_url)}
+                  onClick={() => setPickedImage(img.imageUrl)}
                   className={`flex-shrink-0 w-24 h-24 rounded-2xl border-4 transition transform hover:scale-105 active:scale-95 overflow-hidden shadow-sm ${
-                    mainImage === img.image_url
+                    mainImage === img.imageUrl
                       ? "border-black ring-4 ring-gray-100"
                       : "border-white hover:border-gray-100"
                   }`}
                 >
                   <img
-                    src={img.image_url}
+                    src={img.imageUrl}
                     alt={`${product.name} ${idx}`}
                     className="w-full h-full object-cover"
                   />
@@ -254,10 +237,10 @@ function ProductDetailInner({ productId }) {
 
           <div className="flex items-baseline gap-4 mb-8 lg:mb-12">
             <p className="text-4xl sm:text-5xl font-black text-gray-900 tracking-tighter">
-              ₹{product.sale_price}
+              ₹{product.salePrice}
             </p>
             <p className="text-xl sm:text-2xl line-through text-gray-300 font-bold">
-              ₹{product.original_price}
+              ₹{product.originalPrice}
             </p>
           </div>
 

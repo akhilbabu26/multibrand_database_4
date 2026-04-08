@@ -9,8 +9,8 @@ export default function ProductCard({ product }) {
 
   // These two lines need updating since backend uses product_id in cart/wishlist items
   // Use backend flags as primary source for initial load, then fallback to context checks
-  const isAddedToCart = product?.is_cart || cart.some(item => item.product_id === product?.id)
-  const isWishListed = product?.is_wishlist || isInWishlist(product?.id)
+  const isAddedToCart = product?.isCart || cart.some(item => item.productId === product?.id)
+  const isWishListed = product?.isWishlist || isInWishlist(product?.id)
 
   
   const goToDetail = () => navigate(`/product/${product.id}`)
@@ -30,11 +30,11 @@ export default function ProductCard({ product }) {
     toggleWishlist(product)
   }
 
-  // Backend returns images[] with is_primary flag
-  // Fallback to legacy image_url if provided, then to first image, then null
-  const primaryImage = product.images?.find(img => img.is_primary)?.image_url
-    || product.images?.[0]?.image_url
-    || product.image_url
+  // Backend returns images[] with isPrimary flag
+  // Fallback to legacy imageUrl if provided, then to first image, then null
+  const primaryImage = product.images?.find(img => img.isPrimary)?.imageUrl
+    || product.images?.[0]?.imageUrl
+    || product.imageUrl
     || null
 
   return (
@@ -88,15 +88,15 @@ export default function ProductCard({ product }) {
 
         <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
           <span className="text-sm line-through text-gray-400">
-            ₹{product.original_price}
+            ₹{product.originalPrice}
           </span>
-          {product.discount_percentage > 0 && (
+          {product.discountPercentage > 0 && (
             <span className="text-sm text-emerald-500 font-bold">
-              {product.discount_percentage}% OFF
+              {product.discountPercentage}% OFF
             </span>
           )}
           <span className="text-sm font-bold text-gray-900">
-            ₹{product.sale_price}
+            ₹{product.salePrice}
           </span>
         </div>
 

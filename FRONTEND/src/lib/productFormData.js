@@ -8,11 +8,22 @@ function appendCommonFields(fd, values) {
   if (values.color) fd.append("color", values.color);
   if (values.size) fd.append("size", String(values.size));
   if (values.gender) fd.append("gender", values.gender);
-  if (values.cost_price != null) fd.append("cost_price", String(values.cost_price));
-  if (values.original_price != null) fd.append("original_price", String(values.original_price));
-  if (values.discount_percentage != null) fd.append("discount_percentage", String(values.discount_percentage));
+  
+  // Map camelCase to snake_case for the Go Backend
+  const costPrice = values.costPrice ?? values.cost_price;
+  if (costPrice != null) fd.append("cost_price", String(costPrice));
+
+  const originalPrice = values.originalPrice ?? values.original_price;
+  if (originalPrice != null) fd.append("original_price", String(originalPrice));
+
+  const discPerc = values.discountPercentage ?? values.discount_percentage;
+  if (discPerc != null) fd.append("discount_percentage", String(discPerc));
+
   if (values.description != null) fd.append("description", values.description);
-  if (values.stock != null) fd.append("stock", String(values.stock));
+  
+  const stock = values.stock;
+  if (stock != null) fd.append("stock", String(stock));
+
   return fd;
 }
 
@@ -22,8 +33,8 @@ function appendCommonFields(fd, values) {
 export function appendCreateProduct(fd, values, imageFiles) {
   appendCommonFields(fd, values);
   if (imageFiles?.length) {
-    for (let i = 0; i < imageHeadersToList(imageFiles).length; i++) {
-        const fileList = imageHeadersToList(imageFiles);
+    const fileList = imageHeadersToList(imageFiles);
+    for (let i = 0; i < fileList.length; i++) {
         fd.append("images", fileList[i]);
     }
   }
@@ -35,12 +46,15 @@ export function appendCreateProduct(fd, values, imageFiles) {
  */
 export function appendUpdateProduct(fd, values, imageFiles) {
   appendCommonFields(fd, values);
-  if (values.is_active !== undefined) {
-    fd.append("is_active", values.is_active ? "true" : "false");
+  
+  const isActive = values.isActive ?? values.is_active;
+  if (isActive !== undefined) {
+    fd.append("is_active", isActive ? "true" : "false");
   }
   
-  if (values.delete_image_ids?.length) {
-    values.delete_image_ids.forEach(id => {
+  const deleteImageIds = values.deleteImageIds ?? values.delete_image_ids;
+  if (deleteImageIds?.length) {
+    deleteImageIds.forEach(id => {
       fd.append("delete_image_ids", id);
     });
   }

@@ -6,6 +6,7 @@ import (
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/dto"
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/entities"
 	"github.com/akhilbabu26/multibrand_database_4/internal/repository/generic"
+	"github.com/akhilbabu26/multibrand_database_4/pkg/constant"
 	"gorm.io/gorm"
 )
 
@@ -15,8 +16,8 @@ type OrderRepository interface {
 
 	FindByUserID(userID uint, filter dto.OrderFilter) ([]*entities.Order, int64, error)
 	FindAll(filter dto.OrderFilter) ([]*entities.Order, int64, error)
-	UpdateStatus(id uint, status entities.OrderStatus) error
-	UpdatePayment(id uint, paymentStatus entities.PaymentStatus, razorpayPaymentID string) error
+	UpdateStatus(id uint, status constant.OrderStatus) error
+	UpdatePayment(id uint, paymentStatus constant.PaymentStatus, razorpayPaymentID string) error
 	UpdateRazorpayOrderID(id uint, razorpayOrderID string) error
 
 	CreateItems(items []entities.OrderItem) error

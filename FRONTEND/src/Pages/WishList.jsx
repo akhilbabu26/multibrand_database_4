@@ -62,20 +62,20 @@ function WishList() {
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {wishlist.map((product) => (
             <div
-              key={product.product_id}
+              key={product.productId}
               className="group relative bg-white rounded-2xl shadow-sm p-3 sm:p-4 hover:shadow-md transition border border-gray-100"
             >
-              <div className="relative cursor-pointer group" onClick={() => navigate(`/product/${product.product_id}`, { state: { from: 'Wishlist' } })}>
+              <div className="relative cursor-pointer group" onClick={() => navigate(`/product/${product.productId}`, { state: { from: 'Wishlist' } })}>
                 <img
                   alt={product.name}
-                  src={product.image_url}
+                  src={product.imageUrl}
                   className="w-full h-64 object-cover rounded-md bg-gray-200 group-hover:opacity-90 transition"
                 />
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    removeFromWishlist(product.product_id);
+                    removeFromWishlist(product.productId);
                   }}
                   className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-red-50 hover:text-red-600 transition"
                   title="Remove from wishlist"
@@ -88,7 +88,7 @@ function WishList() {
 
               <div className="mt-4">
                 <h3 
-                  onClick={() => navigate(`/product/${product.product_id}`, { state: { from: 'Wishlist' } })}
+                  onClick={() => navigate(`/product/${product.productId}`, { state: { from: 'Wishlist' } })}
                   className="text-sm font-semibold text-gray-800 line-clamp-2 cursor-pointer hover:text-indigo-600 transition"
                 >
                   {product.name}
@@ -96,12 +96,12 @@ function WishList() {
 
                 <div className="flex items-center justify-between mt-3">
                   <span className="text-lg font-bold text-gray-900">
-                    ₹{Number(product.sale_price || 0).toFixed(0)}
+                    ₹{Number(product.salePrice || 0).toFixed(0)}
                   </span>
 
                   <button
                     type="button"
-                    onClick={() => handleMoveToCart(product.product_id)}
+                    onClick={() => handleMoveToCart(product.productId)}
                     className="bg-black text-white px-4 py-2 rounded text-sm hover:bg-gray-800 transition transform active:scale-95"
                   >
                     Move to cart

@@ -4,10 +4,12 @@ import (
 	"time"
 
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/entities"
+	"github.com/akhilbabu26/multibrand_database_4/pkg/constant"
 )
+
 type OrderFilter struct {
-	Status    entities.OrderStatus
-	Statuses  []entities.OrderStatus
+	Status    constant.OrderStatus
+	Statuses  []constant.OrderStatus
 	StartDate *time.Time
 	EndDate   *time.Time
 	OrderID   string
@@ -17,25 +19,25 @@ type OrderFilter struct {
 
 type PlaceOrderRequest struct {
 	AddressID     uint                   `json:"address_id" validate:"required,gt=0"`
-	PaymentMethod entities.PaymentMethod `json:"payment_method" validate:"required,payment_method"`
+	PaymentMethod constant.PaymentMethod `json:"payment_method" validate:"required,payment_method"`
 }
 
 type BuyNowRequest struct {
 	ProductID     uint                   `json:"product_id" validate:"required,gt=0"`
 	Quantity      int                    `json:"quantity" validate:"required,min=1"`
 	AddressID     uint                   `json:"address_id" validate:"required,gt=0"`
-	PaymentMethod entities.PaymentMethod `json:"payment_method" validate:"required,payment_method"`
+	PaymentMethod constant.PaymentMethod `json:"payment_method" validate:"required,payment_method"`
 }
 
 type UpdateOrderStatusRequest struct {
-	Status entities.OrderStatus `json:"status" validate:"required,order_status"`
+	Status constant.OrderStatus `json:"status" validate:"required,order_status"`
 }
 
 type OrderResponse struct {
 	ID              uint                   `json:"id"`
-	Status          entities.OrderStatus   `json:"status"`
-	PaymentMethod   entities.PaymentMethod `json:"payment_method"`
-	PaymentStatus   entities.PaymentStatus `json:"payment_status"`
+	Status          constant.OrderStatus   `json:"status"`
+	PaymentMethod   constant.PaymentMethod `json:"payment_method"`
+	PaymentStatus   constant.PaymentStatus `json:"payment_status"`
 	TotalAmount     float64                `json:"total_amount"`
 	RazorpayOrderID string                 `json:"razorpay_order_id,omitempty"`
 	Items           []entities.OrderItem   `json:"items"`

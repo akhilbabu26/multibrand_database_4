@@ -8,6 +8,7 @@ import (
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/dto"
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/entities"
 	"github.com/akhilbabu26/multibrand_database_4/internal/repository/generic"
+	"github.com/akhilbabu26/multibrand_database_4/pkg/constant"
 	apperrors "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -69,7 +70,7 @@ func (r *orderRepository) FindByUserID(userID uint, filter dto.OrderFilter) ([]*
 		return db.Limit(100)
 	}).
 		Order("created_at DESC").
-		Offset(offset).Limit(offset+filter.Limit).
+		Offset(offset).Limit(offset + filter.Limit).
 		Find(&orders).Error; err != nil {
 		return nil, 0, apperrors.Internal("failed to find orders", err)
 	}
@@ -111,7 +112,7 @@ func (r *orderRepository) FindAll(filter dto.OrderFilter) ([]*entities.Order, in
 	return orders, total, nil
 }
 
-func (r *orderRepository) UpdateStatus(id uint, status entities.OrderStatus) error {
+func (r *orderRepository) UpdateStatus(id uint, status constant.OrderStatus) error {
 	if err := r.DB().Model(&entities.Order{}).
 		Where("id = ?", id).
 		Update("status", status).Error; err != nil {
@@ -120,7 +121,7 @@ func (r *orderRepository) UpdateStatus(id uint, status entities.OrderStatus) err
 	return nil
 }
 
-func (r *orderRepository) UpdatePayment(id uint, paymentStatus entities.PaymentStatus, razorpayPaymentID string) error {
+func (r *orderRepository) UpdatePayment(id uint, paymentStatus constant.PaymentStatus, razorpayPaymentID string) error {
 	if err := r.DB().Model(&entities.Order{}).
 		Where("id = ?", id).
 		Updates(map[string]interface{}{

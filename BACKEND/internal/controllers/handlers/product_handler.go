@@ -9,6 +9,7 @@ import (
 	apperrors "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
 	"github.com/akhilbabu26/multibrand_database_4/pkg/validator"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 type ProductHandler struct {
@@ -33,8 +34,8 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 	}
 
 	var req dto.CreateProductRequest
-	if err := c.ShouldBind(&req); err != nil {
-		apperrors.HandleError(c, apperrors.BadRequest("invalid request payload", err))
+	if err := c.ShouldBindWith(&req, binding.FormMultipart); err != nil {
+		apperrors.HandleError(c, apperrors.BadRequest("invalid request payload: "+err.Error(), err))
 		return
 	}
 
@@ -64,8 +65,8 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 	}
 
 	var req dto.UpdateProductRequest
-	if err := c.ShouldBind(&req); err != nil {
-		apperrors.HandleError(c, apperrors.BadRequest("invalid request payload", err))
+	if err := c.ShouldBindWith(&req, binding.FormMultipart); err != nil {
+		apperrors.HandleError(c, apperrors.BadRequest("invalid request payload: "+err.Error(), err))
 		return
 	}
 
@@ -113,9 +114,15 @@ func (h *ProductHandler) AdminGetProduct(c *gin.Context) {
 	apperrors.HandleSuccess(c, "product fetched", dto.ToAdminProductResponse(product))
 }
 
-func (h *ProductHandler) AdminListProducts(c *gin.Context) {
+func (h *ProductHandler) parseProductFilters(c *gin.Context, inactive bool) dto.ProductFilter {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if page < 1 {
+		page = 1
+	}
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
 	minPrice, _ := strconv.ParseFloat(c.DefaultQuery("min_price", "0"), 64)
 	maxPrice, _ := strconv.ParseFloat(c.DefaultQuery("max_price", "0"), 64)
 
@@ -125,12 +132,12 @@ func (h *ProductHandler) AdminListProducts(c *gin.Context) {
 		isActive = &b
 	}
 
-	searchQuery := c.Query("q")
+	searchQuery := c.Query("search")
 	if searchQuery == "" {
-		searchQuery = c.Query("search")
+		searchQuery = c.Query("q")
 	}
 
-	filters := dto.ProductFilter{
+	return dto.ProductFilter{
 		Search:   searchQuery,
 		Brand:    c.Query("brand"),
 		Type:     c.Query("type"),
@@ -140,11 +147,15 @@ func (h *ProductHandler) AdminListProducts(c *gin.Context) {
 		MinPrice: minPrice,
 		MaxPrice: maxPrice,
 		InStock:  c.Query("in_stock") == "true",
-		Inactive: true,
+		Inactive: inactive,
 		IsActive: isActive,
 		Page:     page,
 		Limit:    limit,
 	}
+}
+
+func (h *ProductHandler) AdminListProducts(c *gin.Context) {
+	filters := h.parseProductFilters(c, true)
 
 	products, total, err := h.usecase.ListProducts(c.Request.Context(), filters)
 	if err != nil {
@@ -160,8 +171,8 @@ func (h *ProductHandler) AdminListProducts(c *gin.Context) {
 	apperrors.HandleSuccess(c, "products fetched", gin.H{
 		"products": response,
 		"total":    total,
-		"page":     page,
-		"limit":    limit,
+		"page":     filters.Page,
+		"limit":    filters.Limit,
 	})
 }
 
@@ -193,26 +204,31 @@ func (h *ProductHandler) GetProduct(c *gin.Context) {
 	apperrors.HandleSuccess(c, "product fetched", response)
 }
 
-func (h *ProductHandler) ListProducts(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
-	minPrice, _ := strconv.ParseFloat(c.DefaultQuery("min_price", "0"), 64)
-	maxPrice, _ := strconv.ParseFloat(c.DefaultQuery("max_price", "0"), 64)
-
-	filters := dto.ProductFilter{
-		Search:   c.Query("search"),
-		Brand:    c.Query("brand"),
-		Type:     c.Query("type"),
-		Color:    c.Query("color"),
-		Size:     c.Query("size"),
-		Gender:   c.Query("gender"),
-		MinPrice: minPrice,
-		MaxPrice: maxPrice,
-		InStock:  c.Query("in_stock") == "true",
-		Inactive: false,
-		Page:     page,
-		Limit:    limit,
+func (h *ProductHandler) GetProductVariants(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		apperrors.HandleError(c, apperrors.BadRequest("invalid product id", err))
+		return
 	}
+
+	var userID *uint
+	if uID, exists := c.Get("userID"); exists {
+		if u, ok := uID.(uint); ok {
+			userID = &u
+		}
+	}
+
+	variants, err := h.usecase.GetProductVariantsForCustomer(c.Request.Context(), uint(id), userID)
+	if err != nil {
+		apperrors.HandleError(c, err)
+		return
+	}
+
+	apperrors.HandleSuccess(c, "product variants fetched", variants)
+}
+
+func (h *ProductHandler) ListProducts(c *gin.Context) {
+	filters := h.parseProductFilters(c, false)
 
 	// Extract user ID if authenticated
 	var userID *uint
@@ -231,18 +247,17 @@ func (h *ProductHandler) ListProducts(c *gin.Context) {
 	apperrors.HandleSuccess(c, "products fetched", gin.H{
 		"products": products,
 		"total":    total,
-		"page":     page,
-		"limit":    limit,
+		"page":     filters.Page,
+		"limit":    filters.Limit,
 	})
 }
 
 func (h *ProductHandler) GetProductMetadata(c *gin.Context) {
 	response, err := h.usecase.GetProductMetadata(c.Request.Context())
 	if err != nil {
-		apperrors.HandleError(c, err)
+		apperrors.HandleError(c, apperrors.Internal("failed to fetch product metadata: "+err.Error(), err))
 		return
 	}
 
 	apperrors.HandleSuccess(c, "product metadata fetched", response)
 }
-

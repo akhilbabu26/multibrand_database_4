@@ -2,8 +2,8 @@ package errors
 
 import (
 	"errors"
-	"github.com/akhilbabu26/multibrand_database_4/pkg/constant"
 
+	"github.com/akhilbabu26/multibrand_database_4/pkg/constant"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -31,7 +31,7 @@ func HandleError(c *gin.Context, err error) {
 	// UNKNOWN ERROR
 	zap.L().Error("unknown error", zap.Error(err))
 
-	c.JSON(constants.INTERNALSERVERERROR, gin.H{
+	c.JSON(constant.INTERNALSERVERERROR, gin.H{
 		"success": false,
 		"message": "something went wrong",
 		"code":    "INTERNAL_ERROR",
@@ -40,7 +40,7 @@ func HandleError(c *gin.Context, err error) {
 
 // SUCCESS RESPONSE
 func HandleSuccess(c *gin.Context, message string, data any) {
-	c.JSON(constants.SUCCESS, gin.H{
+	c.JSON(constant.SUCCESS, gin.H{
 		"success": true,
 		"message": message,
 		"data":    data,
@@ -49,7 +49,7 @@ func HandleSuccess(c *gin.Context, message string, data any) {
 
 // CREATED RESPONSE
 func HandleCreated(c *gin.Context, message string, data any) {
-	c.JSON(constants.CREATED, gin.H{
+	c.JSON(constant.CREATED, gin.H{
 		"success": true,
 		"message": message,
 		"data":    data,

@@ -4,13 +4,13 @@
  */
 export function buildAddressUpdateBody(values) {
   return {
-    full_name: values.full_name,
+    full_name: values.fullName,
     phone: values.phone,
     street: values.street,
     landmark: values.landmark ?? "",
     city: values.city,
     state: values.state,
-    pin_code: values.pin_code,
-    is_default: Boolean(values.is_default),
+    pin_code: values.pinCode,
+    is_default: Boolean(values.isDefault),
   };
 }

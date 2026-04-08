@@ -1,18 +1,18 @@
 package razorpay
 
 import (
-	"crypto/hmac" // Implements HMAC (Hash-based Message Authentication Code), used to verify both the integrity and authenticity of a message using a secret key.
+	"crypto/hmac"   // Implements HMAC (Hash-based Message Authentication Code), used to verify both the integrity and authenticity of a message using a secret key.
 	"crypto/sha256" // Provides the SHA-256 hashing algorithm, a secure one-way hash function that produces a 256-bit (32-byte) digest
-	"encoding/hex" // Used to encode/decode data to/from hexadecimal string representation (e.g., converting raw bytes []byte → "a3f1b2...").
+	"encoding/hex"  // Used to encode/decode data to/from hexadecimal string representation (e.g., converting raw bytes []byte → "a3f1b2...").
 	"fmt"
 
 	"github.com/akhilbabu26/multibrand_database_4/internal/infrastructure/config"
 	rzp "github.com/razorpay/razorpay-go"
 )
 
-type RazorpayClient struct{
-	client *rzp.Client
-	keyID string
+type RazorpayClient struct {
+	client    *rzp.Client
+	keyID     string
 	keySecret string
 }
 
@@ -27,7 +27,7 @@ func NewRazorpayClient(cfg *config.RazorpayConfig) *RazorpayClient {
 }
 
 // CreateOrder creates a new Razorpay order
-func (r *RazorpayClient) CreateOrder(amount float64, orderID uint) (string, error){
+func (r *RazorpayClient) CreateOrder(amount float64, orderID uint) (string, error) {
 	// razorpay amount is in paise (1 rupee = 100 paise)
 	amountInPaise := int(amount * 100)
 

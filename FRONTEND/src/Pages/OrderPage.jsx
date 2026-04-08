@@ -83,8 +83,8 @@ export default function OrderPage() {
             </div>
             <div>
               <strong>Placed:</strong>{" "}
-              {order.created_at
-                ? new Date(order.created_at).toLocaleString()
+              {order.createdAt
+                ? new Date(order.createdAt).toLocaleString()
                 : "—"}
             </div>
             <div>
@@ -94,10 +94,10 @@ export default function OrderPage() {
               </span>
             </div>
             <div>
-              <strong>Payment:</strong> {order.payment_method} ({order.payment_status})
+              <strong>Payment:</strong> {order.paymentMethod} ({order.paymentStatus})
             </div>
             <div className="md:col-span-2">
-              <strong>Total:</strong> ₹{Number(order.total_amount).toFixed(2)}
+              <strong>Total:</strong> ₹{Number(order.totalAmount).toFixed(2)}
             </div>
           </div>
         </div>
@@ -105,14 +105,14 @@ export default function OrderPage() {
         <div className="mt-8 p-6 bg-gray-50 rounded-lg">
           <h3 className="font-semibold text-lg mb-4">Shipping address</h3>
           <div className="text-sm text-gray-700 space-y-1">
-            <p className="font-medium">{addr.full_name}</p>
+            <p className="font-medium">{addr.fullName}</p>
             <p>{addr.phone}</p>
             <p>
               {addr.street}
               {addr.landmark ? `, ${addr.landmark}` : ""}
             </p>
             <p>
-              {addr.city}, {addr.state} {addr.pin_code}
+              {addr.city}, {addr.state} {addr.pinCode}
             </p>
           </div>
         </div>
@@ -126,12 +126,12 @@ export default function OrderPage() {
                 className="flex items-center gap-4 rounded-xl border p-4"
               >
                 <img
-                  src={item.product_image}
-                  alt={item.product_name}
+                  src={item.productImage}
+                  alt={item.productName}
                   className="w-20 h-20 rounded-lg object-cover bg-gray-100"
                 />
                 <div className="flex-1">
-                  <h3 className="font-semibold">{item.product_name}</h3>
+                  <h3 className="font-semibold">{item.productName}</h3>
                   <p className="text-gray-500 text-sm">Qty: {item.quantity}</p>
                   <p className="text-sm font-medium mt-1">
                     ₹{Number(item.price).toFixed(2)} each · line ₹

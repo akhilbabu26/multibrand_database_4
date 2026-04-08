@@ -15,7 +15,7 @@ func RegisterOrderRoutes(r *gin.RouterGroup, app *bootstrap.App, h *handlers.Ord
 	orders.Use(middleware.RoleMiddleware("user"))
 	{
 		orders.POST("", h.PlaceOrder)
-		orders.POST("/buy-now", h.BuyNow)  
+		orders.POST("/buy-now", h.BuyNow)
 		orders.GET("", h.GetMyOrders)
 		orders.GET("/:id", h.GetOrder)
 		orders.PATCH("/:id/cancel", h.CancelOrder)

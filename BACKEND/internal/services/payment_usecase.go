@@ -5,7 +5,7 @@ import (
 
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/contracts"
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/dto"
-	"github.com/akhilbabu26/multibrand_database_4/internal/models/entities"
+	"github.com/akhilbabu26/multibrand_database_4/pkg/constant"
 	apperrors "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
 	"github.com/akhilbabu26/multibrand_database_4/pkg/razorpay"
 )
@@ -30,7 +30,7 @@ func (u *paymentUsecase) CreatePayment(ctx context.Context, userID uint, req dto
 	if order.UserID != userID {
 		return nil, apperrors.UnauthorizedAccess()
 	}
-	if order.PaymentStatus == entities.PaymentStatusPaid {
+	if order.PaymentStatus == constant.PaymentStatusPaid {
 		return nil, apperrors.BadRequest("payment is already completed", nil)
 	}
 
@@ -64,9 +64,9 @@ func (u *paymentUsecase) VerifyPayment(ctx context.Context, userID uint, req dto
 
 	isValid := u.razorpay.VerifyPayment(req.RazorpayOrderID, req.RazorpayPaymentID, req.RazorpaySignature)
 	if !isValid {
-		u.orderRepo.UpdatePayment(order.ID, entities.PaymentStatusFailed, req.RazorpayPaymentID)
+		u.orderRepo.UpdatePayment(order.ID, constant.PaymentStatusFailed, req.RazorpayPaymentID)
 		return apperrors.BadRequest("invalid payment signature", nil)
 	}
 
-	return u.orderRepo.UpdatePayment(order.ID, entities.PaymentStatusPaid, req.RazorpayPaymentID)
+	return u.orderRepo.UpdatePayment(order.ID, constant.PaymentStatusPaid, req.RazorpayPaymentID)
 }

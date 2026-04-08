@@ -37,7 +37,7 @@ export default function CustomerLayout({ children }) {
         onClose={() => setSidebarOpen(false)}
         userName={currentUser?.name}
         userEmail={currentUser?.email}
-        avatarUrl={currentUser?.avatar_url || currentUser?.image_url}
+        avatarUrl={currentUser?.avatarUrl || currentUser?.imageUrl}
         onLogout={handleLogout}
         requireAuth={requireAuth}
       />

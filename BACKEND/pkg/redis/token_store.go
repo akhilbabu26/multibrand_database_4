@@ -8,11 +8,11 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type TokenStore struct{
+type TokenStore struct {
 	client *redis.Client
 }
 
-func NewTokenStore(client *redis.Client) *TokenStore{
+func NewTokenStore(client *redis.Client) *TokenStore {
 	return &TokenStore{client: client}
 }
 
@@ -23,12 +23,12 @@ func (t *TokenStore) Save(userID uint, token string, ttl time.Duration) error {
 	return t.client.Set(context.Background(), key, token, ttl).Err()
 }
 
-//get referesh token from redis
-func (t *TokenStore) Get(userID uint) (string, error){
+// get referesh token from redis
+func (t *TokenStore) Get(userID uint) (string, error) {
 	key := fmt.Sprintf("refresh:%d", userID)
 
 	token, err := t.client.Get(context.Background(), key).Result()
-	if err == redis.Nil{
+	if err == redis.Nil {
 		return "", fmt.Errorf("token not fount")
 	}
 	return token, err
@@ -42,7 +42,7 @@ func (t *TokenStore) Delete(userID uint) error {
 }
 
 // blacklist a token on logout
-func (t *TokenStore) BlacklistToken(token string, ttl time.Duration) error{
+func (t *TokenStore) BlacklistToken(token string, ttl time.Duration) error {
 	key := fmt.Sprintf("blacklist:%s", token)
 
 	return t.client.Set(context.Background(), key, "1", ttl).Err()
@@ -50,9 +50,9 @@ func (t *TokenStore) BlacklistToken(token string, ttl time.Duration) error{
 
 // check if token is blacklisted
 func (t *TokenStore) IsBlacklisted(token string) bool {
-    key := fmt.Sprintf("blacklist:%s", token)
-    val, err := t.client.Get(context.Background(), key).Result()
-    return err == nil && val == "1"
+	key := fmt.Sprintf("blacklist:%s", token)
+	val, err := t.client.Get(context.Background(), key).Result()
+	return err == nil && val == "1"
 }
 
 // PASSWORD RESET OPERATIONS

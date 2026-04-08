@@ -3,7 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../Hooks/useCart";
 function CartPage() {
   const navigate = useNavigate();
-  const { cart, removeFromCart, updateQuantity, cartTotal } = useCart();
+  const { cart, removeFromCart, updateQuantity, cartTotal, loading } = useCart();
+
+  const handleBack = () => {
+    if (window.history.length > 2) navigate(-1);
+    else navigate('/');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   if (cart.length === 0) {
     return (
@@ -28,7 +41,7 @@ function CartPage() {
   return (
     <div className="min-h-screen max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
       <button
-        onClick={() => navigate(-1)}
+        onClick={handleBack}
         className="flex items-center gap-2 mb-8 text-gray-400 hover:text-indigo-600 transition group"
       >
         <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center group-hover:border-indigo-100 group-hover:bg-indigo-50">
@@ -45,21 +58,18 @@ function CartPage() {
         {/* CART ITEMS */}
         <div className="lg:col-span-2 space-y-4">
           {cart.map((product) => {
-            const unit = Number(product.sale_price ?? 0);
-            const lineTotal =
-              product.subtotal != null
-                ? Number(product.subtotal)
-                : unit * (product.quantity || 1);
+            const unit = Number(product.salePrice ?? 0);
+            const lineTotal = Number(product.subtotal || 0);
 
             return (
                 <div
-                  key={product.product_id}
+                  key={product.productId}
                   className="bg-white rounded-xl shadow-sm p-4 flex flex-col sm:flex-row gap-4 border border-gray-100 hover:shadow-md transition"
                 >
                   <img
                     alt={product.name}
-                    src={product.image_url}
-                    onClick={() => navigate(`/product/${product.product_id}`, { state: { from: 'Cart' } })}
+                    src={product.imageUrl}
+                    onClick={() => navigate(`/product/${product.productId}`, { state: { from: 'Cart' } })}
                     className="w-full sm:w-32 h-40 sm:h-32 object-cover rounded-lg bg-gray-50 cursor-pointer hover:opacity-80 transition"
                   />
     
@@ -67,7 +77,7 @@ function CartPage() {
                     <div>
                       <div className="flex justify-between items-start">
                         <div 
-                          onClick={() => navigate(`/product/${product.product_id}`, { state: { from: 'Cart' } })}
+                          onClick={() => navigate(`/product/${product.productId}`, { state: { from: 'Cart' } })}
                           className="cursor-pointer group"
                         >
                           <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition">{product.name}</h3>
@@ -76,7 +86,7 @@ function CartPage() {
                           </p>
                         </div>
                         <button
-                          onClick={() => removeFromCart(product.product_id)}
+                          onClick={() => removeFromCart(product.productId)}
                           className="text-gray-400 hover:text-red-500 transition p-1"
                           title="Remove item"
                         >
@@ -96,7 +106,7 @@ function CartPage() {
                       <div className="flex items-center border border-gray-200 rounded-lg bg-gray-50 overflow-hidden">
                         <button
                           className="px-3 py-1 hover:bg-gray-100 text-gray-600 transition font-bold"
-                          onClick={() => updateQuantity(product.product_id, (product.quantity || 1) - 1)}
+                          onClick={() => updateQuantity(product.productId, (product.quantity || 1) - 1)}
                         >
                           -
                         </button>
@@ -105,7 +115,7 @@ function CartPage() {
                         </span>
                         <button
                           className="px-3 py-1 hover:bg-gray-100 text-gray-600 transition font-bold"
-                          onClick={() => updateQuantity(product.product_id, (product.quantity || 1) + 1)}
+                          onClick={() => updateQuantity(product.productId, (product.quantity || 1) + 1)}
                         >
                           +
                         </button>

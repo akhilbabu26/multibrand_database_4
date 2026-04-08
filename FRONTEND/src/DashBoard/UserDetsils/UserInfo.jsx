@@ -55,7 +55,7 @@ function UserInfo() {
 
   const handleBlockToggle = async (user) => {
     try {
-      if (user.is_blocked) {
+      if (user.isBlocked) {
         await userService.unblockUser(user.id);
         toast.success("User unblocked");
       } else {
@@ -186,7 +186,7 @@ function UserInfo() {
                       <div>
                         <p className="font-bold text-gray-900">{user.name}</p>
                         <p className="text-sm text-gray-500">
-                          Joined: {user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}
+                          Joined: {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}
                         </p>
                       </div>
                     </div>
@@ -201,12 +201,12 @@ function UserInfo() {
                     <div className="col-span-2 text-center">
                       <span
                         className={`text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-widest border ${
-                          user.is_blocked
+                          user.isBlocked
                             ? "bg-red-50 text-red-700 border-red-200"
                             : "bg-emerald-50 text-emerald-700 border-emerald-200"
                         }`}
                       >
-                        {user.is_blocked ? "Blocked" : "Active"}
+                        {user.isBlocked ? "Blocked" : "Active"}
                       </span>
                     </div>
                     <div className="col-span-2 flex justify-center gap-2 flex-wrap">
@@ -214,12 +214,12 @@ function UserInfo() {
                         type="button"
                         onClick={() => handleBlockToggle(user)}
                         className={`px-3 py-2 rounded-lg border text-xs font-bold uppercase tracking-widest transition-all ${
-                          user.is_blocked
+                          user.isBlocked
                             ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
                             : "bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
                         }`}
                       >
-                        {user.is_blocked ? "Unblock" : "Block"}
+                        {user.isBlocked ? "Unblock" : "Block"}
                       </button>
                       <button
                         type="button"
@@ -252,9 +252,9 @@ function UserInfo() {
                         </div>
                         <div className="flex flex-col items-end gap-1">
                           <span className={`text-[10px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest border ${
-                            user.is_blocked ? "bg-red-50 text-red-600 border-red-100" : "bg-emerald-50 text-emerald-600 border-emerald-100"
+                            user.isBlocked ? "bg-red-50 text-red-600 border-red-100" : "bg-emerald-50 text-emerald-600 border-emerald-100"
                           }`}>
-                            {user.is_blocked ? "Blocked" : "Active"}
+                            {user.isBlocked ? "Blocked" : "Active"}
                           </span>
                           <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
                             {user.role}
@@ -265,7 +265,7 @@ function UserInfo() {
                       <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
                          <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">Join Date</p>
                          <p className="text-sm font-bold text-gray-700">
-                            {user.created_at ? new Date(user.created_at).toLocaleDateString(undefined, { dateStyle: 'long' }) : "—"}
+                            {user.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' }) : "—"}
                          </p>
                       </div>
                       
@@ -274,12 +274,12 @@ function UserInfo() {
                           type="button"
                           onClick={() => handleBlockToggle(user)}
                           className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition active:scale-95 ${
-                            user.is_blocked
+                            user.isBlocked
                               ? "bg-emerald-50 text-emerald-600 border-emerald-100 active:bg-emerald-100"
                               : "bg-red-50 text-red-600 border-red-100 active:bg-red-100"
                           }`}
                         >
-                          {user.is_blocked ? "Unblock Account" : "Block Account"}
+                          {user.isBlocked ? "Unblock Account" : "Block Account"}
                         </button>
                         <button
                           type="button"

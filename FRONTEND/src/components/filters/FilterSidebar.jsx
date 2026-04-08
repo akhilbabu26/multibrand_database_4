@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronDown, X } from 'lucide-react'
 import PriceRangeFilter from './PriceRangeFilter'
 import SingleSelectFilter from './SingleSelectFilter'

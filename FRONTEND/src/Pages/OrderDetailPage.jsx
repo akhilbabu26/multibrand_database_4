@@ -88,8 +88,8 @@ function OrdersPage() {
                 <div>
                   <p className="font-semibold">Order #{order.id}</p>
                   <p className="text-sm text-gray-600">
-                    {order.created_at
-                      ? new Date(order.created_at).toLocaleString()
+                    {order.createdAt
+                      ? new Date(order.createdAt).toLocaleString()
                       : ""}
                   </p>
                 </div>
@@ -102,10 +102,10 @@ function OrdersPage() {
 
               <div className="mb-4">
                 <p className="font-medium">
-                  Total: ₹{Number(order.total_amount).toFixed(2)}
+                  Total: ₹{Number(order.totalAmount).toFixed(2)}
                 </p>
                 <p className="text-sm text-gray-600">
-                  {order.payment_method} · {order.payment_status}
+                  {order.paymentMethod} · {order.paymentStatus}
                 </p>
               </div>
 
@@ -113,12 +113,12 @@ function OrdersPage() {
                 {(order.items || []).map((item) => (
                   <div key={item.id} className="flex items-center gap-3">
                     <img
-                      src={item.product_image}
-                      alt={item.product_name}
+                      src={item.productImage}
+                      alt={item.productName}
                       className="w-12 h-12 rounded object-cover bg-gray-100"
                     />
                     <div className="flex-1">
-                      <p className="text-sm font-medium">{item.product_name}</p>
+                      <p className="text-sm font-medium">{item.productName}</p>
                       <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
                     </div>
                     <p className="text-sm font-medium">

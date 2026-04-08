@@ -53,7 +53,7 @@ export default function Navbar({ sidebarOpen, setSidebarOpen }) {
   };
 
   const displayName = currentUser?.name || currentUser?.email?.split('@')[0] || 'Member';
-  const avatarUrl = currentUser?.avatar_url || currentUser?.image_url;
+  const avatarUrl = currentUser?.avatarUrl || currentUser?.imageUrl;
   const initials = displayName
     .split(/\s+/)
     .map((s) => s[0])

@@ -69,7 +69,7 @@ func (r *productRepository) ListAll(ctx context.Context, filters dto.ProductFilt
 	}
 	if filters.Search != "" {
 		like := "%" + filters.Search + "%"
-		query = query.Where("(name ILIKE ? OR description ILIKE ? OR brand ILIKE ? OR type ILIKE ? OR color ILIKE ? OR gender ILIKE ?)", 
+		query = query.Where("(name ILIKE ? OR description ILIKE ? OR brand ILIKE ? OR type ILIKE ? OR color ILIKE ? OR gender ILIKE ?)",
 			like, like, like, like, like, like)
 	}
 	if filters.Brand != "" {
@@ -136,24 +136,42 @@ func (r *productRepository) FindByID(ctx context.Context, id uint) (*entities.Pr
 	return &product, nil
 }
 
+func (r *productRepository) GetProductVariants(ctx context.Context, id uint) ([]*entities.Product, error) {
+	var baseProduct entities.Product
+	if err := r.DB().WithContext(ctx).First(&baseProduct, id).Error; err != nil {
+		return nil, apperrors.Internal("failed to fetch base product", err)
+	}
+
+	var variants []*entities.Product
+	err := r.DB().WithContext(ctx).
+		Where("name = ? AND brand = ? AND color = ?", baseProduct.Name, baseProduct.Brand, baseProduct.Color).
+		Preload("Images").
+		Find(&variants).Error
+
+	if err != nil {
+		return nil, apperrors.Internal("failed to fetch variants", err)
+	}
+	return variants, nil
+}
+
 func (r *productRepository) GetProductMetadata(ctx context.Context) (*dto.ProductMetadataResponse, error) {
 	var brands, types, colors, sizes, genders []string
 
-	db := r.DB().WithContext(ctx).Model(&entities.Product{}).Where("is_active = ?", true)
+	baseQuery := r.DB().WithContext(ctx).Model(&entities.Product{}).Where("is_active = ?", true)
 
-	if err := db.Distinct("brand").Order("brand asc").Pluck("brand", &brands).Error; err != nil {
+	if err := baseQuery.Session(&gorm.Session{}).Distinct("brand").Order("brand asc").Pluck("brand", &brands).Error; err != nil {
 		return nil, apperrors.Internal("failed to fetch brands", err)
 	}
-	if err := db.Distinct("type").Order("type asc").Pluck("type", &types).Error; err != nil {
+	if err := baseQuery.Session(&gorm.Session{}).Distinct("type").Order("type asc").Pluck("type", &types).Error; err != nil {
 		return nil, apperrors.Internal("failed to fetch types", err)
 	}
-	if err := db.Distinct("color").Order("color asc").Pluck("color", &colors).Error; err != nil {
+	if err := baseQuery.Session(&gorm.Session{}).Distinct("color").Order("color asc").Pluck("color", &colors).Error; err != nil {
 		return nil, apperrors.Internal("failed to fetch colors", err)
 	}
-	if err := db.Distinct("size").Order("size asc").Pluck("size", &sizes).Error; err != nil {
+	if err := baseQuery.Session(&gorm.Session{}).Distinct("size").Order("size asc").Pluck("size", &sizes).Error; err != nil {
 		return nil, apperrors.Internal("failed to fetch sizes", err)
 	}
-	if err := db.Distinct("gender").Order("gender asc").Pluck("gender", &genders).Error; err != nil {
+	if err := baseQuery.Session(&gorm.Session{}).Distinct("gender").Order("gender asc").Pluck("gender", &genders).Error; err != nil {
 		return nil, apperrors.Internal("failed to fetch genders", err)
 	}
 
@@ -165,4 +183,3 @@ func (r *productRepository) GetProductMetadata(ctx context.Context) (*dto.Produc
 		Genders: genders,
 	}, nil
 }
-

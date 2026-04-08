@@ -27,9 +27,9 @@ function ShowProduct({ product, onProductDelete }) {
         }
     }
 
-    const primaryImage = product.images?.find(img => img.is_primary)?.image_url || 
-                        product.images?.[0]?.image_url || 
-                        product.image_url;
+    const primaryImage = product.images?.find(img => img.isPrimary)?.imageUrl || 
+                        product.images?.[0]?.imageUrl || 
+                        product.imageUrl;
 
     return (
         <>
@@ -55,23 +55,23 @@ function ShowProduct({ product, onProductDelete }) {
                 {/* Costs */}
                 <div className="col-span-2 text-center">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Cost</p>
-                    <p className="font-bold text-gray-400 text-xs">₹{product.cost_price || 0}</p>
+                    <p className="font-bold text-gray-400 text-xs">₹{product.costPrice || 0}</p>
                 </div>
 
                 <div className="col-span-2 text-center">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Sale</p>
-                    <p className="font-black text-gray-900">₹{product.sale_price}</p>
+                    <p className="font-black text-gray-900">₹{product.salePrice}</p>
                 </div>
 
                 {/* Discount */}
                 <div className="col-span-2 text-center">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Discount</p>
                     <span className={`inline-flex items-center px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest ${
-                        product.discount_percentage > 0 
+                        product.discountPercentage > 0 
                             ? "bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100" 
                             : "bg-gray-50 text-gray-400 ring-1 ring-gray-100"
                     }`}>
-                        {product.discount_percentage}% OFF
+                        {product.discountPercentage}% OFF
                     </span>
                 </div>
 
@@ -116,11 +116,11 @@ function ShowProduct({ product, onProductDelete }) {
                 <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-2xl">
                     <div>
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">List Price</p>
-                        <p className="font-bold text-gray-400 line-through text-xs">₹{product.original_price}</p>
+                        <p className="font-bold text-gray-400 line-through text-xs">₹{product.originalPrice}</p>
                     </div>
                     <div>
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Sale Price</p>
-                        <p className="font-black text-gray-900">₹{product.sale_price}</p>
+                        <p className="font-black text-gray-900">₹{product.salePrice}</p>
                     </div>
                     <div>
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Stock</p>
@@ -128,7 +128,7 @@ function ShowProduct({ product, onProductDelete }) {
                     </div>
                     <div>
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Discount</p>
-                        <span className="text-emerald-600 font-black text-xs">{product.discount_percentage}% OFF</span>
+                        <span className="text-emerald-600 font-black text-xs">{product.discountPercentage}% OFF</span>
                     </div>
                 </div>
 

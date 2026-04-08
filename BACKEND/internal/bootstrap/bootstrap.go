@@ -1,42 +1,41 @@
 package bootstrap
 
-
-import(
+import (
 	"github.com/akhilbabu26/multibrand_database_4/internal/infrastructure/config"
 	"github.com/akhilbabu26/multibrand_database_4/internal/infrastructure/database"
 	"github.com/akhilbabu26/multibrand_database_4/pkg/email"
-	"github.com/akhilbabu26/multibrand_database_4/pkg/redis"
 	rzp "github.com/akhilbabu26/multibrand_database_4/pkg/razorpay"
+	"github.com/akhilbabu26/multibrand_database_4/pkg/redis"
 
-	"gorm.io/gorm"
-	goredis "github.com/redis/go-redis/v9" 
+	goredis "github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
-type App struct{
-	Config *config.Config
-	DB *gorm.DB
-	Mailer *email.Mailer
-	Redis *goredis.Client
+type App struct {
+	Config     *config.Config
+	DB         *gorm.DB
+	Mailer     *email.Mailer
+	Redis      *goredis.Client
 	TokenStore *redis.TokenStore
-	Razorpay * rzp.RazorpayClient
+	Razorpay   *rzp.RazorpayClient
 }
 
-func Initialize(appLogger *zap.Logger) (*App, error){
+func Initialize(appLogger *zap.Logger) (*App, error) {
 	// 1. Load config
 	cfg, err := config.Load()
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
 	// 2. Connect db
 	db, err := database.NewPostgresDB(&cfg.Database, appLogger)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
 	// 3. run migration
-	if err := database.AutoMigrate(db); err != nil{
+	if err := database.AutoMigrate(db); err != nil {
 		return nil, err
 	}
 
@@ -56,11 +55,11 @@ func Initialize(appLogger *zap.Logger) (*App, error){
 	razorpayClient := rzp.NewRazorpayClient(&cfg.Razorpay)
 
 	return &App{
-		Config: cfg, 
-		DB: db,
-		Mailer: mailer,
-		Redis:  redisClient,
-		TokenStore: tokenStore, 
+		Config:     cfg,
+		DB:         db,
+		Mailer:     mailer,
+		Redis:      redisClient,
+		TokenStore: tokenStore,
 		Razorpay:   razorpayClient,
 	}, nil
 }

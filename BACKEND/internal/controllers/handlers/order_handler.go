@@ -6,7 +6,7 @@ import (
 
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/contracts"
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/dto"
-	"github.com/akhilbabu26/multibrand_database_4/internal/models/entities"
+	"github.com/akhilbabu26/multibrand_database_4/pkg/constant"
 	apperrors "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
 	"github.com/akhilbabu26/multibrand_database_4/pkg/validator"
 	"github.com/gin-gonic/gin"
@@ -56,7 +56,7 @@ func (h *OrderHandler) PlaceOrder(c *gin.Context) {
 		return
 	}
 
-	if req.PaymentMethod == entities.PaymentMethodRazorpay {
+	if req.PaymentMethod == constant.PaymentMethodRazorpay {
 		apperrors.HandleCreated(c, "order placed, complete payment to confirm", gin.H{
 			"order": order,
 			"payment": gin.H{
@@ -91,7 +91,7 @@ func (h *OrderHandler) BuyNow(c *gin.Context) {
 		return
 	}
 
-	if req.PaymentMethod == entities.PaymentMethodRazorpay {
+	if req.PaymentMethod == constant.PaymentMethodRazorpay {
 		apperrors.HandleCreated(c, "order placed, complete payment to confirm", gin.H{
 			"order": order,
 			"payment": gin.H{
@@ -153,15 +153,15 @@ func (h *OrderHandler) GetMyOrders(c *gin.Context) {
 	}
 
 	statuses := c.QueryArray("statuses")
-	var orderStatuses []entities.OrderStatus
+	var orderStatuses []constant.OrderStatus
 	for _, s := range statuses {
 		if s != "" {
-			orderStatuses = append(orderStatuses, entities.OrderStatus(s))
+			orderStatuses = append(orderStatuses, constant.OrderStatus(s))
 		}
 	}
 
 	filter := dto.OrderFilter{
-		Status:    entities.OrderStatus(c.Query("status")),
+		Status:    constant.OrderStatus(c.Query("status")),
 		Statuses:  orderStatuses,
 		StartDate: parseDate(c.Query("start_date")),
 		EndDate:   parseDate(c.Query("end_date")),
@@ -200,15 +200,15 @@ func (h *OrderHandler) GetAllOrders(c *gin.Context) {
 	}
 
 	statuses := c.QueryArray("statuses")
-	var orderStatuses []entities.OrderStatus
+	var orderStatuses []constant.OrderStatus
 	for _, s := range statuses {
 		if s != "" {
-			orderStatuses = append(orderStatuses, entities.OrderStatus(s))
+			orderStatuses = append(orderStatuses, constant.OrderStatus(s))
 		}
 	}
 
 	filter := dto.OrderFilter{
-		Status:    entities.OrderStatus(c.Query("status")),
+		Status:    constant.OrderStatus(c.Query("status")),
 		Statuses:  orderStatuses,
 		StartDate: parseDate(c.Query("start_date")),
 		EndDate:   parseDate(c.Query("end_date")),

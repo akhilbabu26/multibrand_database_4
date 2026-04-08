@@ -22,10 +22,10 @@ const (
 	GenderUnisex Gender = "unisex"
 	GenderKids   Gender = "kids"
 
-	BrandAdidas Brand = "Adidas"
-	BrandNike Brand = "Nike"
-	BrandPuma Brand = "Puma"
-	BrandReebok Brand = "Reebok"
+	BrandAdidas     Brand = "Adidas"
+	BrandNike       Brand = "Nike"
+	BrandPuma       Brand = "Puma"
+	BrandReebok     Brand = "Reebok"
 	BrandNewBalance Brand = "New Balance"
 )
 

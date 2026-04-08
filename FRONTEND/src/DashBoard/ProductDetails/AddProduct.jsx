@@ -11,10 +11,10 @@ const initialValues = {
   brand: "Adidas",
   type: "Casual Retro Runner",
   color: "",
-  original_price: 0,
-  cost_price: 0,
-  discount_percentage: 0,
-  sale_price: 0,
+  originalPrice: 0,
+  costPrice: 0,
+  discountPercentage: 0,
+  salePrice: 0,
   size: "40",
   gender: "unisex",
   stock: 0,
@@ -117,7 +117,7 @@ function AddProduct() {
         {({ values, setFieldValue, isSubmitting }) => {
           const updateSalePrice = (orig, disc) => {
             const sale = Math.round(orig - (orig * disc) / 100);
-            setFieldValue("sale_price", sale);
+            setFieldValue("salePrice", sale);
           };
 
           return (
@@ -188,37 +188,37 @@ function AddProduct() {
                   <div className="grid grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-2">Cost (₹)</label>
-                      <Field name="cost_price" type="number" step="0.01" className="w-full px-4 py-3 border rounded-xl bg-gray-50" />
+                      <Field name="costPrice" type="number" step="0.01" className="w-full px-4 py-3 border rounded-xl bg-gray-50" />
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-2">Original (₹)</label>
                       <Field
-                        name="original_price"
+                        name="originalPrice"
                         type="number"
                         className="w-full px-4 py-3 border rounded-xl bg-gray-50"
                         onChange={(e) => {
                           const val = parseFloat(e.target.value) || 0;
-                          setFieldValue("original_price", val);
-                          updateSalePrice(val, values.discount_percentage);
+                          setFieldValue("originalPrice", val);
+                          updateSalePrice(val, values.discountPercentage);
                         }}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-2">Discount %</label>
                       <Field
-                        name="discount_percentage"
+                        name="discountPercentage"
                         type="number"
                         className="w-full px-4 py-3 border rounded-xl bg-gray-50"
                         onChange={(e) => {
                           const val = parseFloat(e.target.value) || 0;
-                          setFieldValue("discount_percentage", val);
-                          updateSalePrice(values.original_price, val);
+                          setFieldValue("discountPercentage", val);
+                          updateSalePrice(values.originalPrice, val);
                         }}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-indigo-600 mb-2">Sale (₹)</label>
-                      <Field name="sale_price" type="number" className="w-full px-4 py-3 border rounded-xl bg-indigo-50 font-bold" readOnly />
+                      <Field name="salePrice" type="number" className="w-full px-4 py-3 border rounded-xl bg-indigo-50 font-bold" readOnly />
                     </div>
                   </div>
                 </div>

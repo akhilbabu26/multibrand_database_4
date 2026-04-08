@@ -54,7 +54,7 @@ function PaymentPage() {
   }, [orderId, navigate]);
 
   const startPay = async () => {
-    if (!session?.razorpay_order_id || !session?.key_id) {
+    if (!session?.razorpayOrderId || !session?.keyId) {
       toast.error("Payment session not ready");
       return;
     }
@@ -64,10 +64,10 @@ function PaymentPage() {
       const amountPaise = Math.round(Number(session.amount) * 100);
 
       const options = {
-        key: session.key_id,
+        key: session.keyId,
         amount: amountPaise,
         currency: session.currency || "INR",
-        order_id: session.razorpay_order_id,
+        order_id: session.razorpayOrderId,
         name: "Multibrand",
         description: `Order #${orderId}`,
         prefill: {

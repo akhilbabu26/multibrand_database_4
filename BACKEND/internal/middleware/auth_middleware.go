@@ -11,9 +11,9 @@ import (
 
 // AuthMiddleware validates JWT access token
 func AuthMiddleware(secret string, tokenStore *redis.TokenStore) gin.HandlerFunc {
-	return func(c *gin.Context){
+	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
-		if authHeader == ""{
+		if authHeader == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "authorization header required",
 			})
@@ -32,12 +32,12 @@ func AuthMiddleware(secret string, tokenStore *redis.TokenStore) gin.HandlerFunc
 		tokenStr := parts[1]
 
 		// 1. check blacklist first
-        if tokenStore.IsBlacklisted(tokenStr) {
-            c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-                "error": "session expired, please login again",
-            })
-            return
-        }
+		if tokenStore.IsBlacklisted(tokenStr) {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"error": "session expired, please login again",
+			})
+			return
+		}
 
 		// validate token
 		claims, err := jwt.ValidateToken(tokenStr, secret)
@@ -60,9 +60,9 @@ func AuthMiddleware(secret string, tokenStore *redis.TokenStore) gin.HandlerFunc
 
 // RoleMiddleware checks if user has required role
 func RoleMiddleware(roles ...string) gin.HandlerFunc {
-	return func(c *gin.Context){
+	return func(c *gin.Context) {
 		role, exists := c.Get("role")
-		if !exists{
+		if !exists {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 				"error": "role not found in token",
 			})
@@ -71,8 +71,8 @@ func RoleMiddleware(roles ...string) gin.HandlerFunc {
 
 		// check if user role matches any allowed role
 		userRole := role.(string)
-		for _, allowedRole := range roles{
-			if userRole == allowedRole{
+		for _, allowedRole := range roles {
+			if userRole == allowedRole {
 				c.Next()
 				return
 			}
