@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../lib/http';
 
 const ForgotPasswordSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Required'),
@@ -21,14 +22,31 @@ function ForgotPassword() {
       // Pass email to reset-password page so it pre-fills
       navigate('/reset-password', { state: { email: values.email } });
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to send OTP');
+      toast.error(getErrorMessage(error) || 'Failed to send OTP');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-center px-6 py-12 lg:px-8 bg-gray-50">
+    <div className="flex min-h-screen flex-col justify-center px-6 py-12 lg:px-8 bg-gray-50 relative">
+      {/* Premium Floating Back Button */}
+      <button 
+        onClick={() => navigate('/login')}
+        className="fixed top-6 left-6 z-50 p-3 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-gray-100 hover:bg-gray-50 transition-all group active:scale-95"
+        title="Back to Login"
+      >
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="h-6 w-6 text-gray-700 group-hover:-translate-x-1 transition-transform" 
+          fill="none" 
+          viewBox="0 0 24 24" 
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white px-8 py-10 rounded-3xl shadow-xl border border-gray-100">
           <div className="text-center mb-8">

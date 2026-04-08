@@ -1,16 +1,17 @@
-/* eslint-disable react-refresh/only-export-components -- context + provider pattern */
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { AuthContext } from './AuthContext';
 import { CartContext } from './CartContext';
 import wishlistService from '../services/wishlist.service';
 import toast from 'react-hot-toast';
-import { unwrapData, getErrorMessage } from '../lib/http';
+import { getErrorMessage } from '../lib/http';
 
 export const WishlistContext = createContext();
 
 export function WishlistProvider({ children }) {
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
   const { isAuthenticated, currentUser } = useContext(AuthContext);
   const cartCtx = useContext(CartContext);
   const isCustomer =
@@ -25,8 +26,7 @@ export function WishlistProvider({ children }) {
     }
     setLoading(true);
     try {
-      const res = await wishlistService.getWishlist();
-      const inner = unwrapData(res) ?? unwrapData(res?.data);
+      const inner = await wishlistService.getWishlist();
       const rows = inner?.wishlist ?? (Array.isArray(inner) ? inner : []);
       const normalized = rows.map((row) => {
         const p = row.product;
@@ -79,6 +79,7 @@ export function WishlistProvider({ children }) {
     try {
       await wishlistService.addToWishlist(pid);
       await fetchWishlist();
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Added to wishlist 💖");
     } catch (err) {
       toast.error(getErrorMessage(err) || "Failed to add to wishlist");
@@ -94,6 +95,7 @@ export function WishlistProvider({ children }) {
         prev.filter((item) => String(item.product_id) !== idStr)
       );
       await fetchWishlist();
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Removed from wishlist");
     } catch (err) {
       toast.error(getErrorMessage(err) || "Failed to remove from wishlist");
@@ -141,6 +143,7 @@ export function WishlistProvider({ children }) {
       );
       await cartCtx?.fetchCart?.();
       await fetchWishlist();
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Moved to cart 🛒");
     } catch (err) {
       toast.error(getErrorMessage(err) || "Failed to move to cart");

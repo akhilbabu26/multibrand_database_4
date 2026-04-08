@@ -2,13 +2,11 @@ import api from './api';
 
 export const paymentService = {
     createPayment: async (orderId) => {
-        const res = await api.post('/payment/create', { order_id: orderId });
-        return res.data;
+        return api.post('/payment/create', { order_id: orderId });
     },
 
     verifyPayment: async (payload) => {
-        const res = await api.post('/payment/verify', payload);
-        return res.data;
+        return api.post('/payment/verify', payload);
     },
 };
 

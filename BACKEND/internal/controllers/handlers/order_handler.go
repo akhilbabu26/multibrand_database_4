@@ -152,8 +152,17 @@ func (h *OrderHandler) GetMyOrders(c *gin.Context) {
 		limit = 10
 	}
 
+	statuses := c.QueryArray("statuses")
+	var orderStatuses []entities.OrderStatus
+	for _, s := range statuses {
+		if s != "" {
+			orderStatuses = append(orderStatuses, entities.OrderStatus(s))
+		}
+	}
+
 	filter := dto.OrderFilter{
 		Status:    entities.OrderStatus(c.Query("status")),
+		Statuses:  orderStatuses,
 		StartDate: parseDate(c.Query("start_date")),
 		EndDate:   parseDate(c.Query("end_date")),
 		OrderID:   c.Query("order_id"),
@@ -190,8 +199,17 @@ func (h *OrderHandler) GetAllOrders(c *gin.Context) {
 		limit = 10
 	}
 
+	statuses := c.QueryArray("statuses")
+	var orderStatuses []entities.OrderStatus
+	for _, s := range statuses {
+		if s != "" {
+			orderStatuses = append(orderStatuses, entities.OrderStatus(s))
+		}
+	}
+
 	filter := dto.OrderFilter{
 		Status:    entities.OrderStatus(c.Query("status")),
+		Statuses:  orderStatuses,
 		StartDate: parseDate(c.Query("start_date")),
 		EndDate:   parseDate(c.Query("end_date")),
 		OrderID:   c.Query("order_id"),

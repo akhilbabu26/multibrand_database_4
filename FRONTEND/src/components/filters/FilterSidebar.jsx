@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { ChevronDown, X } from 'lucide-react'
 import PriceRangeFilter from './PriceRangeFilter'
 import SingleSelectFilter from './SingleSelectFilter'
 import GenderFilter from './GenderFilter'
 import StockFilter from './StockFilter'
+import productService from '../../services/product.service'
 
 /**
  * FilterSidebar component
@@ -26,12 +27,29 @@ const FilterSidebar = ({
     stock: true,
   })
 
-  // Mock data - in production, these would come from API or props
-  const availableOptions = useMemo(() => ({
-    brands: ['Adidas', 'Nike', 'Puma', 'Reebok', 'New Balance'],
-    sizes: ['38', '39', '40', '41', '42', '43', '44'],
-    colors: ['Red', 'Blue', 'Black', 'White', 'Green', 'Yellow', 'Pink', 'Purple', 'Gray', 'Brown'],
-  }), [])
+  const [metadata, setMetadata] = useState({
+    brands: [],
+    sizes: [],
+    colors: [],
+    genders: [],
+    types: [],
+  })
+
+  useEffect(() => {
+    productService.getMetadata()
+        .then(data => {
+            setMetadata({
+                brands: data.brands || [],
+                sizes: data.sizes || [],
+                colors: data.colors || [],
+                genders: data.genders || [],
+                types: data.types || [],
+            })
+        })
+        .catch(err => console.error('[FilterSidebar] Metadata fetch failed:', err))
+  }, [])
+
+  const availableOptions = metadata;
 
   const toggleSection = (section) => {
     setExpandedSection(prev => ({
@@ -106,9 +124,9 @@ const FilterSidebar = ({
         {/* Header */}
         <div className="mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-2">Filters</h2>
-          {filters.search && (
+          {filters.q && (
             <p className="text-sm text-gray-600">
-              Search: <span className="font-medium">{filters.search}</span>
+              Search: <span className="font-medium">{filters.q}</span>
             </p>
           )}
           {filters.brand && (

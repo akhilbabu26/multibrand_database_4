@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import productService from "../../services/product.service";
 import { appendUpdateProduct } from "../../lib/productFormData";
-import { unwrapData, getErrorMessage } from "../../lib/http";
+import { getErrorMessage } from "../../lib/http";
 
 function ProductEdit() {
   const { productId } = useParams();
@@ -12,13 +12,67 @@ function ProductEdit() {
   const fileRef = useRef(null);
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [previews, setPreviews] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [deletedImageIds, setDeletedImageIds] = useState([]);
+  const [metadata, setMetadata] = useState({
+    brands: [],
+    types: [],
+    sizes: [],
+    genders: [],
+  });
+
+  useEffect(() => {
+    productService.getMetadata()
+      .then(data => setMetadata(data))
+      .catch(err => console.error("Metadata fetch failed", err));
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      previews.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [previews]);
+
+  const brands = metadata.brands?.length ? metadata.brands : ["Adidas", "Nike", "Puma", "Reebok", "New Balance"];
+  const types = metadata.types?.length ? metadata.types : ["Casual Retro Runner", "Lifestyle Basketball Sneaker", "Performance & Motorsport"];
+  const sizes = metadata.sizes?.length ? metadata.sizes : ["38", "39", "40", "41", "42", "43", "44"];
+  const genders = metadata.genders?.length ? metadata.genders : ["men", "women", "unisex", "kids"];
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const newFiles = [...selectedFiles, ...files];
+    const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+
+    previews.forEach(url => URL.revokeObjectURL(url));
+    
+    setSelectedFiles(newFiles);
+    setPreviews(newPreviews);
+
+    if (e.target) e.target.value = "";
+  };
+
+  const removeExistingImage = (id) => {
+    setDeletedImageIds(prev => [...prev, id]);
+  };
+
+  const removeNewImage = (index) => {
+    const newFiles = selectedFiles.filter((_, i) => i !== index);
+    const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+    
+    previews.forEach(url => URL.revokeObjectURL(url));
+    
+    setSelectedFiles(newFiles);
+    setPreviews(newPreviews);
+  };
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const raw = await productService.getAdminProductById(productId);
-        const p = unwrapData(raw) ?? raw;
+        const p = await productService.getAdminProductById(productId);
         if (!cancelled) setProduct(p);
       } catch (e) {
         toast.error(getErrorMessage(e) || "Failed to load product");
@@ -79,8 +133,7 @@ function ProductEdit() {
           setSubmitting(true);
           try {
             const fd = new FormData();
-            const files = fileRef.current?.files;
-            appendUpdateProduct(fd, values, files?.length ? files : null);
+            appendUpdateProduct(fd, { ...values, delete_image_ids: deletedImageIds }, selectedFiles.length ? selectedFiles : null);
             await productService.updateProduct(product.id, fd);
             toast.success("Product updated");
             navigate("/admin/productInfo");
@@ -109,21 +162,13 @@ function ProductEdit() {
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Brand</label>
                     <Field as="select" name="brand" className="w-full px-4 py-3 border rounded-xl bg-gray-50">
-                      <option value="Adidas">Adidas</option>
-                      <option value="Nike">Nike</option>
-                      <option value="Puma">Puma</option>
-                      <option value="Reebok">Reebok</option>
-                      <option value="New Balance">New Balance</option>
+                      {brands.map(b => <option key={b} value={b}>{b}</option>)}
                     </Field>
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Type</label>
                     <Field as="select" name="type" className="w-full px-4 py-3 border rounded-xl bg-gray-50">
-                      <option value="Casual Retro Runner">Retro Runner</option>
-                      <option value="Lifestyle Basketball Sneaker">Basketball Sneaker</option>
-                      <option value="Performance & Motorsport">Performance</option>
-                      <option value="Heritage Court & Fitness">Court & Fitness</option>
-                      <option value="Premium Heritage Runner">Heritage Runner</option>
+                      {types.map(t => <option key={t} value={t}>{t}</option>)}
                     </Field>
                   </div>
                 </div>
@@ -137,16 +182,13 @@ function ProductEdit() {
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Gender</label>
                     <Field as="select" name="gender" className="w-full px-4 py-3 border rounded-xl bg-gray-50">
-                      <option value="men">Men</option>
-                      <option value="women">Women</option>
-                      <option value="unisex">Unisex</option>
-                      <option value="kids">Kids</option>
+                      {genders.map(g => <option key={g} value={g}>{g}</option>)}
                     </Field>
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Size</label>
                     <Field as="select" name="size" className="w-full px-4 py-3 border rounded-xl bg-gray-50">
-                      {["38", "39", "40", "41", "42", "43", "44"].map((s) => (
+                      {sizes.map((s) => (
                         <option key={s} value={s}>
                           {s}
                         </option>
@@ -210,12 +252,81 @@ function ProductEdit() {
                 </div>
 
                 <div className="bg-white rounded-3xl p-8 shadow-sm border space-y-4">
-                  <h2 className="text-xl font-bold text-gray-800 pb-2 border-b">New images (optional)</h2>
+                  <div className="flex items-center justify-between border-b pb-2">
+                    <h2 className="text-xl font-bold text-gray-800">New images (optional)</h2>
+                    <span className="text-xs font-bold px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg">
+                      {previews.length} selected
+                    </span>
+                  </div>
                   <p className="text-sm text-gray-500">Append more photos; leave empty to keep existing.</p>
-                  <input ref={fileRef} type="file" accept="image/*" multiple className="w-full text-sm" />
-                  <div className="flex gap-2 flex-wrap">
-                    {(product.images || []).map((img) => (
-                      <img key={img.id} src={img.image_url} alt="" className="w-16 h-16 object-cover rounded-lg border" />
+                  
+                  <div className="relative group">
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileRef.current?.click()}
+                      className="w-full flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-gray-200 rounded-3xl hover:border-indigo-400 hover:bg-indigo-50/30 transition-all group"
+                    >
+                      <div className="w-10 h-10 flex items-center justify-center bg-gray-50 rounded-2xl group-hover:bg-indigo-100 transition-colors">
+                        <svg className="w-5 h-5 text-gray-400 group-hover:text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                      </div>
+                      <div className="text-center">
+                        <span className="block text-sm font-bold text-gray-700">Add new images</span>
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* Combined Preview Grid */}
+                  <div className="grid grid-cols-4 gap-3 mt-4">
+                    {/* Existing Images */}
+                    {(product.images || [])
+                      .filter(img => !deletedImageIds.includes(img.id))
+                      .map((img) => (
+                        <div key={img.id} className="relative aspect-square rounded-2xl overflow-hidden border group">
+                          <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                          
+                          {/* Remove Button for Live Images */}
+                          <button
+                            type="button"
+                            onClick={() => removeExistingImage(img.id)}
+                            className="absolute top-1 right-1 w-5 h-5 bg-white/90 text-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-50"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                          
+                          <div className="absolute top-1 left-1 bg-green-500 text-white text-[8px] px-1 rounded font-bold">Live</div>
+                        </div>
+                    ))}
+                    
+                    {/* New Previews */}
+                    {previews.map((url, idx) => (
+                      <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border-2 border-indigo-200 group">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        
+                        {/* Remove Button for New Images */}
+                        <button
+                          type="button"
+                          onClick={() => removeNewImage(idx)}
+                          className="absolute top-1 right-1 w-5 h-5 bg-white/90 text-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-50"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+
+                        <div className="absolute top-1 left-1 bg-indigo-600 text-white text-[8px] px-1 rounded font-bold">New</div>
+                      </div>
                     ))}
                   </div>
                 </div>

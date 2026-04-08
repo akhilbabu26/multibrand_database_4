@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import toast from "react-hot-toast";
 import useFetch from "../Hooks/useFetch";
 import { useAuth } from "../Hooks/useAuth";
 import { useCart } from "../Hooks/useCart";
 import { useWishlist } from "../Hooks/useWishlist";
 import api from "../services/api";
-import { unwrapData } from "../lib/http";
+import { getErrorMessage } from "../lib/http";
 
 export default function ProductDetail() {
   const { productId } = useParams();
@@ -14,6 +15,7 @@ export default function ProductDetail() {
 
 function ProductDetailInner({ productId }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { data: product, loading } = useFetch(`/products/${productId}`, null, {
     asEntity: true,
   });
@@ -32,9 +34,8 @@ function ProductDetailInner({ productId }) {
     if (product?.name) {
       const fetchVariants = async () => {
         try {
-          const res = await api.get(`/products?search=${encodeURIComponent(product.name)}&limit=50`);
-          const allData = unwrapData(res.data);
-          const list = allData?.products || [];
+          const data = await api.get(`/products?search=${encodeURIComponent(product.name)}&limit=50`);
+          const list = data?.products || [];
           // Filter to only those with the exact same name and brand to avoid irrelevant fuzzy search results
           const actualVariants = list.filter(p => 
             p.name === product.name && 
@@ -102,6 +103,27 @@ function ProductDetailInner({ productId }) {
     if (!ok && !currentUser) navigate("/login");
   };
 
+  const handleBuyNow = async () => {
+    if (!currentUser) {
+      navigate("/login", { state: { from: `/product/${productId}` } });
+      return;
+    }
+
+    navigate("/checkOut", { 
+      state: { 
+        buyNowItem: {
+          product_id: pid,
+          name: product.name,
+          image_url: mainImage,
+          sale_price: product.sale_price,
+          brand: product.brand,
+          size: product.size,
+          quantity: quantity
+        }
+      } 
+    });
+  };
+
   const sizes = ["38", "39", "40", "41", "42", "43", "44"];
 
   // Map of available sizes to their product objects
@@ -111,7 +133,24 @@ function ProductDetailInner({ productId }) {
   }, {});
 
   return (
-    <div className="max-w-7xl mx-auto p-4 md:p-8 lg:p-12 mb-20 bg-white min-h-screen">
+    <div className="max-w-7xl mx-auto p-4 sm:p-8 lg:p-12 mb-20 bg-white min-h-screen">
+      <div className="flex items-center justify-between mb-6">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-gray-400 hover:text-indigo-600 transition group"
+        >
+          <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center group-hover:border-indigo-100 group-hover:bg-indigo-50">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest">
+            {location.state?.from ? `Back to ${location.state.from}` : "Back to Collection"}
+          </span>
+        </button>
+      </div>
+
       <nav className="flex mb-12 text-[10px] font-black uppercase tracking-widest bg-gray-50 p-4 rounded-2xl border border-gray-100">
         <button
           type="button"
@@ -303,13 +342,22 @@ function ProductDetailInner({ productId }) {
                 type="button"
                 onClick={handleAddToCart}
                 disabled={product.stock === 0}
-                className="flex-1 bg-black text-white h-20 rounded-3xl font-black text-xl uppercase tracking-tighter hover:bg-gray-800 transition transform active:scale-95 shadow-2xl shadow-gray-200 disabled:bg-gray-400 disabled:transform-none disabled:shadow-none"
+                className="flex-[2] bg-white text-black border-2 border-black h-20 rounded-3xl font-black text-xl uppercase tracking-tighter hover:bg-gray-50 transition transform active:scale-95 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-transparent disabled:transform-none"
               >
                 {product.stock === 0
                   ? "OUT OF STOCK"
                   : isAddedToCart
                     ? "VIEW IN CART"
                     : "ADD TO CART"}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleBuyNow}
+                disabled={product.stock === 0}
+                className="flex-[3] bg-black text-white h-20 rounded-3xl font-black text-xl uppercase tracking-tighter hover:bg-gray-800 transition transform active:scale-95 shadow-2xl shadow-gray-200 disabled:bg-gray-400 disabled:transform-none disabled:shadow-none"
+              >
+                BUY NOW
               </button>
 
               <button

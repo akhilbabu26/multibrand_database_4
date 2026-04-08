@@ -10,7 +10,7 @@ export const useProductFilters = () => {
 
   // Parse filters from URL params
   const filters = useMemo(() => ({
-    search: searchParams.get('search') || '',
+    q: searchParams.get('q') || searchParams.get('search') || '',
     brand: searchParams.get('brand') || '',
     type: searchParams.get('type') || '',
     gender: searchParams.get('gender') || '',
@@ -80,6 +80,10 @@ export const useProductFilters = () => {
     console.log('[useProductFilters] Setting page:', page)
     const newParams = new URLSearchParams(searchParams)
     newParams.set('page', page.toString())
+    // Cleanup legacy 'search' param if we are setting 'page' or others
+    if (newParams.has('search') && newParams.has('q')) {
+      newParams.delete('search')
+    }
     setSearchParams(newParams)
   }, [searchParams, setSearchParams])
 
@@ -94,7 +98,7 @@ export const useProductFilters = () => {
   // Get API-ready filters object
   const apiFilters = useMemo(() => {
     const api = {
-      search: filters.search || undefined,
+      search: filters.q || undefined,
       brand: filters.brand || undefined,
       type: filters.type || undefined,
       gender: filters.gender || undefined,

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import api from '../services/api'
 import useFetch from '../Hooks/useFetch'
-import { unwrapData } from '../lib/http'
 
 function DashBoardPage() {
   const [users, setUsers] = useState([])
@@ -18,10 +17,10 @@ function DashBoardPage() {
           api.get('/admin/orders', { params: { page: 1, limit: 500 } }),
         ])
         if (cancelled) return
-        const usersInner = unwrapData(usersRes.data)
+        const usersInner = usersRes;
         const list = usersInner?.users
         setUsers(Array.isArray(list) ? list : [])
-        const ordersInner = unwrapData(ordersRes.data)
+        const ordersInner = ordersRes;
         setAllOrders(Array.isArray(ordersInner?.orders) ? ordersInner.orders : [])
       } catch (err) {
         if (!cancelled) {

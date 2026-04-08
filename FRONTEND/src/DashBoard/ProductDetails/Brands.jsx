@@ -4,11 +4,12 @@ import ShowProduct from "./ShowProduct"
 import { useNavigate } from "react-router-dom"
 
 function Brands() {
-    const [selectedBrand, setSelectedBrand] = useState("Adidas")
+    const [selectedBrand, setSelectedBrand] = useState("")
     const [search, setSearch] = useState("")
     const [color, setColor] = useState("")
     const [gender, setGender] = useState("")
     const [type, setType] = useState("")
+    const [isActive, setIsActive] = useState("") // "" (all), "true", "false"
     
     // Construct query parameters
     const queryParams = new URLSearchParams()
@@ -17,6 +18,7 @@ function Brands() {
     if (color) queryParams.append("color", color)
     if (gender) queryParams.append("gender", gender)
     if (type) queryParams.append("type", type)
+    if (isActive) queryParams.append("is_active", isActive)
     queryParams.append("limit", "100")
 
     const { data, loading, error } = useFetch(`/admin/products?${queryParams.toString()}`)
@@ -115,6 +117,20 @@ function Brands() {
                                 className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-gray-900 outline-none transition"
                             />
                         </div>
+
+                        {/* Status */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-gray-400">Activity Status</label>
+                            <select 
+                                value={isActive}
+                                onChange={(e) => setIsActive(e.target.value)}
+                                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-gray-900 outline-none transition"
+                            >
+                                <option value="">All Statuses</option>
+                                <option value="true">Active Only</option>
+                                <option value="false">Inactive Only</option>
+                            </select>
+                        </div>
                     </div>
 
                     {/* Brand Filter Buttons */}
@@ -143,6 +159,7 @@ function Brands() {
                                     setGender("")
                                     setColor("")
                                     setType("")
+                                    setIsActive("")
                                 }}
                                 className="text-xs font-black uppercase tracking-widest text-red-500 hover:text-red-600 transition"
                             >

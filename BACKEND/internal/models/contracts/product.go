@@ -15,6 +15,7 @@ type ProductRepository interface {
 
 	FindByIDForUpdate(ctx context.Context, id uint) (*entities.Product, error)
 	ListAll(ctx context.Context, filters dto.ProductFilter) ([]*entities.Product, int64, error)
+	GetProductMetadata(ctx context.Context) (*dto.ProductMetadataResponse, error)
 }
 
 type ProductUsecase interface {
@@ -27,4 +28,5 @@ type ProductUsecase interface {
 
 	GetProductForCustomer(ctx context.Context, id uint, userID *uint) (*dto.CustomerProductResponse, error)
 	ListProductsForCustomer(ctx context.Context, filters dto.ProductFilter, userID *uint) ([]*dto.CustomerProductResponse, int64, error)
+	GetProductMetadata(ctx context.Context) (*dto.ProductMetadataResponse, error)
 }

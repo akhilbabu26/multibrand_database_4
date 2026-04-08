@@ -1,9 +1,9 @@
-/* eslint-disable react-refresh/only-export-components -- context + provider pattern */
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import cartService from '../services/cart.service';
 import { AuthContext } from './AuthContext';
 import toast from 'react-hot-toast';
-import { unwrapData, getErrorMessage } from '../lib/http';
+import { getErrorMessage } from '../lib/http';
 
 export const CartContext = createContext();
 
@@ -12,6 +12,7 @@ export function CartProvider({ children }) {
   const [cartTotal, setCartTotal] = useState(0);
   const [cartCount, setCartCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
   const { isAuthenticated, currentUser } = useContext(AuthContext);
   // Cart API is user-role only; admins get 403 if we call it
   const isCustomer =
@@ -28,8 +29,7 @@ export function CartProvider({ children }) {
     }
     setLoading(true);
     try {
-      const res = await cartService.getCart();
-      const cartData = unwrapData(res) ?? unwrapData(res?.data) ?? res?.data;
+      const cartData = await cartService.getCart();
       setCart(cartData?.items || []);
       setCartTotal(cartData?.total_price || 0);
       setCartCount(cartData?.total_items || 0);
@@ -68,6 +68,8 @@ export function CartProvider({ children }) {
     try {
       await cartService.addToCart(pid, quantity);
       await fetchCart();
+      // Sync the product list status
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Added to cart 🛒");
       return true;
     } catch (err) {
@@ -78,9 +80,14 @@ export function CartProvider({ children }) {
 
   const removeFromCart = useCallback(async (productId) => {
     if (!isCustomer) return;
+    if (!productId) {
+      console.warn("[CartContext] removeFromCart called without productId");
+      return;
+    }
     try {
       await cartService.removeFromCart(productId);
       await fetchCart();
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Removed from cart");
     } catch {
       toast.error("Failed to remove item");
@@ -89,6 +96,10 @@ export function CartProvider({ children }) {
 
   const updateQuantity = useCallback(async (productId, quantity) => {
     if (!isCustomer) return;
+    if (!productId) {
+      console.warn("[CartContext] updateQuantity called without productId");
+      return;
+    }
     if (quantity < 1) {
       try {
         await cartService.removeFromCart(productId);
@@ -101,6 +112,7 @@ export function CartProvider({ children }) {
     try {
       await cartService.updateQuantity(productId, quantity);
       await fetchCart();
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     } catch {
       toast.error("Failed to update quantity");
     }
@@ -113,6 +125,7 @@ export function CartProvider({ children }) {
       setCart([]);
       setCartTotal(0);
       setCartCount(0);
+      queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Cart cleared");
     } catch {
       toast.error("Failed to clear cart");

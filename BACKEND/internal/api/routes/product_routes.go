@@ -14,6 +14,7 @@ func RegisterProductRoutes(r *gin.RouterGroup, app *bootstrap.App, h *handlers.P
 	{
 		product.GET("", h.ListProducts) // list + search + filter
 		product.GET("/:id", h.GetProduct) // get single product
+		product.GET("/metadata", h.GetProductMetadata) // get dynamic brands/colors
 	}
 
 	// admin only routes

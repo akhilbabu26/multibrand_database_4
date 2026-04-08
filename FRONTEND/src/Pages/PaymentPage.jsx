@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../Context/AuthContext";
 import paymentService from "../services/payment.service";
 import toast from "react-hot-toast";
-import { unwrapData, getErrorMessage } from "../lib/http";
+import { getErrorMessage } from "../lib/http";
 
 function loadRazorpayScript() {
   return new Promise((resolve, reject) => {
@@ -38,8 +38,7 @@ function PaymentPage() {
     let cancelled = false;
     (async () => {
       try {
-        const raw = await paymentService.createPayment(orderId);
-        const data = unwrapData(raw) ?? raw;
+        const data = await paymentService.createPayment(orderId);
         if (!cancelled) setSession(data);
       } catch (e) {
         toast.error(getErrorMessage(e) || "Could not start payment");

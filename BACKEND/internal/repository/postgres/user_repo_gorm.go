@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/contracts"
+	"github.com/akhilbabu26/multibrand_database_4/internal/models/dto"
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/entities"
 	"github.com/akhilbabu26/multibrand_database_4/internal/repository/generic"
 	apperrors "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
@@ -44,15 +45,21 @@ func (r *userRepository) FindByEmail(email string) (*entities.User, error) {
 
 // FIX 3: separate count query from paged query so future filters
 // don't corrupt the total count used by the pagination bar
-func (r *userRepository) ListUsers(search string, page, limit int) ([]*entities.User, int64, error) {
+func (r *userRepository) ListUsers(filter dto.UserFilter) ([]*entities.User, int64, error) {
 	var users []*entities.User
 	var total int64
 
 	query := r.DB().Model(&entities.User{})
 
-	if search != "" {
-		like := "%" + search + "%"
+	if filter.Search != "" {
+		like := "%" + filter.Search + "%"
 		query = query.Where("name ILIKE ? OR email ILIKE ?", like, like)
+	}
+	if filter.Role != "" {
+		query = query.Where("role = ?", filter.Role)
+	}
+	if filter.IsBlocked != nil {
+		query = query.Where("is_blocked = ?", *filter.IsBlocked)
 	}
 
 	// count on a fresh query — never shares state with the paged query
@@ -60,8 +67,8 @@ func (r *userRepository) ListUsers(search string, page, limit int) ([]*entities.
 		return nil, 0, apperrors.Internal("failed to count users", err)
 	}
 
-	offset := (page - 1) * limit
-	if err := query.Offset(offset).Limit(limit).Find(&users).Error; err != nil {
+	offset := (filter.Page - 1) * filter.Limit
+	if err := query.Offset(offset).Limit(filter.Limit).Find(&users).Error; err != nil {
 		return nil, 0, apperrors.Internal("failed to list users", err)
 	}
 

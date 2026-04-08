@@ -119,8 +119,19 @@ func (h *ProductHandler) AdminListProducts(c *gin.Context) {
 	minPrice, _ := strconv.ParseFloat(c.DefaultQuery("min_price", "0"), 64)
 	maxPrice, _ := strconv.ParseFloat(c.DefaultQuery("max_price", "0"), 64)
 
+	var isActive *bool
+	if val := c.Query("is_active"); val != "" {
+		b := val == "true"
+		isActive = &b
+	}
+
+	searchQuery := c.Query("q")
+	if searchQuery == "" {
+		searchQuery = c.Query("search")
+	}
+
 	filters := dto.ProductFilter{
-		Search:   c.Query("search"),
+		Search:   searchQuery,
 		Brand:    c.Query("brand"),
 		Type:     c.Query("type"),
 		Color:    c.Query("color"),
@@ -130,6 +141,7 @@ func (h *ProductHandler) AdminListProducts(c *gin.Context) {
 		MaxPrice: maxPrice,
 		InStock:  c.Query("in_stock") == "true",
 		Inactive: true,
+		IsActive: isActive,
 		Page:     page,
 		Limit:    limit,
 	}
@@ -223,3 +235,14 @@ func (h *ProductHandler) ListProducts(c *gin.Context) {
 		"limit":    limit,
 	})
 }
+
+func (h *ProductHandler) GetProductMetadata(c *gin.Context) {
+	response, err := h.usecase.GetProductMetadata(c.Request.Context())
+	if err != nil {
+		apperrors.HandleError(c, err)
+		return
+	}
+
+	apperrors.HandleSuccess(c, "product metadata fetched", response)
+}
+

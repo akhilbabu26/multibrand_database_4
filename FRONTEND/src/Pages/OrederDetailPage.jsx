@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import orderService from "../services/order.service";
-import { unwrapData, getErrorMessage } from "../lib/http";
+import { getErrorMessage } from "../lib/http";
 
 function OrdersPage() {
   const navigate = useNavigate();
@@ -15,8 +15,7 @@ function OrdersPage() {
   const load = useCallback(async (p = 1) => {
     setLoading(true);
     try {
-      const raw = await orderService.getMyOrders({ page: p, limit });
-      const inner = unwrapData(raw) ?? raw;
+      const inner = await orderService.getMyOrders({ page: p, limit });
       setOrders(inner?.orders ?? []);
       setTotal(inner?.total ?? 0);
       setPage(inner?.page ?? p);

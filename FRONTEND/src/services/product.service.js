@@ -6,24 +6,14 @@ export const productService = {
      * @param {Object} filters - { search, category, minPrice, maxPrice, page, limit }
      */
     getProducts: async (filters = {}) => {
-        try {
-            const res = await api.get('/products', { params: filters });
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        return api.get('/products', { params: filters });
     },
 
     /**
      * Get single product by ID
      */
     getProductById: async (id) => {
-        try {
-            const res = await api.get(`/products/${id}`);
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        return api.get(`/products/${id}`);
     },
 
     /**
@@ -31,62 +21,40 @@ export const productService = {
      * Expects FormData with image files
      */
     createProduct: async (formData) => {
-        try {
-            // Let axios set multipart boundary — manual Content-Type breaks uploads
-            const res = await api.post('/admin/products', formData);
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        return api.post('/admin/products', formData);
     },
 
     /**
      * Update product (admin only)
      */
     updateProduct: async (id, formData) => {
-        try {
-            const res = await api.patch(`/admin/products/${id}`, formData);
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        return api.patch(`/admin/products/${id}`, formData);
     },
 
     /**
      * Delete product (admin only)
      */
     deleteProduct: async (id) => {
-        try {
-            const res = await api.delete(`/admin/products/${id}`);
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        return api.delete(`/admin/products/${id}`);
     },
 
     /**
      * Get all products (admin view with more details)
      */
     getAdminProducts: async (filters = {}) => {
-        try {
-            const res = await api.get('/admin/products', { params: filters });
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        return api.get('/admin/products', { params: filters });
     },
 
     /**
      * Get single product (admin view)
      */
     getAdminProductById: async (id) => {
-        try {
-            const res = await api.get(`/admin/products/${id}`);
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        return api.get(`/admin/products/${id}`);
     },
-};
+    
+    getMetadata: async () => {
+        return api.get('/products/metadata');
+    },
+}
 
 export default productService;

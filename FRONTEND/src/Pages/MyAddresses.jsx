@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Formik, Field, Form } from "formik";
+import { useNavigate } from "react-router-dom";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
 import addressService from "../services/address.service";
@@ -32,6 +33,7 @@ const empty = {
 };
 
 export default function MyAddresses() {
+  const navigate = useNavigate();
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
@@ -74,17 +76,29 @@ export default function MyAddresses() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-black text-gray-900 mb-6">My addresses</h1>
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+      <button
+        onClick={() => navigate("/")}
+        className="flex items-center gap-2 mb-8 text-gray-400 hover:text-indigo-600 transition group"
+      >
+        <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center group-hover:border-indigo-100 group-hover:bg-indigo-50">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </div>
+        <span className="text-[10px] font-black uppercase tracking-widest">Back to Account</span>
+      </button>
+
+      <h1 className="text-3xl font-black text-gray-900 mb-8 uppercase tracking-tight">My Addresses</h1>
 
       {loading ? (
         <div className="flex justify-center py-16">
           <div className="animate-spin h-10 w-10 border-2 border-indigo-600 border-t-transparent rounded-full" />
         </div>
       ) : (
-        <ul className="space-y-4 mb-10">
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
           {list.map((a) => (
-            <li key={a.id} className="border rounded-xl p-4 flex flex-col sm:flex-row sm:justify-between gap-4">
+            <li key={a.id} className="border border-gray-100 bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition">
               <div>
                 <p className="font-semibold">{a.full_name}</p>
                 <p className="text-sm text-gray-600">{a.phone}</p>

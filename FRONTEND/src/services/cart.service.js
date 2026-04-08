@@ -5,63 +5,38 @@ export const cartService = {
      * Get user's cart
      */
     getCart: async () => {
-        try {
-            const res = await api.get('/cart');
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        return api.get('/cart');
     },
 
     /**
      * Add product to cart
      */
     addToCart: async (productId, quantity = 1) => {
-        try {
-            const id = encodeURIComponent(String(productId));
-            const res = await api.post(`/cart/${id}`, { quantity });
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        const id = encodeURIComponent(String(productId));
+        return api.post(`/cart/${id}`, { quantity });
     },
 
     /**
      * Update product quantity in cart
      */
     updateQuantity: async (productId, quantity) => {
-        try {
-            const id = encodeURIComponent(String(productId));
-            const res = await api.patch(`/cart/${id}`, { quantity });
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        const id = encodeURIComponent(String(productId));
+        return api.patch(`/cart/${id}`, { quantity });
     },
 
     /**
      * Remove product from cart
      */
     removeFromCart: async (productId) => {
-        try {
-            const id = encodeURIComponent(String(productId));
-            const res = await api.delete(`/cart/${id}`);
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        const id = encodeURIComponent(String(productId));
+        return api.delete(`/cart/${id}`);
     },
 
     /**
      * Clear entire cart
      */
     clearCart: async () => {
-        try {
-            const res = await api.delete('/cart');
-            return res.data;
-        } catch (error) {
-            throw error.response?.data || error;
-        }
+        return api.delete('/cart');
     },
 };
 

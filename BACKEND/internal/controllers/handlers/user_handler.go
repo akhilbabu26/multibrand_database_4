@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/contracts"
+	"github.com/akhilbabu26/multibrand_database_4/internal/models/dto"
 	apperrors "github.com/akhilbabu26/multibrand_database_4/pkg/errors"
 	"github.com/gin-gonic/gin"
 )
@@ -43,16 +44,29 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 func (h *UserHandler) ListUsers(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
-	search := c.Query("search")
-
-	if page < 1 {
-		page = 1
-	}
-	if limit < 1 || limit > 50 {
-		limit = 10
+	
+	var isBlocked *bool
+	if val := c.Query("is_blocked"); val != "" {
+		b := val == "true"
+		isBlocked = &b
 	}
 
-	users, total, err := h.usecase.ListUsers(c.Request.Context(), search, page, limit)
+	filter := dto.UserFilter{
+		Search:    c.Query("search"),
+		Role:      c.Query("role"),
+		IsBlocked: isBlocked,
+		Page:      page,
+		Limit:     limit,
+	}
+
+	if filter.Page < 1 {
+		filter.Page = 1
+	}
+	if filter.Limit < 1 || filter.Limit > 50 {
+		filter.Limit = 10
+	}
+
+	users, total, err := h.usecase.ListUsers(c.Request.Context(), filter)
 	if err != nil {
 		apperrors.HandleError(c, err)
 		return

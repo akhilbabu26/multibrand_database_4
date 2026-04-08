@@ -13,33 +13,29 @@ export default function SearchPage() {
   const [searchParams] = useSearchParams()
   const { filters, setFilter, setFilters, clearFilters, apiFilters } = useProductFilters()
   const [showFilters, setShowFilters] = useState(false)
-  const [searchInput, setSearchInput] = useState(filters.search || "")
+  const [searchInput, setSearchInput] = useState(filters.q || "")
 
-  // Sync search input with URL params
+  // Sync local search input with unified 'q' param if it changes from outside
   useEffect(() => {
-    const q = searchParams.get("q")
-    if (q && q !== filters.search) {
-      console.log('[SearchPage] Syncing URL search param:', q)
-      setFilter("search", q)
-      setSearchInput(q)
+    if (filters.q !== searchInput) {
+      setSearchInput(filters.q)
     }
-  }, [searchParams, filters.search, setFilter])
+  }, [filters.q])
 
-  // Debounce search input
+  // Debounce search input update to URL
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchInput.trim() !== filters.search) {
-        console.log('[SearchPage] Debounced search update:', searchInput.trim())
-        setFilter("search", searchInput.trim())
+      if (searchInput.trim() !== filters.q) {
+        setFilter("q", searchInput.trim())
       }
     }, 350)
     return () => clearTimeout(timer)
-  }, [searchInput, filters.search, setFilter])
+  }, [searchInput, filters.q, setFilter])
 
   // Log filter state changes for debugging
   useEffect(() => {
     console.log('[SearchPage] Filters updated:', {
-      search: filters.search,
+      q: filters.q,
       brand: filters.brand,
       type: filters.type,
       gender: filters.gender,
@@ -73,11 +69,11 @@ export default function SearchPage() {
       console.log('[SearchPage] API Response:', response)
       return response
     },
-    enabled: filters.search.trim().length >= 2 || filters.brand || filters.type || filters.gender || filters.color || filters.size || filters.minPrice > 0 || filters.maxPrice > 0,
+    enabled: filters.q.trim().length >= 2 || filters.brand || filters.type || filters.gender || filters.color || filters.size || filters.minPrice > 0 || filters.maxPrice > 0,
   })
 
-  const products = productsData?.data?.products || []
-  const totalCount = productsData?.data?.total || 0
+  const products = productsData?.products || []
+  const totalCount = productsData?.total || 0
 
   return (
     <div className="w-full min-h-screen bg-white">
@@ -207,7 +203,7 @@ export default function SearchPage() {
           )}
 
           {/* Loading State */}
-          {isLoading && (filters.search.trim().length >= 2 || filters.type || filters.gender || filters.color || filters.size) && (
+          {isLoading && (filters.q.trim().length >= 2 || filters.type || filters.gender || filters.color || filters.size) && (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {[...Array(8)].map((_, i) => (
                 <div key={i} className="animate-pulse h-80 bg-gray-200 rounded-lg" />
@@ -223,7 +219,7 @@ export default function SearchPage() {
           )}
 
           {/* No Results */}
-          {!isLoading && !error && products.length === 0 && (filters.search.trim().length >= 2 || filters.brand || filters.type || filters.gender || filters.color || filters.size) && (
+          {!isLoading && !error && products.length === 0 && (filters.q.trim().length >= 2 || filters.brand || filters.type || filters.gender || filters.color || filters.size) && (
             <div className="text-center py-12">
               <p className="text-gray-500 text-lg">No products found</p>
               <button

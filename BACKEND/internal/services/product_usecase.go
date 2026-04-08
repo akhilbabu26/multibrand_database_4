@@ -149,6 +149,32 @@ func (u *productUsecase) UpdateProduct(ctx context.Context, id uint, req dto.Upd
 
 	product.CalculateSalePrice()
 
+	if len(req.DeleteImageIDs) > 0 {
+		var updatedImages []entities.ProductImage
+		for _, img := range product.Images {
+			shouldDelete := false
+			for _, deleteID := range req.DeleteImageIDs {
+				if img.ID == deleteID {
+					shouldDelete = true
+					break
+				}
+			}
+
+			if shouldDelete {
+				// Delete from Cloudinary
+				_ = u.imageService.DeleteImage(ctx, img.ImageURL)
+				// Delete from DB
+				if err := u.repo.DB().WithContext(ctx).Unscoped().Delete(&entities.ProductImage{}, img.ID).Error; err != nil {
+					// Logic check: if it fails, maybe log but continue?
+					// For now let's just log or ignore if it's already gone.
+				}
+			} else {
+				updatedImages = append(updatedImages, img)
+			}
+		}
+		product.Images = updatedImages
+	}
+
 	if len(req.Images) > 0 {
 		urls, err := u.uploadImages(ctx, req.Images)
 		if err != nil {
@@ -218,3 +244,8 @@ func (u *productUsecase) ListProductsForCustomer(ctx context.Context, filters dt
 
 	return response, total, nil
 }
+
+func (u *productUsecase) GetProductMetadata(ctx context.Context) (*dto.ProductMetadataResponse, error) {
+	return u.repo.GetProductMetadata(ctx)
+}
+

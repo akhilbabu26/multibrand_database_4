@@ -62,7 +62,9 @@ func (r *productRepository) ListAll(ctx context.Context, filters dto.ProductFilt
 	query := r.DB().WithContext(ctx).Model(&entities.Product{})
 
 	// --- filter predicates ---
-	if !filters.Inactive {
+	if filters.IsActive != nil {
+		query = query.Where("is_active = ?", *filters.IsActive)
+	} else if !filters.Inactive {
 		query = query.Where("is_active = ?", true)
 	}
 	if filters.Search != "" {
@@ -133,3 +135,34 @@ func (r *productRepository) FindByID(ctx context.Context, id uint) (*entities.Pr
 	}
 	return &product, nil
 }
+
+func (r *productRepository) GetProductMetadata(ctx context.Context) (*dto.ProductMetadataResponse, error) {
+	var brands, types, colors, sizes, genders []string
+
+	db := r.DB().WithContext(ctx).Model(&entities.Product{}).Where("is_active = ?", true)
+
+	if err := db.Distinct("brand").Order("brand asc").Pluck("brand", &brands).Error; err != nil {
+		return nil, apperrors.Internal("failed to fetch brands", err)
+	}
+	if err := db.Distinct("type").Order("type asc").Pluck("type", &types).Error; err != nil {
+		return nil, apperrors.Internal("failed to fetch types", err)
+	}
+	if err := db.Distinct("color").Order("color asc").Pluck("color", &colors).Error; err != nil {
+		return nil, apperrors.Internal("failed to fetch colors", err)
+	}
+	if err := db.Distinct("size").Order("size asc").Pluck("size", &sizes).Error; err != nil {
+		return nil, apperrors.Internal("failed to fetch sizes", err)
+	}
+	if err := db.Distinct("gender").Order("gender asc").Pluck("gender", &genders).Error; err != nil {
+		return nil, apperrors.Internal("failed to fetch genders", err)
+	}
+
+	return &dto.ProductMetadataResponse{
+		Brands:  brands,
+		Types:   types,
+		Colors:  colors,
+		Sizes:   sizes,
+		Genders: genders,
+	}, nil
+}
+

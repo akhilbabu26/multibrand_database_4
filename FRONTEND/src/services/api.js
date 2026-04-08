@@ -45,14 +45,25 @@ api.interceptors.request.use(
     }
 );
 
-// RESPONSE INTERCEPTOR - Handle 401 and refresh token
+// RESPONSE INTERCEPTOR - Handle envelope unwrapping and 401 refresh
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        // Automatically unwrap the standard Go backend response envelope
+        // Expected format: { success: true, message: "...", data: { ... } }
+        if (response.data && response.data.data !== undefined && response.data.success !== undefined) {
+             console.debug(`[API] Unwrapping response for ${response.config.url}`);
+             return response.data.data;
+        }
+        return response.data;
+    },
     async (error) => {
         const originalRequest = error.config;
+        const url = originalRequest?.url || "";
+        const isAuthRoute = url.startsWith('/auth/');
+        const isAlreadyOnLogin = window.location.pathname === "/login";
 
-        // If 401 and not already retrying
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // If 401 and not already retrying AND not an auth route
+        if (error.response?.status === 401 && !originalRequest?._retry && !isAuthRoute) {
             if (isRefreshing) {
                 // Queue the request if already refreshing
                 return new Promise((resolve, reject) => {
@@ -73,6 +84,7 @@ api.interceptors.response.use(
                     throw new Error('No refresh token');
                 }
 
+                console.debug("[API] Attempting to refresh access token...");
                 // Get new access token
                 const response = await axios.post(
                     `${api.defaults.baseURL}/auth/refresh`,
@@ -85,19 +97,23 @@ api.interceptors.response.use(
                 
                 processQueue(null, access_token);
                 
+                console.debug("[API] Token refresh successful. Retrying original request.");
                 // Retry original request
                 originalRequest.headers.Authorization = `Bearer ${access_token}`;
                 return api(originalRequest);
 
             } catch (err) {
                 // Refresh failed - logout user
+                console.error("[API] Token refresh failed. Clearing session and redirecting to login.", err);
                 processQueue(err, null);
                 localStorage.removeItem('access_token');
                 localStorage.removeItem('refresh_token');
                 localStorage.removeItem('user');
                 
-                // Redirect to login
-                window.location.href = '/login';
+                // Only redirect to login if we are NOT already there
+                if (!isAlreadyOnLogin) {
+                    window.location.href = "/login";
+                }
                 return Promise.reject(err);
                 
             } finally {

@@ -11,7 +11,7 @@ func RegisterAuthRoutes(r *gin.RouterGroup, app *bootstrap.App, h *handlers.Auth
 	
 	// Apply brute-force protection (15 requests per minute)
 	auth := r.Group("/auth")
-	bruteForceBlocker := middleware.RateLimiter(app.Redis, "15-M")
+	bruteForceBlocker := middleware.RateLimiter(app.Redis, "100-M")
 	auth.Use(bruteForceBlocker)
 
 	// PUBLIC ROUTES - No authentication required

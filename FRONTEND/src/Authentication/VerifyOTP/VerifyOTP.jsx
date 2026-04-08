@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { AuthContext } from '../../Context/AuthContext'
 import api from '../../services/api'
+import { getErrorMessage } from '../../lib/http'
 
 export default function VerifyOTP() {
   const [otp, setOtp] = useState(Array(6).fill(''))
@@ -85,8 +86,7 @@ export default function VerifyOTP() {
       toast.success('Email verified! Please log in.')
       navigate('/login')
     } catch (err) {
-      const message = err?.message || err?.error || 'OTP verification failed'
-      toast.error(message)
+      toast.error(getErrorMessage(err) || 'OTP verification failed')
       // Clear OTP boxes on failure
       setOtp(Array(6).fill(''))
       inputRefs.current[0]?.focus()
@@ -104,15 +104,32 @@ export default function VerifyOTP() {
       setCanResend(false)
       setOtp(Array(6).fill(''))
       inputRefs.current[0]?.focus()
-    } catch {
-      toast.error('Failed to resend OTP. Try again.')
+    } catch (err) {
+      toast.error(getErrorMessage(err) || 'Failed to resend OTP. Try again.')
     }
   }
 
   const formatTimer = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 
   return (
-    <div className="flex min-h-screen flex-col justify-center px-6 py-8 lg:px-8 bg-gray-50">
+    <div className="flex min-h-screen flex-col justify-center px-6 py-8 lg:px-8 bg-gray-50 relative">
+      {/* Premium Floating Back Button */}
+      <button 
+        onClick={() => navigate('/register')}
+        className="fixed top-6 left-6 z-50 p-3 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-gray-100 hover:bg-gray-50 transition-all group active:scale-95"
+        title="Back to Registration"
+      >
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="h-6 w-6 text-gray-700 group-hover:-translate-x-1 transition-transform" 
+          fill="none" 
+          viewBox="0 0 24 24" 
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white px-8 py-10 rounded-3xl shadow-xl border border-gray-100">
 

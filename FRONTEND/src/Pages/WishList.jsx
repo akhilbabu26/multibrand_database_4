@@ -28,7 +28,20 @@ function WishList() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-4">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+      <button
+        onClick={() => navigate("/")}
+        className="flex items-center gap-2 mb-8 text-gray-400 hover:text-indigo-600 transition group"
+      >
+        <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center group-hover:border-indigo-100 group-hover:bg-indigo-50">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </div>
+        <span className="text-[10px] font-black uppercase tracking-widest">Back to Collection</span>
+      </button>
+
+      <h1 className="text-3xl font-black text-gray-900 mb-8 uppercase tracking-tight">Wishlist</h1>
       {wishlist.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-gray-400 mb-4">
@@ -46,13 +59,13 @@ function WishList() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {wishlist.map((product) => (
             <div
               key={product.product_id}
-              className="group relative bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition border"
+              className="group relative bg-white rounded-2xl shadow-sm p-3 sm:p-4 hover:shadow-md transition border border-gray-100"
             >
-              <div className="relative">
+              <div className="relative cursor-pointer group" onClick={() => navigate(`/product/${product.product_id}`, { state: { from: 'Wishlist' } })}>
                 <img
                   alt={product.name}
                   src={product.image_url}
@@ -60,7 +73,10 @@ function WishList() {
                 />
                 <button
                   type="button"
-                  onClick={() => removeFromWishlist(product.product_id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeFromWishlist(product.product_id);
+                  }}
                   className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-red-50 hover:text-red-600 transition"
                   title="Remove from wishlist"
                 >
@@ -71,7 +87,12 @@ function WishList() {
               </div>
 
               <div className="mt-4">
-                <h3 className="text-sm font-semibold text-gray-800 line-clamp-2">{product.name}</h3>
+                <h3 
+                  onClick={() => navigate(`/product/${product.product_id}`, { state: { from: 'Wishlist' } })}
+                  className="text-sm font-semibold text-gray-800 line-clamp-2 cursor-pointer hover:text-indigo-600 transition"
+                >
+                  {product.name}
+                </h3>
 
                 <div className="flex items-center justify-between mt-3">
                   <span className="text-lg font-bold text-gray-900">

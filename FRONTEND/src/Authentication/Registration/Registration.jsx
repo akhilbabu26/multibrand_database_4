@@ -4,6 +4,7 @@ import * as Yup from 'yup'
 import api from '../../services/api'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from "react-hot-toast";
+import { getErrorMessage } from '../../lib/http';
 
 const Validation = Yup.object().shape({
   name: Yup.string().min(2, 'Min 2 characters').required('Required'),
@@ -33,7 +34,7 @@ export default function Register() {
       navigate('/verify-otp', { state: { email: values.email } })
     } catch (err) {
       console.error('Signup error:', err)
-      toast.error(err.response?.data?.message || 'Registration failed')
+      toast.error(getErrorMessage(err) || 'Registration failed')
     }
   }
 

@@ -2,56 +2,47 @@ import api from './api';
 
 export const orderService = {
     placeOrder: async (addressId, paymentMethod) => {
-        const res = await api.post('/orders', {
+        return api.post('/orders', {
             address_id: addressId,
             payment_method: paymentMethod,
         });
-        return res.data;
     },
 
     buyNow: async (productId, quantity, addressId, paymentMethod) => {
-        const res = await api.post('/orders/buy-now', {
+        return api.post('/orders/buy-now', {
             product_id: productId,
             quantity,
             address_id: addressId,
             payment_method: paymentMethod,
         });
-        return res.data;
     },
 
     getMyOrders: async (params = {}) => {
-        const res = await api.get('/orders', { params });
-        return res.data;
+        return api.get('/orders', { params });
     },
 
     getOrder: async (orderId) => {
-        const res = await api.get(`/orders/${orderId}`);
-        return res.data;
+        return api.get(`/orders/${orderId}`);
     },
 
     cancelOrder: async (orderId) => {
-        const res = await api.patch(`/orders/${orderId}/cancel`);
-        return res.data;
+        return api.patch(`/orders/${orderId}/cancel`);
     },
 
     getAllOrders: async (params = {}) => {
-        const res = await api.get('/admin/orders', { params });
-        return res.data;
+        return api.get('/admin/orders', { params });
     },
 
     getAdminOrder: async (orderId) => {
-        const res = await api.get(`/admin/orders/${orderId}`);
-        return res.data;
+        return api.get(`/admin/orders/${orderId}`);
     },
 
     updateOrderStatus: async (orderId, status) => {
-        const res = await api.patch(`/admin/orders/${orderId}/status`, { status });
-        return res.data;
+        return api.patch(`/admin/orders/${orderId}/status`, { status });
     },
 
     adminCancelOrder: async (orderId) => {
-        const res = await api.patch(`/admin/orders/${orderId}/cancel`);
-        return res.data;
+        return api.patch(`/admin/orders/${orderId}/cancel`);
     },
 };
 

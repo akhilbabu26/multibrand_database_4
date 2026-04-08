@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import orderService from "../services/order.service";
 import toast from "react-hot-toast";
-import { unwrapData, getErrorMessage } from "../lib/http";
+import { getErrorMessage } from "../lib/http";
 
 export default function OrderPage() {
   const [order, setOrder] = useState(null);
@@ -20,8 +20,7 @@ export default function OrderPage() {
         return;
       }
       try {
-        const raw = await orderService.getOrder(lastOrderId);
-        const data = unwrapData(raw) ?? raw;
+        const data = await orderService.getOrder(lastOrderId);
         if (!cancelled) setOrder(data);
       } catch (e) {
         toast.error(getErrorMessage(e) || "Could not load order");
@@ -144,13 +143,20 @@ export default function OrderPage() {
           </div>
         </div>
 
-        <div className="text-center mt-10">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
           <button
             type="button"
             onClick={() => navigate("/")}
-            className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-500"
+            className="w-full sm:w-auto bg-gray-900 text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-gray-800 transition shadow-lg shadow-gray-200"
           >
             Continue shopping
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate("/orders")}
+            className="w-full sm:w-auto bg-white text-gray-900 border-2 border-gray-900 px-10 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-gray-50 transition"
+          >
+            View History
           </button>
         </div>
       </div>

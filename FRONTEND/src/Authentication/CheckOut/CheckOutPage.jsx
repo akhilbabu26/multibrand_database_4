@@ -2,12 +2,12 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Formik, Field, Form } from "formik";
 import * as Yup from "yup";
 import { useCart } from "../../Hooks/useCart";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import addressService from "../../services/address.service";
 import orderService from "../../services/order.service";
 import { PAYMENT_METHOD } from "../../constants/apiConstants";
-import { getErrorMessage, unwrapData } from "../../lib/http";
+import { getErrorMessage } from "../../lib/http";
 
 const addressSchema = Yup.object({
   full_name: Yup.string().min(2).required("Required"),
@@ -37,12 +37,21 @@ const emptyAddress = {
 function CheckOutPage() {
   const { cart, cartTotal, fetchCart, loading: cartLoading } = useCart();
   const navigate = useNavigate();
+  const { state } = useLocation();
   const [addresses, setAddresses] = useState([]);
   const [loadingAddr, setLoadingAddr] = useState(true);
   const [selectedId, setSelectedId] = useState(null);
   const [showNew, setShowNew] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHOD.COD);
   const [submitting, setSubmitting] = useState(false);
+
+  const buyNowItem = state?.buyNowItem;
+  const isBuyNow = !!buyNowItem;
+
+  const displayItems = isBuyNow ? [buyNowItem] : cart;
+  const displayTotal = isBuyNow 
+    ? (buyNowItem.sale_price * buyNowItem.quantity) 
+    : cartTotal;
 
   const loadAddresses = useCallback(async () => {
     setLoadingAddr(true);
@@ -90,8 +99,8 @@ function CheckOutPage() {
   };
 
   const handlePlaceOrder = async () => {
-    if (!cart?.length) {
-      toast.error("Your cart is empty");
+    if (!displayItems?.length) {
+      toast.error("Process is empty");
       return;
     }
     if (!selectedId) {
@@ -100,10 +109,20 @@ function CheckOutPage() {
     }
     setSubmitting(true);
     try {
-      const res = await orderService.placeOrder(selectedId, paymentMethod);
-      const payload = unwrapData(res) ?? res;
+      let payload;
+      if (isBuyNow) {
+        payload = await orderService.buyNow(
+          buyNowItem.product_id,
+          buyNowItem.quantity,
+          selectedId,
+          paymentMethod
+        );
+      } else {
+        payload = await orderService.placeOrder(selectedId, paymentMethod);
+      }
+      
       const order = payload?.order ?? payload;
-      await fetchCart();
+      if (!isBuyNow) await fetchCart();
 
       if (paymentMethod === PAYMENT_METHOD.RAZORPAY) {
         navigate("/payment", {
@@ -132,7 +151,7 @@ function CheckOutPage() {
     );
   }
 
-  if (!cart?.length) {
+  if (!isBuyNow && !cart?.length) {
     return (
       <div className="max-w-2xl mx-auto p-12 text-center bg-white rounded-3xl mt-10 shadow-sm border border-gray-100">
         <div className="mb-6 text-6xl">🛒</div>
@@ -154,7 +173,21 @@ function CheckOutPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6 md:p-10 mb-20 mt-6">
+    <div className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-10 mb-20 mt-6 min-h-screen">
+      <button
+        onClick={() => navigate(isBuyNow ? -1 : "/cart")}
+        className="flex items-center gap-2 mb-8 text-gray-400 hover:text-indigo-600 transition group"
+      >
+        <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center group-hover:border-indigo-100 group-hover:bg-indigo-50">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </div>
+        <span className="text-[10px] font-black uppercase tracking-widest">
+          {isBuyNow ? "Back to Product" : "Return to Cart"}
+        </span>
+      </button>
+
       <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tight mb-8">
         Checkout
       </h1>
@@ -177,13 +210,13 @@ function CheckOutPage() {
               <ul className="space-y-3">
                 {addresses.map((a) => (
                   <li key={a.id}>
-                    <label className="flex gap-3 p-4 rounded-xl border cursor-pointer hover:border-indigo-200 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/30">
+                    <label className="flex gap-4 p-5 rounded-2xl border-2 cursor-pointer transition hover:border-indigo-100 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/30">
                       <input
                         type="radio"
                         name="addr"
                         checked={selectedId === a.id}
                         onChange={() => setSelectedId(a.id)}
-                        className="mt-1"
+                        className="mt-1.5 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                       />
                       <div>
                         <p className="font-semibold text-gray-900">{a.full_name}</p>
@@ -351,18 +384,24 @@ function CheckOutPage() {
         </div>
 
         <aside className="bg-gray-50 rounded-2xl p-6 border border-gray-100 h-fit">
-          <h3 className="font-bold text-gray-900 mb-4">Summary</h3>
+          <h3 className="font-bold text-gray-900 mb-4">{isBuyNow ? "Direct Order" : "Summary"}</h3>
           <ul className="space-y-3 text-sm max-h-64 overflow-y-auto mb-4">
-            {cart.map((item) => (
-              <li key={item.id ?? item.product_id} className="flex justify-between gap-2">
-                <span className="text-gray-700 truncate">{item.name}</span>
-                <span className="font-medium shrink-0">×{item.quantity}</span>
+            {displayItems.map((item) => (
+              <li key={item.id ?? item.product_id} className="flex justify-between gap-4 group">
+                <span 
+                  onClick={() => navigate(`/product/${item.product_id}`)}
+                  className="text-gray-700 truncate cursor-pointer group-hover:text-indigo-600 transition"
+                  title="View details"
+                >
+                  {item.name}
+                </span>
+                <span className="font-medium shrink-0 text-gray-400">×{item.quantity}</span>
               </li>
             ))}
           </ul>
           <div className="border-t pt-4 flex justify-between font-black text-lg">
             <span>Total</span>
-            <span>₹{Number(cartTotal).toFixed(2)}</span>
+            <span>₹{Number(displayTotal).toFixed(2)}</span>
           </div>
         </aside>
       </div>

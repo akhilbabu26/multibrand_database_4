@@ -18,6 +18,7 @@ type ProductFilter struct {
 	MaxPrice float64
 	InStock  bool
 	Inactive bool
+	IsActive *bool
 	Page     int
 	Limit    int
 }
@@ -48,6 +49,7 @@ type UpdateProductRequest struct {
 	OriginalPrice      *float64                `json:"original_price" form:"original_price" validate:"omitempty,gt=0"`
 	DiscountPercentage *float64                `json:"discount_percentage" form:"discount_percentage" validate:"omitempty,min=0,max=100"`
 	Images             []*multipart.FileHeader `form:"images" json:"-"`
+	DeleteImageIDs     []uint                  `form:"delete_image_ids" json:"delete_image_ids"`
 	Description        *string                 `json:"description" form:"description"`
 	Stock              *int                    `json:"stock" form:"stock" validate:"omitempty,min=0"`
 	IsActive           *bool                   `json:"is_active" form:"is_active"`
@@ -90,6 +92,15 @@ type AdminProductResponse struct {
 	CreatedAt          time.Time               `json:"created_at"`
 	UpdatedAt          time.Time               `json:"updated_at"`
 }
+
+type ProductMetadataResponse struct {
+	Brands  []string `json:"brands"`
+	Types   []string `json:"types"`
+	Colors  []string `json:"colors"`
+	Sizes   []string `json:"sizes"`
+	Genders []string `json:"genders"`
+}
+
 
 func ToCustomerProductResponse(p *entities.Product) *CustomerProductResponse {
 	images := p.Images

@@ -2,7 +2,7 @@
 import React, { createContext, useEffect, useState, useCallback, useMemo } from 'react';
 import authService from '../services/auth.service';
 import api from '../services/api';
-import { unwrapData, getErrorMessage } from '../lib/http';
+import { getErrorMessage } from '../lib/http';
 
 export const AuthContext = createContext();
 
@@ -25,8 +25,7 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        const userRes = await api.get('/user/profile');
-        const user = unwrapData(userRes.data);
+        const user = await api.get('/user/profile');
         localStorage.setItem('user', JSON.stringify(user));
         setCurrentUser(user);
         setIsAuthenticated(true);

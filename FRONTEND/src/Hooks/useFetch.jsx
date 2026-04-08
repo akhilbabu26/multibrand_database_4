@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect -- data fetching hook resets loading/list state in effect */
 import { useEffect, useState } from "react";
 import api from "../services/api";
-import { normalizeListPayload, listMeta, unwrapData } from "../lib/http";
+import { normalizeListPayload, listMeta } from "../lib/http";
 
 /**
  * @param {string} url
@@ -34,9 +34,8 @@ function useFetch(url, reload, options = {}) {
 
     api
       .get(url)
-      .then((res) => {
+      .then((inner) => {
         if (!isMounted) return;
-        const inner = unwrapData(res.data);
         setError(null);
         if (asEntity) {
           setData(inner ?? null);

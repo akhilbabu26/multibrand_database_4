@@ -8,7 +8,7 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Search, ChevronDown } from 'lucide-react';
 import api from '../../services/api';
-import { unwrapData, normalizeListPayload } from '../../lib/http';
+import { normalizeListPayload } from '../../lib/http';
 
 /** Department scope (matches catalog product `type` values). */
 const SEARCH_DEPARTMENTS = [
@@ -67,8 +67,7 @@ export default function NavbarSearchBar({ onNavigate }) {
       try {
         const params = { search: q, limit: SUGGEST_LIMIT };
         if (department) params.type = department;
-        const res = await api.get('/products', { params });
-        const inner = unwrapData(res.data);
+        const inner = await api.get('/products', { params });
         const list = normalizeListPayload(inner);
         if (!cancelled) setSuggestions(Array.isArray(list) ? list.slice(0, SUGGEST_LIMIT) : []);
       } catch {

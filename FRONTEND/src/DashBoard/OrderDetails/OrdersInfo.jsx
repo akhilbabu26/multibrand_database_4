@@ -1,7 +1,17 @@
 import React, { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import orderService from "../../services/order.service";
-import { unwrapData, getErrorMessage } from "../../lib/http";
+import { getErrorMessage } from "../../lib/http";
+
+const STATUS_TABS = [
+  { label: 'ALL', value: '' },
+  { label: 'WAITING', value: 'waiting' },
+  { label: 'PENDING', value: 'pending' },
+  { label: 'CONFIRMED', value: 'confirmed' },
+  { label: 'SHIPPED', value: 'shipped' },
+  { label: 'DELIVERED', value: 'delivered' },
+  { label: 'CANCELLED', value: 'cancelled' },
+];
 
 function OrdersInfo() {
   const [orders, setOrders] = useState([]);
@@ -20,13 +30,18 @@ function OrdersInfo() {
       const params = { 
         page: p, 
         limit,
-        status: s || undefined,
         start_date: sd || undefined,
         end_date: ed || undefined,
         order_id: oid || undefined
       };
-      const raw = await orderService.getAllOrders(params);
-      const inner = unwrapData(raw) ?? raw;
+
+      if (s === 'waiting') {
+        params.statuses = ['pending', 'confirmed'];
+      } else {
+        params.status = s || undefined;
+      }
+
+      const inner = await orderService.getAllOrders(params);
       setOrders(inner?.orders ?? []);
       setTotal(inner?.total ?? 0);
       setPage(inner?.page ?? p);
@@ -125,6 +140,23 @@ function OrdersInfo() {
           </button>
         </div>
 
+        {/* Status Tabs (FourCard style) */}
+        <div className="flex flex-wrap justify-start sm:justify-center gap-2 mb-8 no-scrollbar overflow-x-auto pb-2">
+          {STATUS_TABS.map((tab) => (
+            <button
+              key={tab.label}
+              onClick={() => setStatus(tab.value)}
+              className={`px-4 py-2 sm:px-6 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all duration-200 border
+                ${status === tab.value
+                  ? 'bg-gray-900 text-white border-gray-900 scale-105 shadow-lg shadow-gray-200'
+                  : 'bg-white text-gray-500 border-gray-200 hover:border-gray-900 hover:text-gray-900'
+                }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
         {/* Filter Bar */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
             <div className="space-y-1">
@@ -136,21 +168,6 @@ function OrdersInfo() {
                     onChange={(e) => setOrderId(e.target.value)}
                     className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
                 />
-            </div>
-            <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Status</label>
-                <select 
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
-                >
-                    <option value="">All Statuses</option>
-                    <option value="pending">Pending</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="shipped">Shipped</option>
-                    <option value="delivered">Delivered</option>
-                    <option value="cancelled">Cancelled</option>
-                </select>
             </div>
             <div className="space-y-1">
                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">From Date</label>
@@ -211,7 +228,6 @@ function OrdersInfo() {
                     </p>
                     <span
                       className={`inline-flex mt-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${getStatusColor(order.status)}`}
-                     Valencian
                     >
                       {order.status}
                     </span>
@@ -266,15 +282,54 @@ function OrdersInfo() {
 
           <div className="lg:hidden divide-y">
             {orders.map((order) => (
-              <div key={order.id} className="p-4 space-y-2">
-                <div className="flex justify-between">
-                  <span className="font-semibold">#{order.id}</span>
-                  <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(order.status)}`}>
+              <div key={order.id} className="p-4 space-y-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="font-bold text-gray-900 block">Order #{order.id}</span>
+                    <span className="text-[10px] text-gray-400 uppercase font-black">
+                      {order.created_at ? new Date(order.created_at).toLocaleDateString() : ""}
+                    </span>
+                  </div>
+                  <span className={`text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider border ${getStatusColor(order.status)}`}>
                     {order.status}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600">{order.address?.full_name}</p>
-                <p className="font-bold">₹{Number(order.total_amount).toFixed(2)}</p>
+                
+                <div className="text-sm bg-gray-50 p-3 rounded-xl border border-gray-100">
+                  <p className="font-bold">{order.address?.full_name}</p>
+                  <p className="text-gray-500 text-xs truncate">{order.address?.city}, {order.address?.state}</p>
+                  <p className="mt-2 font-black text-gray-900">₹{Number(order.total_amount).toFixed(2)}</p>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  {nextStatuses(order.status).length > 0 && (
+                    <select
+                      defaultValue=""
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        e.target.value = "";
+                        if (v) updateOrderStatus(order.id, v);
+                      }}
+                      className="w-full px-4 py-3 border rounded-xl text-sm bg-white font-bold uppercase tracking-widest text-gray-700 shadow-sm outline-none"
+                    >
+                      <option value="">Update Status…</option>
+                      {nextStatuses(order.status).map((s) => (
+                        <option key={s} value={s}>
+                          {s.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {order.status !== "cancelled" && order.status !== "delivered" && (
+                    <button
+                      type="button"
+                      onClick={() => adminCancel(order.id)}
+                      className="w-full py-3 bg-red-50 text-red-500 text-[10px] uppercase font-black rounded-xl border border-red-100 tracking-widest hover:bg-red-100 transition"
+                    >
+                      Force Cancel Order
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>

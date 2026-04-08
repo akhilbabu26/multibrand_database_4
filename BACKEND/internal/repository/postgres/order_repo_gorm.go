@@ -47,7 +47,9 @@ func (r *orderRepository) FindByUserID(userID uint, filter dto.OrderFilter) ([]*
 
 	query := r.DB().Model(&entities.Order{}).Where("user_id = ?", userID)
 
-	if filter.Status != "" {
+	if len(filter.Statuses) > 0 {
+		query = query.Where("status IN ?", filter.Statuses)
+	} else if filter.Status != "" {
 		query = query.Where("status = ?", filter.Status)
 	}
 	if filter.StartDate != nil {
@@ -80,7 +82,9 @@ func (r *orderRepository) FindAll(filter dto.OrderFilter) ([]*entities.Order, in
 
 	query := r.DB().Model(&entities.Order{})
 
-	if filter.Status != "" {
+	if len(filter.Statuses) > 0 {
+		query = query.Where("status IN ?", filter.Statuses)
+	} else if filter.Status != "" {
 		query = query.Where("status = ?", filter.Status)
 	}
 	if filter.StartDate != nil {

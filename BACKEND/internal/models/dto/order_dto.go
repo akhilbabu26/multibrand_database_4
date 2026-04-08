@@ -7,6 +7,7 @@ import (
 )
 type OrderFilter struct {
 	Status    entities.OrderStatus
+	Statuses  []entities.OrderStatus
 	StartDate *time.Time
 	EndDate   *time.Time
 	OrderID   string

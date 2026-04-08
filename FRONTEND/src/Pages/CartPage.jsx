@@ -26,8 +26,20 @@ function CartPage() {
   }
 
   return (
-    <div className="min-h-screen max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
+    <div className="min-h-screen max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+      <button
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-2 mb-8 text-gray-400 hover:text-indigo-600 transition group"
+      >
+        <div className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center group-hover:border-indigo-100 group-hover:bg-indigo-50">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </div>
+        <span className="text-[10px] font-black uppercase tracking-widest">Continue Shopping</span>
+      </button>
+
+      <h1 className="text-3xl font-black text-gray-900 mb-8 uppercase tracking-tight">Shopping Cart</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* CART ITEMS */}
@@ -47,14 +59,18 @@ function CartPage() {
                   <img
                     alt={product.name}
                     src={product.image_url}
-                    className="w-full sm:w-32 h-40 sm:h-32 object-cover rounded-lg bg-gray-50"
+                    onClick={() => navigate(`/product/${product.product_id}`, { state: { from: 'Cart' } })}
+                    className="w-full sm:w-32 h-40 sm:h-32 object-cover rounded-lg bg-gray-50 cursor-pointer hover:opacity-80 transition"
                   />
     
                   <div className="flex-1 flex flex-col justify-between">
                     <div>
                       <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-lg font-bold text-gray-900">{product.name}</h3>
+                        <div 
+                          onClick={() => navigate(`/product/${product.product_id}`, { state: { from: 'Cart' } })}
+                          className="cursor-pointer group"
+                        >
+                          <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition">{product.name}</h3>
                           <p className="text-xs font-black uppercase tracking-widest text-gray-400">
                              {product.brand} | Size {product.size}
                           </p>
