@@ -5,7 +5,7 @@ import { getErrorMessage } from "../../lib/http";
 
 const STATUS_TABS = [
   { label: 'ALL', value: '' },
-  { label: 'WAITING', value: 'waiting' },
+  // { label: 'WAITING', value: 'waiting' },
   { label: 'PENDING', value: 'pending' },
   { label: 'CONFIRMED', value: 'confirmed' },
   { label: 'SHIPPED', value: 'shipped' },

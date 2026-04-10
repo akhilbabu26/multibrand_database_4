@@ -137,6 +137,16 @@ function Brands() {
                     <div className="mt-8 pt-8 border-t border-gray-100">
                         <div className="flex flex-wrap justify-between items-center gap-4">
                             <div className="flex flex-wrap gap-3">
+                                <button
+                                    onClick={() => setSelectedBrand("")}
+                                    className={`px-6 py-2 rounded-xl font-bold text-xs uppercase tracking-widest transition-all duration-200 border
+                                        ${selectedBrand === ""
+                                            ? "bg-gray-900 text-white border-gray-900 scale-105 shadow-lg"
+                                            : "bg-white text-gray-600 border-gray-200 hover:border-gray-900"
+                                        }`}
+                                >
+                                    All
+                                </button>
                                 {brandFilters.map((brand) => (
                                     <button
                                         key={brand}
