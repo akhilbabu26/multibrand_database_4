@@ -2,9 +2,11 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 function ShowProduct({ product, onProductDelete }) {
     const navigate = useNavigate()
+    const queryClient = useQueryClient()
 
     const handleEdit = () => {
         navigate(`/admin/productEdit/${product.id}`)
@@ -14,6 +16,7 @@ function ShowProduct({ product, onProductDelete }) {
         if (window.confirm(`Are you sure you want to delete "${product.name}"?`)) {
             try {
                 await api.delete(`/admin/products/${product.id}`)
+                queryClient.invalidateQueries({ queryKey: ["products"] })
                 
                 if (onProductDelete) {
                     onProductDelete(product.id)

@@ -5,10 +5,12 @@ import toast from "react-hot-toast";
 import productService from "../../services/product.service";
 import { appendUpdateProduct } from "../../lib/productFormData";
 import { getErrorMessage } from "../../lib/http";
+import { useQueryClient } from "@tanstack/react-query";
 
 function ProductEdit() {
   const { productId } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const fileRef = useRef(null);
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -135,6 +137,7 @@ function ProductEdit() {
             const fd = new FormData();
             appendUpdateProduct(fd, { ...values, deleteImageIds: deletedImageIds }, selectedFiles.length ? selectedFiles : null);
             await productService.updateProduct(product.id, fd);
+            queryClient.invalidateQueries({ queryKey: ["products"] });
             toast.success("Product updated");
             navigate("/admin/productInfo");
           } catch (e) {

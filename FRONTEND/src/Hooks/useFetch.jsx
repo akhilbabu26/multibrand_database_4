@@ -11,7 +11,7 @@ function useFetch(url, reload, options = {}) {
   const { asEntity = false } = options;
 
   // Determine query key root to match global invalidation (e.g. "products")
-  const rootKey = url && url.startsWith("/products") ? "products" : "fetch";
+  const rootKey = url && (url.startsWith("/products") || url.startsWith("/admin/products")) ? "products" : "fetch";
   const queryKey = url ? [rootKey, url, reload, options] : ["empty"];
 
   const { data: rawData, isLoading: loading, error } = useQuery({

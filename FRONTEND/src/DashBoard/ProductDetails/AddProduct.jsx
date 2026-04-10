@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import productService from "../../services/product.service";
 import { appendCreateProduct } from "../../lib/productFormData";
 import { getErrorMessage } from "../../lib/http";
+import { useQueryClient } from "@tanstack/react-query";
 
 const initialValues = {
   name: "",
@@ -23,6 +24,7 @@ const initialValues = {
 
 function AddProduct() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const fileRef = useRef(null);
   const [submitting, setSubmitting] = useState(false);
   const [previews, setPreviews] = useState([]);
@@ -104,6 +106,7 @@ function AddProduct() {
             const fd = new FormData();
             appendCreateProduct(fd, values, selectedFiles);
             await productService.createProduct(fd);
+            queryClient.invalidateQueries({ queryKey: ["products"] });
             toast.success("Product created");
             navigate("/admin/productInfo");
           } catch (e) {
