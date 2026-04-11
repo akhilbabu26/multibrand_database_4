@@ -181,10 +181,17 @@ func (m *Mailer) send(to, subject, body string) error {
 		Subject: subject,
 		Html:    body,
 	}
-	_, err := m.client.Emails.Send(params)
+	
+	fmt.Printf("Sending email via Resend - From: %s, To: %s, Key: %s\n", 
+		m.cfg.Email, to, m.cfg.ResendAPIKey[:8])
+	
+	resp, err := m.client.Emails.Send(params)
 	if err != nil {
+		fmt.Printf("Resend error: %v\n", err)
 		return fmt.Errorf("failed to send email: %w", err)
 	}
+	
+	fmt.Printf("Resend success: %v\n", resp)
 	return nil
 }
 
