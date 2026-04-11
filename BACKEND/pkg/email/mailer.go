@@ -6,54 +6,53 @@ import (
 	"html/template"
 
 	"github.com/akhilbabu26/multibrand_database_4/internal/infrastructure/config"
-	"github.com/resend/resend-go/v2"
+
+	"gopkg.in/gomail.v2"
 )
 
 type Mailer struct {
-	cfg    *config.SMTPConfig
-	client *resend.Client
+	cfg *config.SMTPConfig
 }
 
 func NewMailer(cfg *config.SMTPConfig) *Mailer {
-	client := resend.NewClient(cfg.ResendAPIKey)
-	return &Mailer{cfg: cfg, client: client}
+	return &Mailer{cfg: cfg}
 }
 
-func (m *Mailer) send(to, subject, body string) error {
-	params := &resend.SendEmailRequest{
-		From:    fmt.Sprintf("%s <%s>", m.cfg.FromName, m.cfg.Email),
-		To:      []string{to},
-		Subject: subject,
-		Html:    body,
-	}
-	
-	fmt.Printf("Sending email via Resend - From: %s, To: %s, Key: %s\n", 
-		m.cfg.Email, to, m.cfg.ResendAPIKey[:8])
-	
-	resp, err := m.client.Emails.Send(params)
-	if err != nil {
-		fmt.Printf("Resend error: %v\n", err)
-		return fmt.Errorf("failed to send email: %w", err)
-	}
-	
-	fmt.Printf("Resend success: %v\n", resp)
-	return nil
-}
-
+// SendOTP sends a 6 digit OTP to the given email
 func (m *Mailer) SendOTP(toEmail, name, otp string) error {
+	subject := "Verify your Multibrand account"
+
 	body, err := createOTPEmail(name, otp)
 	if err != nil {
 		return fmt.Errorf("failed to build email body: %w", err)
 	}
-	return m.send(toEmail, "Verify your Multibrand account", body)
+
+	return m.send(toEmail, subject, body)
 }
 
-func (m *Mailer) SendResetOTP(toEmail, name, otp string) error {
-	body, err := buildResetOTPEmail(name, otp)
-	if err != nil {
-		return fmt.Errorf("failed to build email: %w", err)
+// send is a private helper that sends the actual email
+func (m *Mailer) send(to, subject, body string) error {
+	msg := gomail.NewMessage()
+
+	msg.SetHeader("From", fmt.Sprintf("%s <%s>", m.cfg.FromName, m.cfg.Email))
+	msg.SetHeader("To", to)
+	msg.SetHeader("Subject", subject)
+	msg.SetBody("text/html", body)
+
+	dialer := gomail.NewDialer(
+		m.cfg.Host,
+		m.cfg.Port,
+		m.cfg.Email,
+		m.cfg.Password,
+	)
+
+	dialer.SSL = true
+
+	if err := dialer.DialAndSend(msg); err != nil {
+		return fmt.Errorf("failed to send email: %w", err)
 	}
-	return m.send(toEmail, "Reset your Multibrand password", body)
+
+	return nil
 }
 
 func createOTPEmail(name, otp string) (string, error) {
@@ -89,7 +88,10 @@ func createOTPEmail(name, otp string) (string, error) {
 	data := struct {
 		Name string
 		OTP  string
-	}{Name: name, OTP: otp}
+	}{
+		Name: name,
+		OTP:  otp,
+	}
 
 	var buf bytes.Buffer
 	if err := t.Execute(&buf, data); err != nil {
@@ -97,6 +99,16 @@ func createOTPEmail(name, otp string) (string, error) {
 	}
 
 	return buf.String(), nil
+}
+
+// --- reset password mail format
+func (m *Mailer) SendResetOTP(toEmail, name, otp string) error {
+	subject := "Reset your Multibrand password"
+	body, err := buildResetOTPEmail(name, otp)
+	if err != nil {
+		return fmt.Errorf("failed to build email: %w", err)
+	}
+	return m.send(toEmail, subject, body)
 }
 
 func buildResetOTPEmail(name, otp string) (string, error) {
