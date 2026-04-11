@@ -109,10 +109,7 @@ func Load() (*Config, error) {
 			Secret: getEnv("JWT_SECRET", "multibrand4"),
 		},
 		SMTP: SMTPConfig{
-			// Host:     getEnv("SMTP_HOST", "smtp.gmail.com"),
-			// Port:     getEnvInt("SMTP_PORT", 587),
 			Email:    getEnv("SMTP_EMAIL", ""),
-			// Password: getEnv("SMTP_PASSWORD", ""),
 			FromName: getEnv("SMTP_FROM_NAME", "Multibrand"),
 			ResendAPIKey: getEnv("RESEND_API_KEY", ""),
 		},
