@@ -12,13 +12,17 @@ import (
 func HandleError(c *gin.Context, err error) {
 	var appErr *AppError
 
+	// attach to gin context so middleware can log it
+	c.Error(err)
+
 	if errors.As(err, &appErr) {
-
-		// LOG INTERNAL ERROR using structured logging
 		if appErr.Err != nil {
-			zap.L().Error("app error", zap.Error(appErr.Err), zap.String("code", appErr.ErrorCode))
+			zap.L().Error("app error",
+				zap.Error(appErr.Err),
+				zap.String("code", appErr.ErrorCode),
+				zap.String("message", appErr.Message),
+			)
 		}
-
 		c.JSON(appErr.Code, gin.H{
 			"success": false,
 			"message": appErr.Message,
@@ -28,9 +32,7 @@ func HandleError(c *gin.Context, err error) {
 		return
 	}
 
-	// UNKNOWN ERROR
 	zap.L().Error("unknown error", zap.Error(err))
-
 	c.JSON(constant.INTERNALSERVERERROR, gin.H{
 		"success": false,
 		"message": "something went wrong",
