@@ -43,6 +43,7 @@ type SMTPConfig struct {
 	Email    string
 	Password string
 	FromName string
+	ResendAPIKey string
 }
 
 type RedisConfig struct {
@@ -108,11 +109,12 @@ func Load() (*Config, error) {
 			Secret: getEnv("JWT_SECRET", "multibrand4"),
 		},
 		SMTP: SMTPConfig{
-			Host:     getEnv("SMTP_HOST", "smtp.gmail.com"),
-			Port:     getEnvInt("SMTP_PORT", 587),
+			// Host:     getEnv("SMTP_HOST", "smtp.gmail.com"),
+			// Port:     getEnvInt("SMTP_PORT", 587),
 			Email:    getEnv("SMTP_EMAIL", ""),
-			Password: getEnv("SMTP_PASSWORD", ""),
+			// Password: getEnv("SMTP_PASSWORD", ""),
 			FromName: getEnv("SMTP_FROM_NAME", "Multibrand"),
+			ResendAPIKey: getEnv("RESEND_API_KEY", ""),
 		},
 		Redis: RedisConfig{
 			Addr:     getEnv("REDIS_ADDR", "localhost:6379"),
