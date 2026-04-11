@@ -46,6 +46,8 @@ func (m *Mailer) send(to, subject, body string) error {
 		m.cfg.Password,
 	)
 
+	dialer.SSL = true
+
 	if err := dialer.DialAndSend(msg); err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}
