@@ -22,6 +22,11 @@ const initialValues = {
   description: "",
 };
 
+const brands = ["Adidas", "Nike", "Puma", "Reebok", "New Balance"];
+const types = ["Casual Retro Runner", "Lifestyle Basketball Sneaker", "Performance & Motorsport"];
+const sizes = ["38", "39", "40", "41", "42", "43", "44"];
+const genders = ["men", "women", "unisex", "kids"];
+
 function AddProduct() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -29,12 +34,6 @@ function AddProduct() {
   const [submitting, setSubmitting] = useState(false);
   const [previews, setPreviews] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [metadata, setMetadata] = useState({
-    brands: [],
-    types: [],
-    sizes: [],
-    genders: [],
-  });
 
   useEffect(() => {
     return () => {
@@ -42,40 +41,22 @@ function AddProduct() {
     };
   }, [previews]);
 
-  useEffect(() => {
-    productService.getMetadata()
-      .then(data => setMetadata(data))
-      .catch(err => console.error("Metadata fetch failed", err));
-  }, []);
-
-  const brands = metadata.brands?.length ? metadata.brands : ["Adidas", "Nike", "Puma", "Reebok", "New Balance"];
-  const types = metadata.types?.length ? metadata.types : ["Casual Retro Runner", "Lifestyle Basketball Sneaker", "Performance & Motorsport"];
-  const sizes = metadata.sizes?.length ? metadata.sizes : ["38", "39", "40", "41", "42", "43", "44"];
-  const genders = metadata.genders?.length ? metadata.genders : ["men", "women", "unisex", "kids"];
-
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
     const newFiles = [...selectedFiles, ...files];
     const newPreviews = newFiles.map(file => URL.createObjectURL(file));
-    
-    // Revoke old previews
     previews.forEach(url => URL.revokeObjectURL(url));
-    
     setSelectedFiles(newFiles);
     setPreviews(newPreviews);
-
-    // Reset input so the same file name can be picked again if removed
     if (e.target) e.target.value = "";
   };
 
   const removeImage = (index) => {
     const newFiles = selectedFiles.filter((_, i) => i !== index);
     const newPreviews = newFiles.map(file => URL.createObjectURL(file));
-    
     previews.forEach(url => URL.revokeObjectURL(url));
-    
     setSelectedFiles(newFiles);
     setPreviews(newPreviews);
   };
@@ -167,11 +148,7 @@ function AddProduct() {
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Size</label>
                     <Field as="select" name="size" className="w-full px-4 py-3 border rounded-xl bg-gray-50">
-                      {sizes.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
+                      {sizes.map(s => <option key={s} value={s}>{s}</option>)}
                     </Field>
                   </div>
                   <div>
@@ -220,7 +197,7 @@ function AddProduct() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-indigo-600 mb-2">Sale (₹)</label>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">Sale (₹)</label>
                       <Field name="salePrice" type="number" className="w-full px-4 py-3 border rounded-xl bg-indigo-50 font-bold" readOnly />
                     </div>
                   </div>
@@ -236,7 +213,7 @@ function AddProduct() {
                   <p className="text-sm text-gray-500">
                     The first image will be used as the primary thumbnail.
                   </p>
-                  
+
                   <div className="relative group">
                     <input
                       ref={fileRef}
@@ -268,8 +245,6 @@ function AddProduct() {
                       {previews.map((url, idx) => (
                         <div key={idx} className="relative aspect-square group rounded-2xl overflow-hidden border border-gray-100">
                           <img src={url} alt="" className="w-full h-full object-cover" />
-                          
-                          {/* Remove Button */}
                           <button
                             type="button"
                             onClick={() => removeImage(idx)}
@@ -279,9 +254,8 @@ function AddProduct() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                           </button>
-
                           <div className="absolute inset-x-0 bottom-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center py-1">
-                             {idx === 0 && <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.5 rounded-md font-bold">Main</span>}
+                            {idx === 0 && <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.5 rounded-md font-bold">Main</span>}
                           </div>
                         </div>
                       ))}
