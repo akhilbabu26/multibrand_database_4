@@ -215,7 +215,7 @@ function ProductDetailInner({ productId }) {
                 {product.type}
               </span>
             </div>
-            <h1 className="text-3xl sm:text-5xl font-black text-gray-900 leading-[1.1] mb-4 tracking-tighter">
+            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-[1.1] mb-4 tracking-tighter">
               {product.name}
             </h1>
             <div className="flex items-center gap-4 text-gray-500">
@@ -236,10 +236,10 @@ function ProductDetailInner({ productId }) {
           </div>
 
           <div className="flex items-baseline gap-4 mb-8 lg:mb-12">
-            <p className="text-4xl sm:text-5xl font-black text-gray-900 tracking-tighter">
+            <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 tracking-tighter">
               ₹{product.salePrice}
             </p>
-            <p className="text-xl sm:text-2xl line-through text-gray-300 font-bold">
+            <p className="text-lg sm:text-xl lg:text-2xl line-through text-gray-300 font-bold">
               ₹{product.originalPrice}
             </p>
           </div>
@@ -267,7 +267,7 @@ function ProductDetailInner({ productId }) {
                         }
                       }}
                       disabled={!variant || !isAvailable}
-                      className={`h-14 flex flex-col items-center justify-center rounded-2xl border-2 transition transform active:scale-95 ${
+                      className={`h-12 sm:h-14 flex flex-col items-center justify-center rounded-2xl border-2 transition transform active:scale-95 ${
                         isSelected
                           ? "bg-black text-white border-black shadow-lg shadow-gray-200"
                           : variant
@@ -299,7 +299,7 @@ function ProductDetailInner({ productId }) {
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
                 Quantity
               </label>
-              <div className="flex items-center border-2 border-gray-100 rounded-2xl bg-white shadow-sm h-14 overflow-hidden">
+              <div className="flex items-center border-2 border-gray-100 rounded-2xl bg-white shadow-sm h-12 sm:h-14 overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
@@ -325,7 +325,7 @@ function ProductDetailInner({ productId }) {
                 type="button"
                 onClick={handleAddToCart}
                 disabled={product.stock === 0}
-                className="flex-[2] bg-white text-black border-2 border-black h-20 rounded-3xl font-black text-xl uppercase tracking-tighter hover:bg-gray-50 transition transform active:scale-95 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-transparent disabled:transform-none"
+                className="flex-[2] bg-white text-black border-2 border-black h-14 sm:h-20 rounded-2xl sm:rounded-3xl font-black text-base sm:text-xl uppercase tracking-tighter hover:bg-gray-50 transition transform active:scale-95 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-transparent disabled:transform-none flex items-center justify-center"
               >
                 {product.stock === 0
                   ? "OUT OF STOCK"
@@ -338,7 +338,7 @@ function ProductDetailInner({ productId }) {
                 type="button"
                 onClick={handleBuyNow}
                 disabled={product.stock === 0}
-                className="flex-[3] bg-black text-white h-20 rounded-3xl font-black text-xl uppercase tracking-tighter hover:bg-gray-800 transition transform active:scale-95 shadow-2xl shadow-gray-200 disabled:bg-gray-400 disabled:transform-none disabled:shadow-none"
+                className="flex-[3] bg-black text-white h-14 sm:h-20 rounded-2xl sm:rounded-3xl font-black text-base sm:text-xl uppercase tracking-tighter hover:bg-gray-800 transition transform active:scale-95 shadow-xl sm:shadow-2xl shadow-gray-200 disabled:bg-gray-400 disabled:transform-none disabled:shadow-none flex items-center justify-center"
               >
                 BUY NOW
               </button>
@@ -346,14 +346,14 @@ function ProductDetailInner({ productId }) {
               <button
                 type="button"
                 onClick={() => toggleWishlist(product)}
-                className={`w-20 h-20 border-2 rounded-3xl transition transform active:scale-95 flex items-center justify-center ${
+                className={`w-14 sm:w-20 h-14 sm:h-20 border-2 rounded-2xl sm:rounded-3xl transition transform active:scale-95 flex items-center justify-center ${
                   isWishListed
                     ? "border-red-50 bg-red-50 text-red-500 shadow-xl shadow-red-50"
                     : "border-gray-50 text-gray-300 hover:border-gray-200 bg-white"
                 }`}
               >
                 <svg
-                  className={`w-8 h-8 ${isWishListed ? "fill-current" : ""}`}
+                  className={`w-6 h-6 sm:w-8 sm:h-8 ${isWishListed ? "fill-current" : ""}`}
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                   strokeWidth={2}

@@ -113,13 +113,29 @@ function AdminPage() {
         </div>
       </aside>
 
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="md:hidden fixed inset-0 z-20 bg-slate-900/50 backdrop-blur-sm transition-opacity"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-50">
         {/* Top Bar - Clean, Elevated Header */}
-        <header className="bg-white px-8 py-4 flex justify-between items-center border-b border-gray-200 shadow-sm z-10">
-          <h2 className="text-xl font-semibold text-gray-800 tracking-wide">
-            {currentPage}
-          </h2>
+        <header className="bg-white px-4 md:px-8 py-4 flex justify-between items-center border-b border-gray-200 shadow-sm z-10">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg md:hidden transition-colors"
+            >
+              <Menu size={24} />
+            </button>
+            <h2 className="text-xl font-semibold text-gray-800 tracking-wide truncate">
+              {currentPage}
+            </h2>
+          </div>
           
           <div className="flex items-center gap-5">
             {/* Admin Profile */}
