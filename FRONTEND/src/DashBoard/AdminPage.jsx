@@ -40,8 +40,8 @@ function AdminPage() {
       {/* Sidebar - Deep Charcoal/Black */}
       <aside
         className={`${
-          sidebarOpen ? "w-64" : "w-20"
-        } bg-gray-950 text-white transition-all duration-300 flex flex-col border-r border-gray-800 shadow-xl z-20`}
+          sidebarOpen ? "w-64 translate-x-0" : "w-20 -translate-x-full md:translate-x-0"
+        } absolute md:relative z-30 h-full bg-gray-950 text-white transition-all duration-300 flex flex-col border-r border-gray-800 shadow-xl`}
       >
         {/* Header - Branding Area */}
         <div className="flex items-center justify-between px-4 py-5 border-b border-gray-800">
@@ -82,7 +82,10 @@ function AdminPage() {
             return (
               <div
                 key={index}
-                onClick={() => navigate(item.path)}
+                onClick={() => {
+                  navigate(item.path)
+                  if (window.innerWidth < 768) setSidebarOpen(false)
+                }}
                 className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors duration-150 ${
                   active
                     ? "bg-gray-600 text-white font-semibold shadow-md shadow-emerald-600/30"
@@ -111,7 +114,7 @@ function AdminPage() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-50">
         {/* Top Bar - Clean, Elevated Header */}
         <header className="bg-white px-8 py-4 flex justify-between items-center border-b border-gray-200 shadow-sm z-10">
           <h2 className="text-xl font-semibold text-gray-800 tracking-wide">

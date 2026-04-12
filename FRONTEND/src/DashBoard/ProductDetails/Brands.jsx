@@ -59,6 +59,24 @@ function Brands() {
         <div className="bg-white">  
             <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
                 
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h1 className="text-3xl font-extrabold text-gray-900">Products</h1>
+                        <p className="text-sm font-bold text-gray-500 mt-2 uppercase tracking-widest">
+                            {filteredProducts.length} {selectedBrand ? `${selectedBrand} ` : ""}Product{filteredProducts.length !== 1 ? 's' : ''} Found
+                        </p>
+                    </div>
+                    <button 
+                        className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 font-bold text-sm uppercase tracking-widest active:scale-95"
+                        onClick={() => navigate("/admin/addProduct")}
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Add New Product
+                    </button>
+                </div>
+
                 {/* Search and Filters Bar */}
                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm mb-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -211,19 +229,6 @@ function Brands() {
                                 </button>
                             </div>
                         )}
-
-                        {/* Add Product Button */}
-                        <div className="p-6 bg-gray-50/50 border-t border-gray-100">
-                            <button 
-                                className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 font-bold text-sm uppercase tracking-widest active:scale-95"
-                                onClick={() => navigate("/admin/addProduct")}
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                Add New Product
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>

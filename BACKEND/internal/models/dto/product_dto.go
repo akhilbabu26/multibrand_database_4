@@ -23,19 +23,23 @@ type ProductFilter struct {
 	Limit    int
 }
 
+type ProductVariantRequest struct {
+	Size               entities.Size `json:"size" validate:"required,shoe_size"`
+	CostPrice          float64       `json:"cost_price" validate:"required,gt=0"`
+	OriginalPrice      float64       `json:"original_price" validate:"required,gt=0"`
+	DiscountPercentage float64       `json:"discount_percentage" validate:"min=0,max=100"`
+	Stock              int           `json:"stock" validate:"min=0"`
+}
+
 type CreateProductRequest struct {
-	Name               string                  `json:"name" form:"name" validate:"required,min=2"`
-	Brand              entities.Brand          `json:"brand" form:"brand" validate:"required"`
-	Type               string                  `json:"type" form:"type" validate:"required"`
-	Color              string                  `json:"color" form:"color" validate:"required"`
-	Size               entities.Size           `json:"size" form:"size" validate:"required,shoe_size"`
-	Gender             entities.Gender         `json:"gender" form:"gender" validate:"required,gender"`
-	CostPrice          float64                 `json:"cost_price" form:"cost_price" validate:"required,gt=0"`
-	OriginalPrice      float64                 `json:"original_price" form:"original_price" validate:"required,gt=0"`
-	DiscountPercentage float64                 `json:"discount_percentage" form:"discount_percentage" validate:"min=0,max=100"`
-	Images             []*multipart.FileHeader `form:"images" json:"-"`
-	Description        string                  `json:"description" form:"description"`
-	Stock              int                     `json:"stock" form:"stock" validate:"min=0"`
+	Name        string                  `json:"name" form:"name" validate:"required,min=2"`
+	Brand       entities.Brand          `json:"brand" form:"brand" validate:"required"`
+	Type        string                  `json:"type" form:"type" validate:"required"`
+	Color       string                  `json:"color" form:"color" validate:"required"`
+	Gender      entities.Gender         `json:"gender" form:"gender" validate:"required,gender"`
+	Images      []*multipart.FileHeader `form:"images" json:"-"`
+	Description string                  `json:"description" form:"description"`
+	Variants    string                  `form:"variants" validate:"required"` // JSON array string
 }
 
 type UpdateProductRequest struct {

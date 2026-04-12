@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import useFetch from '../Hooks/useFetch'
 import ProductCard from './ProductCard'
@@ -6,13 +6,15 @@ import ProductCard from './ProductCard'
 function ShowAll() {
   const { type: brand } = useParams()
   const navigate = useNavigate()
+  const [page, setPage] = useState(1)
 
-  // Use backend filter with brand instead of type
-  const { data, loading } = useFetch(
-    brand === 'all'
-      ? '/products'
-      : `/products?brand=${encodeURIComponent(brand)}`
-  )
+  const url = brand === 'all'
+    ? `/products?page=${page}`
+    : `/products?brand=${encodeURIComponent(brand)}&page=${page}`
+
+  const { data, loading, meta } = useFetch(url)
+
+  const totalPages = Math.ceil((meta?.total || 0) / (meta?.limit || 10))
 
   return (
     <div className='max-w-7xl mx-auto p-4 md:p-8'>
@@ -52,11 +54,35 @@ function ShowAll() {
           </button>
         </div>
       ) : (
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8'>
-          {data.map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <>
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8'>
+            {data.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+          
+          {totalPages > 1 && (
+            <div className="mt-12 flex items-center justify-center gap-4">
+              <button
+                disabled={page <= 1}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                className="px-6 py-2 rounded-lg font-bold text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                Previous
+              </button>
+              <span className="text-sm font-medium text-gray-600">
+                Page {page} of {totalPages}
+              </span>
+              <button
+                disabled={page >= totalPages}
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                className="px-6 py-2 rounded-lg font-bold text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       <div className="mt-12 flex justify-center">

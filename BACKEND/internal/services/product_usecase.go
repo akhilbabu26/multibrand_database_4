@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
 	"mime/multipart"
 
 	"github.com/akhilbabu26/multibrand_database_4/internal/models/contracts"
@@ -69,39 +70,57 @@ func (u *productUsecase) uploadImages(ctx context.Context, fileHeaders []*multip
 }
 
 func (u *productUsecase) CreateProduct(ctx context.Context, req dto.CreateProductRequest) error {
-	product := &entities.Product{
-		Name:               req.Name,
-		Brand:              req.Brand,
-		Type:               req.Type,
-		Color:              req.Color,
-		Size:               req.Size,
-		Gender:             req.Gender,
-		CostPrice:          req.CostPrice,
-		OriginalPrice:      req.OriginalPrice,
-		DiscountPercentage: req.DiscountPercentage,
-		Description:        req.Description,
-		Stock:              req.Stock,
-		IsActive:           true,
+	var variants []dto.ProductVariantRequest
+	if err := json.Unmarshal([]byte(req.Variants), &variants); err != nil {
+		return apperrors.BadRequest("invalid variants format, must be JSON array", err)
 	}
-	product.CalculateSalePrice()
+	if len(variants) == 0 {
+		return apperrors.BadRequest("at least one product variant is required", nil)
+	}
 
+	var urls []string
 	if len(req.Images) > 0 {
-		urls, err := u.uploadImages(ctx, req.Images)
+		var err error
+		urls, err = u.uploadImages(ctx, req.Images)
 		if err != nil {
 			return err
 		}
-
-		images := make([]entities.ProductImage, 0, len(urls))
-		for i, url := range urls {
-			images = append(images, entities.ProductImage{
-				ImageURL:  url,
-				IsPrimary: i == 0,
-			})
-		}
-		product.Images = images
 	}
 
-	return u.repo.Create(ctx, product)
+	for _, variant := range variants {
+		product := &entities.Product{
+			Name:               req.Name,
+			Brand:              req.Brand,
+			Type:               req.Type,
+			Color:              req.Color,
+			Size:               variant.Size,
+			Gender:             req.Gender,
+			CostPrice:          variant.CostPrice,
+			OriginalPrice:      variant.OriginalPrice,
+			DiscountPercentage: variant.DiscountPercentage,
+			Description:        req.Description,
+			Stock:              variant.Stock,
+			IsActive:           true,
+		}
+		product.CalculateSalePrice()
+
+		if len(urls) > 0 {
+			images := make([]entities.ProductImage, 0, len(urls))
+			for i, url := range urls {
+				images = append(images, entities.ProductImage{
+					ImageURL:  url,
+					IsPrimary: i == 0,
+				})
+			}
+			product.Images = images
+		}
+
+		if err := u.repo.Create(ctx, product); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (u *productUsecase) UpdateProduct(ctx context.Context, id uint, req dto.UpdateProductRequest) error {

@@ -1,29 +1,13 @@
 /**
  * Internal helper to append common product fields to FormData.
  */
-function appendCommonFields(fd, values) {
+function appendBaseFields(fd, values) {
   if (values.name) fd.append("name", values.name);
   if (values.brand) fd.append("brand", values.brand);
   if (values.type) fd.append("type", values.type);
   if (values.color) fd.append("color", values.color);
-  if (values.size) fd.append("size", String(values.size));
   if (values.gender) fd.append("gender", values.gender);
-  
-  // Map camelCase to snake_case for the Go Backend
-  const costPrice = values.costPrice ?? values.cost_price;
-  if (costPrice != null) fd.append("cost_price", String(costPrice));
-
-  const originalPrice = values.originalPrice ?? values.original_price;
-  if (originalPrice != null) fd.append("original_price", String(originalPrice));
-
-  const discPerc = values.discountPercentage ?? values.discount_percentage;
-  if (discPerc != null) fd.append("discount_percentage", String(discPerc));
-
   if (values.description != null) fd.append("description", values.description);
-  
-  const stock = values.stock;
-  if (stock != null) fd.append("stock", String(stock));
-
   return fd;
 }
 
@@ -31,7 +15,12 @@ function appendCommonFields(fd, values) {
  * Build multipart form data for Go admin product create handler.
  */
 export function appendCreateProduct(fd, values, imageFiles) {
-  appendCommonFields(fd, values);
+  appendBaseFields(fd, values);
+  
+  if (values.variants && Array.isArray(values.variants)) {
+    fd.append("variants", JSON.stringify(values.variants));
+  }
+
   if (imageFiles?.length) {
     const fileList = imageHeadersToList(imageFiles);
     for (let i = 0; i < fileList.length; i++) {
@@ -45,7 +34,21 @@ export function appendCreateProduct(fd, values, imageFiles) {
  * Build multipart form data for Go admin product update handler.
  */
 export function appendUpdateProduct(fd, values, imageFiles) {
-  appendCommonFields(fd, values);
+  appendBaseFields(fd, values);
+
+  if (values.size) fd.append("size", String(values.size));
+  
+  const costPrice = values.costPrice ?? values.cost_price;
+  if (costPrice != null) fd.append("cost_price", String(costPrice));
+
+  const originalPrice = values.originalPrice ?? values.original_price;
+  if (originalPrice != null) fd.append("original_price", String(originalPrice));
+
+  const discPerc = values.discountPercentage ?? values.discount_percentage;
+  if (discPerc != null) fd.append("discount_percentage", String(discPerc));
+  
+  const stock = values.stock;
+  if (stock != null) fd.append("stock", String(stock));
   
   const isActive = values.isActive ?? values.is_active;
   if (isActive !== undefined) {

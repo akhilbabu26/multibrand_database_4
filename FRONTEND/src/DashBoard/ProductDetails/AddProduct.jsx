@@ -63,7 +63,7 @@ function AddProduct() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto bg-gray-50 min-h-screen">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <h1 className="text-3xl font-extrabold text-gray-900">Add product</h1>
         <button
           type="button"
@@ -118,7 +118,7 @@ function AddProduct() {
                     required
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Brand</label>
                     <Field as="select" name="brand" className="w-full px-4 py-3 border rounded-xl bg-gray-50">
@@ -132,13 +132,13 @@ function AddProduct() {
                     </Field>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Color</label>
                     <Field name="color" className="w-full px-4 py-3 border rounded-xl bg-gray-50" required />
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Gender</label>
                     <Field as="select" name="gender" className="w-full px-4 py-3 border rounded-xl bg-gray-50">
@@ -165,7 +165,7 @@ function AddProduct() {
               <div className="space-y-8">
                 <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 space-y-6">
                   <h2 className="text-xl font-bold text-gray-800 pb-2 border-b">Pricing</h2>
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-2">Cost (₹)</label>
                       <Field name="costPrice" type="number" step="0.01" className="w-full px-4 py-3 border rounded-xl bg-gray-50" />
@@ -204,7 +204,7 @@ function AddProduct() {
                 </div>
 
                 <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 space-y-4">
-                  <div className="flex items-center justify-between border-b pb-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
                     <h2 className="text-xl font-bold text-gray-800">Products Images</h2>
                     <span className="text-xs font-bold px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg">
                       {previews.length} selected
@@ -241,7 +241,7 @@ function AddProduct() {
                   </div>
 
                   {previews.length > 0 && (
-                    <div className="grid grid-cols-4 gap-3 mt-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
                       {previews.map((url, idx) => (
                         <div key={idx} className="relative aspect-square group rounded-2xl overflow-hidden border border-gray-100">
                           <img src={url} alt="" className="w-full h-full object-cover" />
