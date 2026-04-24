@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Formik, Field, Form } from "formik";
+import { Formik, Field, Form, FieldArray } from "formik";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import productService from "../../services/product.service";
@@ -12,14 +12,18 @@ const initialValues = {
   brand: "Adidas",
   type: "Casual Retro Runner",
   color: "",
-  originalPrice: 0,
-  costPrice: 0,
-  discountPercentage: 0,
-  salePrice: 0,
-  size: "40",
   gender: "unisex",
-  stock: 0,
   description: "",
+  variants: [
+    {
+      size: "40",
+      costPrice: 0,
+      originalPrice: 0,
+      discountPercentage: 0,
+      salePrice: 0,
+      stock: 0,
+    }
+  ]
 };
 
 const brands = ["Adidas", "Nike", "Puma", "Reebok", "New Balance"];
@@ -81,11 +85,24 @@ function AddProduct() {
             toast.error("Add at least one product image");
             return;
           }
+          if (!values.variants || values.variants.length === 0) {
+            toast.error("Add at least one product variant");
+            return;
+          }
           setSubmitting(true);
           sf(true);
           try {
+            const transformedVariants = values.variants.map(v => ({
+              size: v.size,
+              cost_price: Number(v.costPrice),
+              original_price: Number(v.originalPrice),
+              discount_percentage: Number(v.discountPercentage),
+              stock: Number(v.stock)
+            }));
+            const payload = { ...values, variants: transformedVariants };
+
             const fd = new FormData();
-            appendCreateProduct(fd, values, selectedFiles);
+            appendCreateProduct(fd, payload, selectedFiles);
             await productService.createProduct(fd);
             queryClient.invalidateQueries({ queryKey: ["products"] });
             toast.success("Product created");
@@ -99,9 +116,9 @@ function AddProduct() {
         }}
       >
         {({ values, setFieldValue, isSubmitting }) => {
-          const updateSalePrice = (orig, disc) => {
+          const updateSalePrice = (index, orig, disc) => {
             const sale = Math.round(orig - (orig * disc) / 100);
-            setFieldValue("salePrice", sale);
+            setFieldValue(`variants.${index}.salePrice`, sale);
           };
 
           return (
@@ -138,22 +155,12 @@ function AddProduct() {
                     <Field name="color" className="w-full px-4 py-3 border rounded-xl bg-gray-50" required />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">Gender</label>
                     <Field as="select" name="gender" className="w-full px-4 py-3 border rounded-xl bg-gray-50">
                       {genders.map(g => <option key={g} value={g}>{g}</option>)}
                     </Field>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Size</label>
-                    <Field as="select" name="size" className="w-full px-4 py-3 border rounded-xl bg-gray-50">
-                      {sizes.map(s => <option key={s} value={s}>{s}</option>)}
-                    </Field>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Stock</label>
-                    <Field name="stock" type="number" min="0" className="w-full px-4 py-3 border rounded-xl bg-gray-50" />
                   </div>
                 </div>
                 <div>
@@ -163,45 +170,88 @@ function AddProduct() {
               </div>
 
               <div className="space-y-8">
-                <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 space-y-6">
-                  <h2 className="text-xl font-bold text-gray-800 pb-2 border-b">Pricing</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">Cost (₹)</label>
-                      <Field name="costPrice" type="number" step="0.01" className="w-full px-4 py-3 border rounded-xl bg-gray-50" />
+                <FieldArray name="variants">
+                  {({ push, remove }) => (
+                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 space-y-6">
+                      <div className="flex justify-between items-center pb-2 border-b">
+                        <h2 className="text-xl font-bold text-gray-800">Variants (Size, Stock & Pricing)</h2>
+                        <button
+                          type="button"
+                          onClick={() => push({ size: "40", costPrice: 0, originalPrice: 0, discountPercentage: 0, salePrice: 0, stock: 0 })}
+                          className="px-4 py-2 bg-indigo-50 text-indigo-700 text-sm font-bold rounded-lg hover:bg-indigo-100 transition"
+                        >
+                          + Add Variant
+                        </button>
+                      </div>
+
+                      {values.variants && values.variants.map((variant, index) => (
+                        <div key={index} className="p-6 bg-gray-50 rounded-2xl border border-gray-100 relative">
+                          {values.variants.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => remove(index)}
+                              className="absolute top-4 right-4 text-red-500 hover:bg-red-50 p-2 rounded-full transition"
+                              title="Remove variant"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          )}
+                          <h3 className="font-bold text-gray-700 mb-4">Variant #{index + 1}</h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Size</label>
+                              <Field as="select" name={`variants.${index}.size`} className="w-full px-4 py-3 border rounded-xl bg-white">
+                                {sizes.map(s => <option key={s} value={s}>{s}</option>)}
+                              </Field>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Stock</label>
+                              <Field name={`variants.${index}.stock`} type="number" min="0" className="w-full px-4 py-3 border rounded-xl bg-white" />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Cost (₹)</label>
+                              <Field name={`variants.${index}.costPrice`} type="number" step="0.01" className="w-full px-4 py-3 border rounded-xl bg-white" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Original (₹)</label>
+                              <Field
+                                name={`variants.${index}.originalPrice`}
+                                type="number"
+                                className="w-full px-4 py-3 border rounded-xl bg-white"
+                                onChange={(e) => {
+                                  const val = parseFloat(e.target.value) || 0;
+                                  setFieldValue(`variants.${index}.originalPrice`, val);
+                                  updateSalePrice(index, val, variant.discountPercentage);
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Discount %</label>
+                              <Field
+                                name={`variants.${index}.discountPercentage`}
+                                type="number"
+                                className="w-full px-4 py-3 border rounded-xl bg-white"
+                                onChange={(e) => {
+                                  const val = parseFloat(e.target.value) || 0;
+                                  setFieldValue(`variants.${index}.discountPercentage`, val);
+                                  updateSalePrice(index, variant.originalPrice, val);
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-bold text-indigo-500 uppercase mb-1">Sale (₹)</label>
+                              <Field name={`variants.${index}.salePrice`} type="number" className="w-full px-4 py-3 border rounded-xl bg-indigo-50 font-bold" readOnly />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">Original (₹)</label>
-                      <Field
-                        name="originalPrice"
-                        type="number"
-                        className="w-full px-4 py-3 border rounded-xl bg-gray-50"
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value) || 0;
-                          setFieldValue("originalPrice", val);
-                          updateSalePrice(val, values.discountPercentage);
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">Discount %</label>
-                      <Field
-                        name="discountPercentage"
-                        type="number"
-                        className="w-full px-4 py-3 border rounded-xl bg-gray-50"
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value) || 0;
-                          setFieldValue("discountPercentage", val);
-                          updateSalePrice(values.originalPrice, val);
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">Sale (₹)</label>
-                      <Field name="salePrice" type="number" className="w-full px-4 py-3 border rounded-xl bg-indigo-50 font-bold" readOnly />
-                    </div>
-                  </div>
-                </div>
+                  )}
+                </FieldArray>
 
                 <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
